@@ -1,27 +1,31 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0002A-JS8_NATIVE_RX**
-Project version: `v7-js8-native-rx`
-Phase: **Native modes: JS8 RX complete; JS8 TX next**
-Test status: **GREEN host/CI: JS8 RX gate PASS 19 assertions; exact pinned ARM64 JNI exports checked; device/RF proof not run; finalizer run 37296091037**
+Latest verified checkpoint: **CP-0002B-JS8_NATIVE_TX**
+Project version: `v8-js8-native-tx`
+Phase: **Native modes: JS8 RX/TX host-integrated; WSPR RX next**
+Test status: **GREEN host/CI: core=42062 pipeline=56 LoTW=19 JS8_RX=19 JS8_TX=39; exact pinned ARM64 TX JNI exports checked; device/RF proof not run; finalizer run 37298037260**
 
 ## What is complete in this checkpoint
-- JS8 RX routed as continuous 12 kHz stream; no slot assembler
-- Production FieldOps binding imports pinned com.js8call.core.JS8Engine API
-- Native decode callback maps to FieldOps DecodeResult
-- Upstream TX audio tap disabled and no JS8 TX API exposed in CP-0002A
-- Focused deterministic JS8 RX suite PASS 19 assertions
-- Exact successful upstream ARM64 JNI artifact checked for nativeCreate/start/stop/destroy/submitAudio exports
+- Pinned JS8 native TX audio tap enabled with upstream rig/PTT path unused
+- JS8 native transmit gate remains closed until FieldOps owns radio and completes CAT PTT lead
+- JS8 TX callback PCM routed only through Ftx1RadioSession streaming TX path
+- Stateful callback-rate to 48 kHz streaming rate adapter implemented and chunk-invariance tested
+- Normal JS8 completion attempts TX0, closes TX audio and releases ownership
+- Audio failure, unexpected early native audio, cancel and close paths fail closed to RX-safe state
+- Focused deterministic JS8 TX suite PASS 39 assertions; JS8 RX PASS 19; inherited core/pipeline/LoTW suites green
+- Exact successful upstream ARM64 artifact re-checked for nativeTransmitMessage/stop/status/setTransmitReady exports
 
 ## Known blockers / red items
-- Actual Samsung Galaxy S23 Ultra + Yaesu FTX-1 JS8 RX has not been device-tested
+- Actual Samsung Galaxy S23 Ultra + Yaesu FTX-1 JS8 RF TX has not been device-tested
+- Actual FTX-1 Android USB playback endpoint/rate/level remains unverified
+- RF spectral quality, ALC and transmit-power calibration remain unverified
 - Final Android AAR/APK packaging of the pinned JS8 native runtime remains unfinished
 - Project-library FTX1_FieldOps_CP-0002_JS8_NATIVE.zip remains inaccessible for raw-byte comparison
 
 ## Continue with these exact actions
-1. CP-0002B: enable upstream TX audio tap while keeping upstream rig/PTT ownership disabled
-2. Route JS8 TX chunks only through FieldOps TX arbiter/PTT and USB audio path
-3. Prove TX0/audio-stop/ownership-release on error and close, then checkpoint CP-0002B
+1. CP-0002C: vendor pinned Guenael/rtlsdr-wsprd pure-C decoder
+2. Implement 12 kHz real to 375 Hz complex-IQ WSPR receive front end and 120-second decoder window
+3. Prove native encoder fixture through synthesized RX waveform to expected WSPR decode; do not implement WSPR TX yet
 
 ## Verification before continuing
 Run:

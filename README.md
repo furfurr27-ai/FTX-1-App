@@ -39,21 +39,23 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** `CP-0002A-JS8_NATIVE_RX`
+**Latest verified checkpoint:** `CP-0002B-JS8_NATIVE_TX`
 
-Parent: `CP-0001-GITHUB_SURVEY`.
+Parent: `CP-0002A-JS8_NATIVE_RX`.
 
-CP-0002A is a **GREEN host/CI integration checkpoint with YELLOW hardware status**. It establishes the JS8 receive boundary without claiming S23 Ultra / FTX-1 device proof.
+CP-0002B is a **GREEN host/CI integration checkpoint with YELLOW hardware/RF status**. It adds the JS8 transmit boundary without claiming actual S23 Ultra / FTX-1 RF proof.
 
-CP-0002A adds and proves:
+CP-0002B adds and proves:
 
-- JS8 uses the shared continuous 12 kHz PCM branch and no longer passes through `SlotWindowAssembler`.
-- `Js8EngineAdapter` maps continuous PCM and native decode callbacks into the FieldOps decode model.
-- `Js8CallAndroidEngineFactory` binds the production boundary to `com.js8call.core.JS8Engine` from the pinned Android port.
-- CP-0002A exposes no JS8 transmit API and keeps the upstream TX audio tap disabled.
-- Focused host compilation compiles core main once, then the production DSP slice and deterministic tests separately.
-- Deterministic JS8 RX tests pass with **19 assertions**.
-- The exact successful upstream ARM64 JNI artifact was inspected and the required lifecycle/RX JNI exports were present.
+- The pinned JS8 native TX audio tap is enabled while upstream rig/PTT ownership remains unused.
+- `Js8TxController` queues native JS8 modulation with the native transmit gate closed.
+- CAT PTT and USB TX audio are reachable only through the FieldOps-owned `Ftx1RadioSession` / `RadioModeArbiter` path.
+- FieldOps pre-keys CAT PTT before opening the native transmit gate.
+- Native TX PCM is statefully rate-adapted from its callback rate (11,520 Hz at the pinned upstream build) to the configured 48 kHz FTX-1 playback domain.
+- Normal completion and failure/cancel/close paths attempt `TX0`, close TX audio and release radio ownership.
+- Deterministic JS8 TX safety tests pass with **39 assertions**; JS8 RX remains green with **19 assertions**.
+- The inherited core regression remains green: **42,062 core assertions, 56 pipeline assertions, 19 LoTW assertions**.
+- The exact pinned ARM64 artifact was re-checked for required JS8 TX/lifecycle JNI exports.
 
 Pinned upstream JS8 source:
 
@@ -61,19 +63,19 @@ Pinned upstream JS8 source:
 
 Exact upstream Android Build run checked: `36659533828`, conclusion **success**.
 
-Exact checked artifact evidence is recorded in `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.
+Exact checked artifact and TX-boundary evidence is recorded in `research/js8/CP-0002B_JS8_TX_INTEGRATION.md`.
 
-- CP-0002A finalization workflow run: `37296091037`
+- CP-0002B finalization workflow run: `37298037260`
 
-### CP-0001 inherited baseline
+### Inherited verified ancestry
 
-The CP-0001 baseline remains part of the verified ancestry. Its original recovery package passed its verifier with **157 file hashes**, core **42,062 assertions**, pipeline **56**, LoTW **19**, FT-family JNI symbols present, and Kotlin adapter compile PASS.
+`CP-0002A-JS8_NATIVE_RX` remains the verified JS8 receive parent checkpoint. `CP-0001-GITHUB_SURVEY` remains its verified source/research ancestor.
 
-### Important recovery boundary
+### Hardware/RF boundary
 
-A later project handoff describes additional post-CP-0001 work beyond CP-0002A, and a project-library archive named `FTX1_FieldOps_CP-0002_JS8_NATIVE.zip` is known to exist. Its raw bytes remain inaccessible to the current tool path, so it is still a recovery/comparison lead rather than a verified Git baseline. Do not silently promote unrecovered later work.
+Actual Galaxy S23 Ultra + FTX-1 USB enumeration/playback, real JS8 RF transmission, output-level/ALC calibration and RF spectral-quality validation are **not** proven by CP-0002B. Final Android AAR/APK packaging also remains a later task.
 
-Actual S23 Ultra + FTX-1 JS8 RX, final Android AAR/APK packaging, and JS8 TX remain outside CP-0002A.
+The older project-library `FTX1_FieldOps_CP-0002_JS8_NATIVE.zip` remains an inaccessible recovery/comparison lead and was not used as proof for this checkpoint.
 
 ## Engineering rules
 
@@ -282,7 +284,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline before this finalization run: `CP-0002A-JS8_NATIVE_RX`
+- Current Git source baseline: `CP-0002B-JS8_NATIVE_TX`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -295,16 +297,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0002B — JS8 native TX only.**
+**CP-0002C — WSPR native RX only.**
 
-1. Enable the pinned upstream TX audio tap.
-2. Capture native JS8 TX PCM without allowing upstream rig/PTT ownership.
-3. Route JS8 TX audio only through the FieldOps-owned radio arbiter/PTT path.
-4. Adapt the native TX sample rate to the FTX-1 USB output rate as required.
-5. Prove that JS8 TX cannot bypass the arbiter and that every failure/close path guarantees `TX0`, audio stop, and ownership release.
-6. Keep real-device/RF status YELLOW/RED until tested on the actual S23 Ultra + FTX-1.
-
-The inaccessible later JS8 archive remains a recovery/comparison source if its raw bytes become available, but it no longer blocks processing the explicit checkpoint queue.
+1. Vendor the pinned pure-C WSPR decoder from `Guenael/rtlsdr-wsprd@1ca9b83dd2562ce9ef2453aacdd5bc3aab982c7d`.
+2. Keep the shared 12 kHz FieldOps receive branch as the source.
+3. Mix the WSPR passband to complex baseband, low-pass it and decimate to the decoder's 375 Hz complex-I/Q input.
+4. Assemble the 120-second / 45,000-complex-sample WSPR decoder window without changing JS8 or FT-family timing.
+5. Exit gate: pinned/native WSPR encoding fixture -> synthesized receive waveform -> FieldOps downconverter -> correct decoded message.
+6. Do not implement WSPR TX in CP-0002C; that is CP-0002D.
+7. Keep Android/radio hardware status YELLOW/RED until actual S23 Ultra + FTX-1 testing.
 
 ## README maintenance contract
 

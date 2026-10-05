@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0002A-JS8_NATIVE_RX",
-  "created_utc": "2026-10-05T10:22:20+00:00",
-  "manifest": "checkpoints/manifests/CP-0002A-JS8_NATIVE_RX.json",
-  "snapshot": "checkpoints/snapshots/CP-0002A-JS8_NATIVE_RX.tar.gz",
-  "snapshot_sha256": "a83da9f02efb7fdbe0a44bcf2caaef2bda952de28b8157b81b72053cf8555dc0"
+  "checkpoint_id": "CP-0002B-JS8_NATIVE_TX",
+  "created_utc": "2026-10-05T10:41:01+00:00",
+  "manifest": "checkpoints/manifests/CP-0002B-JS8_NATIVE_TX.json",
+  "snapshot": "checkpoints/snapshots/CP-0002B-JS8_NATIVE_TX.tar.gz",
+  "snapshot_sha256": "e1dec1b4ab684098c52e7636ca5fb20089aefcb4d706736b8fefdd97fe8bb122"
 }

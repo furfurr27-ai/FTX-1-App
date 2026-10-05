@@ -17,3 +17,14 @@ FieldOps JS8 RX now uses the pinned JS8Call Android native-engine boundary on th
 
 Evidence: `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.
 
+## CP-0002B — JS8 native TX
+
+Parent: `CP-0002A-JS8_NATIVE_RX`
+
+FieldOps now captures the pinned JS8 native TX audio tap while retaining exclusive CAT/PTT/USB-audio ownership. Native modulation is gated until FieldOps acquires the JS8 radio owner and completes PTT lead, then callback PCM is statefully adapted to the 48 kHz playback domain. Normal completion and all tested error/cancel paths collapse to RX-safe state.
+
+Host/CI gate: core 42,062; pipeline 56; LoTW 19; JS8 RX 19; JS8 TX 39 assertions, all PASS.
+
+Finalization workflow run: `37298037260`.
+
+Evidence: `research/js8/CP-0002B_JS8_TX_INTEGRATION.md`.
