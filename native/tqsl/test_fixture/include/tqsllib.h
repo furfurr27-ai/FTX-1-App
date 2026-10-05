@@ -14,6 +14,7 @@ extern "C" {
 #define TQSL_LOC_IGNORE 0
 #define TQSL_LOC_REPORT 1
 #define TQSL_LOC_UPDATE 2
+#define TQSL_CERT_ERROR 19
 
 typedef void* tQSL_Cert;
 typedef void* tQSL_Location;
@@ -33,6 +34,12 @@ int tqsl_importPKCS12Base64(
     int (*pwcb)(char *buf, int bufsiz, void *userdata),
     int (*cb)(int type, const char *message, void *userdata),
     void *user);
+int tqsl_importKeyPairEncoded(
+    const char *callsign,
+    const char *type,
+    const char *keybuf,
+    const char *certbuf);
+int tqsl_mergeStationLocations(const char *locdata);
 
 int tqsl_getStationLocation(tQSL_Location *loc, const char *name);
 int tqsl_getLocationCallSign(tQSL_Location loc, char *buf, int bufsiz);
