@@ -8,11 +8,14 @@ import dev.n0png.fieldops.core.dsp.WindowedDspEngine
 import kotlin.math.roundToInt
 
 /**
- * WSPR receive adapter around the pinned Guenael/rtlsdr-wsprd decoder.
+ * WSPR adapter around the pinned Guenael/rtlsdr-wsprd codec.
  *
- * CP-0002C is receive-only. The native boundary accepts the decoder's native
- * 375 sps complex I/Q domain. FieldOps owns the 12 kHz real-audio front-end.
- * WSPR transmit stays deliberately unavailable until CP-0002D.
+ * RX uses the pinned decoder at 375 sps complex I/Q. TX uses the pinned
+ * upstream channel-symbol encoder, then FieldOps performs continuous-phase
+ * 4-FSK synthesis in the canonical 12 kHz modem domain.
+ *
+ * This class never owns CAT/PTT or USB audio. Physical transmission is routed
+ * separately through WsprTxController and Ftx1RadioSession.
  */
 class WsprEngineAdapter(
     private val native: NativeBridge,
@@ -30,8 +33,9 @@ class WsprEngineAdapter(
         val powerDbm: String,
     )
 
-    fun interface NativeBridge {
+    interface NativeBridge {
         fun decode375(i: FloatArray, q: FloatArray): List<NativeDecode>
+        fun encodeSymbols(message: String): ByteArray
     }
 
     override val modes = setOf(DigitalMode.WSPR)
@@ -57,6 +61,19 @@ class WsprEngineAdapter(
 
     override fun encode(request: EncodeRequest): TxWaveform {
         require(request.mode == DigitalMode.WSPR)
-        throw UnsupportedOperationException("WSPR TX is intentionally unavailable until CP-0002D")
+        require(request.sampleRate == WsprTxWaveformSynthesizer.SAMPLE_RATE) {
+            "WSPR TX synthesis is fixed at 12 kHz in CP-0002D"
+        }
+
+        val normalized = request.text.trim().uppercase()
+        require(normalized.isNotEmpty()) { "WSPR message must not be empty" }
+        require(normalized.length <= 22) { "WSPR message must be at most 22 ASCII characters" }
+        require(normalized.all { it.code in 0x20..0x7e }) { "WSPR message must be printable ASCII" }
+
+        val symbols = native.encodeSymbols(normalized)
+        return WsprTxWaveformSynthesizer.synthesize(
+            symbols = symbols,
+            centerAudioHz = request.audioHz,
+        )
     }
 }
