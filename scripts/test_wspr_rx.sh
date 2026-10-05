@@ -48,6 +48,7 @@ done
 echo "[4/6] Compile production WSPR Kotlin slice"
 kotlinc \
   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprRxFrontEnd.kt" \
+  "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprTxWaveformSynthesizer.kt" \
   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprEngineAdapter.kt" \
   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprJniBridge.kt" \
   -cp "$MAIN_JAR" \
