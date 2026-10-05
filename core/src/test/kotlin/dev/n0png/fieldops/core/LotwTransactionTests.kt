@@ -175,6 +175,11 @@ object LotwTransactionTests {
         checkThat(result.qsos.all { it.lotwUpload == LotwUploadState.QUEUED }, "network failure must leave QSOs queued")
         eq(1, signer.lastSession!!.rollbacks, "network failure rollback count")
         eq(0, signer.lastSession!!.commits, "network failure commit count")
+
+        val queue = LotwUploadQueue()
+        sampleBatch().forEach { queue.enqueue(it, "home") }
+        queue.applyResult(result)
+        eq(3, queue.pending("home").size, "network failure must remain retryable in the shared queue")
     }
 
     private fun serverRejectionRollsBack() {
@@ -195,6 +200,12 @@ object LotwTransactionTests {
         checkThat(result.qsos.all { it.lotwUpload == LotwUploadState.REJECTED }, "server rejection must mark batch REJECTED")
         eq(1, signer.lastSession!!.rollbacks, "server rejection rollback count")
         eq(0, transport.queryParams.size, "server rejection must not query acceptance")
+
+        val queue = LotwUploadQueue()
+        sampleBatch().forEach { queue.enqueue(it, "home") }
+        queue.applyResult(result)
+        eq(0, queue.pending("home").size, "rejected jobs must not auto-retry")
+        eq(3, queue.size(), "rejected jobs must remain visible for operator action")
     }
 
     private fun reportFailureRollsBack() {
