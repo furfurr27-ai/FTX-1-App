@@ -4,6 +4,7 @@
  * FieldOps-specific code added 2026-10-05. The linked upstream decoder is
  * GNU GPL v3. See native/wspr/upstream/LICENSE and UPSTREAM.md.
  */
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,6 +12,35 @@
 #include "fieldops_wspr_bridge.h"
 #include "upstream/wsprd.h"
 #include "upstream/wsprsim_utils.h"
+
+/*
+ * Upstream wspr_decode() keeps several large decoder buffers on the C stack.
+ * A JVM/Android caller thread may have a much smaller stack than the original
+ * daemon process. Run the pinned decoder on a dedicated native worker with an
+ * explicit stack rather than risking a process-wide stack-overflow crash.
+ */
+struct fieldops_wspr_worker {
+    float *i_samples;
+    float *q_samples;
+    int sample_count;
+    struct decoder_options options;
+    struct decoder_results *results;
+    int result_count;
+    int decoder_rc;
+};
+
+static void *fieldops_wspr_decode_worker(void *opaque) {
+    struct fieldops_wspr_worker *worker = (struct fieldops_wspr_worker *)opaque;
+    worker->decoder_rc = wspr_decode(
+        worker->i_samples,
+        worker->q_samples,
+        worker->sample_count,
+        worker->options,
+        worker->results,
+        &worker->result_count
+    );
+    return NULL;
+}
 
 int fieldops_wspr_decode375(
     const float *i_samples,
@@ -43,22 +73,46 @@ int fieldops_wspr_decode375(
 
     struct decoder_results native_results[FIELDOPS_WSPR_MAX_RESULTS];
     memset(native_results, 0, sizeof(native_results));
-    int native_count = 0;
+    struct fieldops_wspr_worker worker;
+    memset(&worker, 0, sizeof(worker));
+    worker.i_samples = i_copy;
+    worker.q_samples = q_copy;
+    worker.sample_count = sample_count;
+    worker.options = options;
+    worker.results = native_results;
 
-    int rc = wspr_decode(
-        i_copy,
-        q_copy,
-        sample_count,
-        options,
-        native_results,
-        &native_count
-    );
+    pthread_attr_t attr;
+    if (pthread_attr_init(&attr) != 0) {
+        free(i_copy);
+        free(q_copy);
+        return -5;
+    }
 
+    const size_t decoder_stack_bytes = 8u * 1024u * 1024u;
+    if (pthread_attr_setstacksize(&attr, decoder_stack_bytes) != 0) {
+        pthread_attr_destroy(&attr);
+        free(i_copy);
+        free(q_copy);
+        return -6;
+    }
+
+    pthread_t thread;
+    int thread_rc = pthread_create(&thread, &attr, fieldops_wspr_decode_worker, &worker);
+    pthread_attr_destroy(&attr);
+    if (thread_rc != 0) {
+        free(i_copy);
+        free(q_copy);
+        return -7;
+    }
+
+    thread_rc = pthread_join(thread, NULL);
     free(i_copy);
     free(q_copy);
+    if (thread_rc != 0) return -8;
+    if (worker.decoder_rc != 0) return -9;
 
-    if (rc != 0) return -5;
-    if (native_count < 0) return -6;
+    int native_count = worker.result_count;
+    if (native_count < 0) return -10;
 
     int count = native_count;
     if (count > FIELDOPS_WSPR_MAX_RESULTS) count = FIELDOPS_WSPR_MAX_RESULTS;
