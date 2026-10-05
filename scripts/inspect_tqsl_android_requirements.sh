@@ -15,17 +15,17 @@ tar -xzf "$BUILD/tqsl.tar.gz" -C "$BUILD"
 ROOT="$(find "$BUILD" -mindepth 1 -maxdepth 1 -type d | head -n1)"
 echo "ROOT=$ROOT"
 
-echo "=== top-level files ==="
-find "$ROOT" -maxdepth 2 -type f | sed "s#^$ROOT/##" | sort | head -250
+echo "=== top-level CMakeLists.txt ==="
+sed -n '1,320p' "$ROOT/CMakeLists.txt"
 
-echo "=== CMake dependency lines ==="
-grep -RInE 'find_package\(|find_library\(|OPENSSL|EXPAT|BDB|Berkeley|CURL|ZLIB|WX|SQLITE|sqlite|CMAKE_SYSTEM_NAME|ANDROID'   "$ROOT"/CMakeLists.txt "$ROOT"/src "$ROOT"/cmake 2>/dev/null | head -400 || true
+echo "=== src/CMakeLists.txt ==="
+sed -n '1,360p' "$ROOT/src/CMakeLists.txt"
 
-echo "=== tqsllib target context ==="
-grep -RInE 'add_library\(|tqsllib|target_link_libraries\(|target_include_directories\('   "$ROOT"/CMakeLists.txt "$ROOT"/src 2>/dev/null | head -500 || true
+echo "=== exact dependency calls ==="
+grep -InE 'find_package\(|find_library\(|include_directories\(|target_link_libraries\(|add_library\('   "$ROOT/CMakeLists.txt" "$ROOT/src/CMakeLists.txt" || true
 
-echo "=== source includes ==="
-grep -RhoE '^#include [<"][^>"]+[>"]' "$ROOT"/src/*.{c,cc,cpp,cxx,h,hpp} 2>/dev/null | sort -u | head -300 || true
+echo "=== compile-time platform conditionals in src root ==="
+grep -InE '#if|#ifdef|#ifndef|__APPLE__|_WIN32|WIN32|UNIX|ANDROID|__ANDROID__'   "$ROOT/src/"*.{cpp,h} 2>/dev/null | head -350 || true
 
-echo "=== source files ==="
-find "$ROOT/src" -maxdepth 1 -type f | sed "s#^$ROOT/src/##" | sort
+echo "=== SQLite/OpenSSL/Expat/Zlib references in src root only ==="
+grep -InE 'sqlite3|openssl/|expat|zlib|gzopen|deflate|inflate'   "$ROOT/src/"*.{cpp,h} 2>/dev/null | head -350 || true
