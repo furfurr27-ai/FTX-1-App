@@ -1,0 +1,47 @@
+name: CP-0003C Android TrustedQSL Package
+
+on:
+  push:
+    branches:
+      - cp-0003c-real-lotw-validation
+    paths:
+      - 'native/tqsl/android/**'
+      - 'native/tqsl/fieldops_tqsl_jni.cpp'
+      - 'scripts/build_tqsl_android_arm64.sh'
+      - '.github/workflows/cp0003c-android-tqsl.yml'
+  pull_request:
+    paths:
+      - 'native/tqsl/android/**'
+      - 'native/tqsl/fieldops_tqsl_jni.cpp'
+      - 'scripts/build_tqsl_android_arm64.sh'
+      - '.github/workflows/cp0003c-android-tqsl.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native build prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ninja-build perl zip
+      - name: Build arm64-v8a TrustedQSL runtime
+        shell: bash
+        run: bash scripts/build_tqsl_android_arm64.sh
+      - name: Upload Android TrustedQSL runtime bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: fieldops-tqsl-android-arm64-v8a
+          path: |
+            .build/cp0003c-android-tqsl/fieldops-tqsl-android-arm64-v8a.zip
+            .build/cp0003c-android-tqsl/package.sha256
+            .build/cp0003c-android-tqsl/elf-header.txt
+            .build/cp0003c-android-tqsl/dynamic.txt
+            .build/cp0003c-android-tqsl/jni-symbols.txt
+          if-no-files-found: error
