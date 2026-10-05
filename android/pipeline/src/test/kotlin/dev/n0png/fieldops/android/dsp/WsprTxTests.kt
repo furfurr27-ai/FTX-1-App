@@ -195,7 +195,7 @@ object WsprTxTests {
 
     private fun testEncodeFailureNeverKeys(engine: WsprEngineAdapter) {
         val f = fixture(engine)
-        val accepted = f.controller.start(request(text = "", sampleRate = 12_000))
+        val accepted = f.controller.start(request(text = "K1JT", sampleRate = 12_000))
         checkThat(!accepted, "invalid WSPR message must fail before TX")
         checkThat(f.controller.snapshot().phase == WsprTxController.Phase.FAILED, "encode failure should be explicit")
         checkThat(f.commands.isEmpty(), "encode failure must never assert CAT PTT")
