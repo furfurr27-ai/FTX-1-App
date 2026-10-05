@@ -22,7 +22,7 @@ class WsprJniBridge(
     }
 
     /** Encoder-side channel symbols are exposed only for deterministic RX fixtures in CP-0002C. */
-    internal fun encodeSymbolsForSelfTest(message: String): ByteArray =
+    fun encodeSymbolsForSelfTest(message: String): ByteArray =
         nativeEncodeSymbols(message)
 
     private external fun nativeDecode375(
