@@ -33,10 +33,10 @@ echo "[2/8] Compile production JNI bridge against exact official 2.8.6 headers"
 g++ -std=c++17 -Wall -Wextra -Werror -fPIC -c   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -I"$TQSL_SRC"   "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp"   -o "$BUILD/official-api-check.o"
 
 echo "[3/8] Build deterministic host TrustedQSL fixture + production JNI bridge"
-g++ -std=c++17 -Wall -Wextra -Werror -fPIC -shared   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -I"$ROOT/native/tqsl/test_fixture/include"   "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp"   "$ROOT/native/tqsl/test_fixture/fake_tqsl.cpp"   -lz   -o "$NATIVE_DIR/libfieldops_tqsl.so"
+g++ -std=c++17 -Wall -Wextra -Werror -fPIC -shared   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -I"$ROOT/native/tqsl/test_fixture/include"   "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp"   "$ROOT/native/tqsl/test_fixture/fake_tqsl.cpp"   -lexpat -lz   -o "$NATIVE_DIR/libfieldops_tqsl.so"
 
 nm -D --defined-only "$NATIVE_DIR/libfieldops_tqsl.so" > "$BUILD/jni-symbols.txt"
-for sym in   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeRollback   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeClose; do
+for sym in   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportBackup   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeRollback   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeClose; do
   grep -Fq "$sym" "$BUILD/jni-symbols.txt" || { echo "missing TrustedQSL JNI symbol: $sym" >&2; exit 1; }
 done
 
