@@ -1,6 +1,7 @@
 package dev.n0png.fieldops.android.logbook
 
 import dev.n0png.fieldops.core.logbook.LotwSigningRequest
+import dev.n0png.fieldops.core.logbook.LotwStationProfile
 import dev.n0png.fieldops.core.logbook.LotwSigningSession
 import dev.n0png.fieldops.core.logbook.LotwSigningSessionState
 import dev.n0png.fieldops.core.logbook.TransactionalLotwSigner
@@ -24,6 +25,20 @@ class TrustedQslSigner internal constructor(
         resourceDirectory: String = dataDirectory,
         libraryLoader: () -> Unit = { System.loadLibrary(TrustedQslJniBridge.LIBRARY_NAME) },
     ) : this(TrustedQslJniBridge(dataDirectory, resourceDirectory, libraryLoader))
+
+    fun ensureStationLocation(
+        profile: LotwStationProfile,
+        stationLocationName: String,
+    ) {
+        native.ensureStationLocation(
+            name = stationLocationName,
+            callsign = profile.stationCallsign.trim().uppercase(),
+            dxcc = profile.dxcc,
+            gridSquare = profile.gridSquare.trim().uppercase(),
+            cqZone = profile.cqZone,
+            ituZone = profile.ituZone,
+        )
+    }
 
     override fun importPkcs12(
         pkcs12: ByteArray,
