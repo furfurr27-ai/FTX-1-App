@@ -86,7 +86,7 @@ CP-0003B also hardens the CP-0003A Kotlin signer session:
 
 ## Branch evidence
 
-Final pre-merge branch workflow: `37328507339`.
+Final pre-merge branch workflow: `37328897441`.
 
 Expected gates:
 
