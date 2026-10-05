@@ -39,3 +39,27 @@ Do not infer LoTW station location solely from a callsign. FieldOps must maintai
 
 ## Signing status
 The network/query/reconciliation layer is implemented. The production signer should bind the official TrustedQSL/tqsllib source rather than reimplementing the TQ8 cryptography from qFT8 behavior. Until that native library is integrated and tested on Android/ARM64, automatic upload must remain disabled; import and report-sync can be exercised independently with LoTW web credentials.
+
+
+## CP-0003A signer bridge
+
+Host/CI GREEN:
+
+- official TrustedQSL 2.8.6 source archive pinned and SHA-256 verified
+- production JNI source compiles against the exact official 2.8.6 headers
+- transactional signer API added for PKCS#12 import, explicit station-location validation and ADIF -> TQ8
+- signer session preserves explicit TrustedQSL duplicate-database commit/rollback semantics
+- closing an uncommitted signer session rolls back
+- raw tqsllib error strings are not exposed through the FieldOps bridge
+- signing remains separate from HTTP upload/reconciliation
+- focused signer tests: 43 PASS
+- inherited LoTW tests: 19 PASS
+
+Still YELLOW/RED:
+
+- complete official TrustedQSL Android ARM64 dependency build/link
+- real certificate import/signature on the S23 Ultra
+- transaction-safe network integration (CP-0003B)
+- real LoTW test-account/device validation and auto-upload enablement (CP-0003C)
+
+Evidence: `research/tqsl/CP-0003A_SOURCE_PIN.md` and `research/tqsl/CP-0003A_SIGNER_BRIDGE.md`.
