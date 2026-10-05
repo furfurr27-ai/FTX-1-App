@@ -56,3 +56,21 @@ sed -n '1,600p' "$ROOT/src/config.xml"
 
 echo "=== TQSL backup writer format ==="
 grep -RIn -C 8 -E 'RootCert|CACert|UserCert|PrivateKey|StationDataFile|Locations|backup.*xml|Backup'   "$ROOT/apps" "$ROOT/src" 2>/dev/null | head -900 || true
+
+
+echo "=== exact BackupConfig/Restore implementation ==="
+grep -nE 'TQSLApp::(BackupConfig|AutoBackup|Restore)|BackupConfig\(|Restore.*Config|TQSL_Configuration|RootCert|CACert|UserCert|PrivateKey|StationDataFile'   "$ROOT/apps/tqsl.cpp" | head -300 || true
+
+backup_line="$(grep -n 'TQSLApp::BackupConfig' "$ROOT/apps/tqsl.cpp" | head -n1 | cut -d: -f1 || true)"
+if [[ -n "$backup_line" ]]; then
+  start=$(( backup_line > 80 ? backup_line - 80 : 1 ))
+  end=$(( backup_line + 520 ))
+  sed -n "${start},${end}p" "$ROOT/apps/tqsl.cpp"
+fi
+
+restore_line="$(grep -nE 'TQSLApp::.*Restore|Restore.*Config' "$ROOT/apps/tqsl.cpp" | head -n1 | cut -d: -f1 || true)"
+if [[ -n "$restore_line" ]]; then
+  start=$(( restore_line > 80 ? restore_line - 80 : 1 ))
+  end=$(( restore_line + 520 ))
+  sed -n "${start},${end}p" "$ROOT/apps/tqsl.cpp"
+fi
