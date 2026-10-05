@@ -1,6 +1,7 @@
 name: CP-0003C Android TrustedQSL Package
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - cp-0003c-real-lotw-validation
