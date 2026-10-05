@@ -31,6 +31,33 @@ internal class TrustedQslJniBridge(
         status("initialize", nativeInitialize(dataDirectory, resourceDirectory))
     }
 
+    fun ensureStationLocation(
+        name: String,
+        callsign: String,
+        dxcc: Int,
+        gridSquare: String,
+        cqZone: Int,
+        ituZone: Int,
+    ) {
+        require(name.isNotBlank())
+        require(callsign.isNotBlank())
+        require(dxcc > 0)
+        require(gridSquare.length >= 4)
+        require(cqZone in 1..40)
+        require(ituZone in 1..90)
+        status(
+            "station-location provisioning",
+            nativeEnsureStationLocation(
+                name,
+                callsign,
+                dxcc,
+                gridSquare,
+                cqZone,
+                ituZone,
+            ),
+        )
+    }
+
     fun importPkcs12(
         pkcs12: ByteArray,
         p12PasswordUtf8: ByteArray,
@@ -86,6 +113,14 @@ internal class TrustedQslJniBridge(
     private external fun nativeInitialize(
         dataDirectory: String,
         resourceDirectory: String,
+    ): Int
+    private external fun nativeEnsureStationLocation(
+        name: String,
+        callsign: String,
+        dxcc: Int,
+        gridSquare: String,
+        cqZone: Int,
+        ituZone: Int,
     ): Int
     private external fun nativeImportPkcs12(
         pkcs12: ByteArray,
