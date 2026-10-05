@@ -1,0 +1,7 @@
+#ifndef FIELDOPS_TEST_TQSLERRNO_H
+#define FIELDOPS_TEST_TQSLERRNO_H
+
+#define TQSL_NO_ERROR 0
+#define TQSL_CERT_ERROR 44
+
+#endif
