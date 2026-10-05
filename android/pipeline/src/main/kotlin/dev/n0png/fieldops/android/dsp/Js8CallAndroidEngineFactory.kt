@@ -6,8 +6,8 @@ import com.js8call.core.JS8Engine
  * Production binding to JS8Call-improved/Android-port pinned at
  * 9996202f355569c5ee7b97fae539f3b763081dc2.
  *
- * CP-0002A is RX-only: the upstream TX audio tap is disabled and no transmit
- * method is exposed through FieldOps' NativeEngine boundary.
+ * FieldOps uses the native TX audio tap only. Upstream rig/PTT/service control
+ * is not instantiated; CAT/PTT and USB playback remain FieldOps-owned.
  */
 class Js8CallAndroidEngineFactory(
     private val submodes: Int = 0x1F,
@@ -40,9 +40,10 @@ class Js8CallAndroidEngineFactory(
                 override fun onDecodeFinished(count: Int) = Unit
                 override fun onError(message: String) = callbacks.onError(message)
                 override fun onLog(level: Int, message: String) = Unit
-                override fun onTxAudio(samples: ShortArray, sampleRateHz: Int) = Unit
+                override fun onTxAudio(samples: ShortArray, sampleRateHz: Int) =
+                    callbacks.onTxAudio(samples, sampleRateHz)
             },
-            enableTxAudioTap = false,
+            enableTxAudioTap = true,
             useQmxUsbAudio = false,
         )
 
@@ -51,6 +52,25 @@ class Js8CallAndroidEngineFactory(
             override fun stop() = upstream.stop()
             override fun submitAudio(samples: ShortArray, timestampNs: Long): Boolean =
                 upstream.submitAudio(samples, timestampNs)
+
+            override fun transmitMessage(request: Js8EngineAdapter.TxRequest): Boolean =
+                upstream.transmitMessage(
+                    text = request.text,
+                    myCall = request.myCall,
+                    myGrid = request.myGrid,
+                    selectedCall = request.selectedCall,
+                    submode = request.submode,
+                    audioFrequencyHz = request.audioFrequencyHz,
+                    txDelaySec = request.txDelaySec,
+                    forceIdentify = request.forceIdentify,
+                    forceData = request.forceData,
+                )
+
+            override fun stopTransmit() = upstream.stopTransmit()
+            override fun isTransmitting(): Boolean = upstream.isTransmitting()
+            override fun isTransmittingAudio(): Boolean = upstream.isTransmittingAudio()
+            override fun txMillisecondsUntilAudio(): Int = upstream.txMillisecondsUntilAudio()
+            override fun setTransmitReady(ready: Boolean) = upstream.setTransmitReady(ready)
             override fun close() = upstream.close()
         }
     }
