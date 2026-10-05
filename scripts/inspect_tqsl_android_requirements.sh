@@ -29,3 +29,7 @@ grep -InE '#if|#ifdef|#ifndef|__APPLE__|_WIN32|WIN32|UNIX|ANDROID|__ANDROID__'  
 
 echo "=== SQLite/OpenSSL/Expat/Zlib references in src root only ==="
 grep -InE 'sqlite3|openssl/|expat|zlib|gzopen|deflate|inflate'   "$ROOT/src/"*.{cpp,h} 2>/dev/null | head -350 || true
+
+
+echo "=== config/data-directory behavior ==="
+grep -RIn -C 4 -E 'CONFDIR|config\.xml|tqsl_setDirectory|tQSL_BaseDir' "$ROOT/src"/*.cpp "$ROOT/src"/*.h 2>/dev/null || true
