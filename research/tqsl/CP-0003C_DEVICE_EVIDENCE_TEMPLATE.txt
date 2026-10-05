@@ -1,0 +1,10 @@
+FieldOps CP-0003C validation
+source_sha=<copied from validation app>
+device=samsung SM-S918U1
+android_sdk=<copied from validation app>
+backup_import=PASS
+signing_only=PASS
+live_transaction=PASS
+confirmation_sync=PASS
+automatic_upload=DISABLED
+result=CP-0003C LIVE TRANSACTION PASS: <copied sanitized result from validation app>
