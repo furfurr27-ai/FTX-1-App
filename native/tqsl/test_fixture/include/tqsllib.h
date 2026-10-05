@@ -41,9 +41,16 @@ int tqsl_importKeyPairEncoded(
     const char *certbuf);
 int tqsl_mergeStationLocations(const char *locdata);
 
+int tqsl_initStationLocationCapture(tQSL_Location *loc);
 int tqsl_getStationLocation(tQSL_Location *loc, const char *name);
 int tqsl_getLocationCallSign(tQSL_Location loc, char *buf, int bufsiz);
 int tqsl_getLocationDXCCEntity(tQSL_Location loc, int *dxcc);
+int tqsl_getStationLocationField(tQSL_Location loc, const char *name, char *buf, int bufsiz);
+int tqsl_setLocationCallSign(tQSL_Location loc, const char *callsign, int dxcc);
+int tqsl_setLocationField(tQSL_Location loc, const char *field, const char *value);
+int tqsl_updateStationLocationCapture(tQSL_Location loc);
+int tqsl_setStationLocationCaptureName(tQSL_Location loc, const char *name);
+int tqsl_saveStationLocationCapture(tQSL_Location loc, int overwrite);
 int tqsl_endStationLocationCapture(tQSL_Location *loc);
 
 int tqsl_selectCertificates(
