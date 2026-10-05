@@ -14,6 +14,7 @@
 #include <vector>
 
 #include <unistd.h>
+#include <expat.h>
 #include <zlib.h>
 
 #include <tqsllib.h>
@@ -29,6 +30,9 @@ enum Status : int {
     INVALID_ARGUMENT = 110,
     PKCS12_ENCODE_FAILED = 120,
     PKCS12_IMPORT_FAILED = 121,
+    BACKUP_DECOMPRESS_FAILED = 122,
+    BACKUP_PARSE_FAILED = 123,
+    BACKUP_IMPORT_FAILED = 124,
     LOCATION_NOT_FOUND = 130,
     LOCATION_CALLSIGN_MISMATCH = 131,
     LOCATION_DXCC_MISMATCH = 132,
@@ -77,6 +81,11 @@ void wipe(std::vector<unsigned char>& value) {
 }
 
 void wipe(std::vector<char>& value) {
+    if (!value.empty()) secure_zero(value.data(), value.size());
+    value.clear();
+}
+
+void wipe(std::string& value) {
     if (!value.empty()) secure_zero(value.data(), value.size());
     value.clear();
 }
@@ -146,6 +155,239 @@ int gzip_gabbi(const std::string& gabbi, std::vector<unsigned char>* out) {
     deflateEnd(&stream);
     compressed.resize(used);
     *out = std::move(compressed);
+    return OK;
+}
+
+
+struct BackupUserCert {
+    std::string callsign;
+    int dxcc = 0;
+    std::string signed_cert;
+    std::string private_key;
+};
+
+struct BackupRestoreState {
+    std::string capture;
+    std::string text;
+    std::vector<std::string> root_certs;
+    std::vector<std::string> ca_certs;
+    std::vector<BackupUserCert> user_certs;
+    BackupUserCert current_user;
+    bool in_user = false;
+    bool in_locations = false;
+    int location_count = 0;
+    std::string station_xml = "<StationDataFile>\n";
+    bool invalid = false;
+};
+
+std::string trim_copy(const std::string& value) {
+    const auto first = value.find_first_not_of(" \t\r\n");
+    if (first == std::string::npos) return {};
+    const auto last = value.find_last_not_of(" \t\r\n");
+    return value.substr(first, last - first + 1);
+}
+
+std::string xml_escape(const char* raw) {
+    if (raw == nullptr) return {};
+    std::string out;
+    for (const char ch : std::string(raw)) {
+        switch (ch) {
+            case '&': out += "&amp;"; break;
+            case '"': out += "&quot;"; break;
+            case '\'': out += "&apos;"; break;
+            case '<': out += "&lt;"; break;
+            case '>': out += "&gt;"; break;
+            default: out.push_back(ch); break;
+        }
+    }
+    return out;
+}
+
+const char* xml_attr(const XML_Char** atts, const char* name) {
+    if (atts == nullptr) return nullptr;
+    for (int i = 0; atts[i] != nullptr && atts[i + 1] != nullptr; i += 2) {
+        if (std::strcmp(atts[i], name) == 0) return atts[i + 1];
+    }
+    return nullptr;
+}
+
+void XMLCALL backup_start(void* opaque, const XML_Char* name, const XML_Char** atts) {
+    auto* state = static_cast<BackupRestoreState*>(opaque);
+    if (state == nullptr || name == nullptr) return;
+
+    if (std::strcmp(name, "UserCert") == 0) {
+        state->current_user = BackupUserCert{};
+        state->in_user = true;
+        const char* call = xml_attr(atts, "CallSign");
+        const char* dxcc = xml_attr(atts, "dxcc");
+        if (call != nullptr) state->current_user.callsign = call;
+        if (dxcc != nullptr) state->current_user.dxcc = std::atoi(dxcc);
+        return;
+    }
+
+    if (std::strcmp(name, "Locations") == 0) {
+        state->in_locations = true;
+        return;
+    }
+
+    if (std::strcmp(name, "Location") == 0 && state->in_locations) {
+        const char* loc_name = xml_attr(atts, "name");
+        if (loc_name == nullptr || *loc_name == '\0') {
+            state->invalid = true;
+            return;
+        }
+        state->station_xml += "<StationData name=\"" + xml_escape(loc_name) + "\">\n";
+        if (atts != nullptr) {
+            for (int i = 0; atts[i] != nullptr && atts[i + 1] != nullptr; i += 2) {
+                if (std::strcmp(atts[i], "name") == 0) continue;
+                state->station_xml += "<";
+                state->station_xml += atts[i];
+                state->station_xml += ">";
+                state->station_xml += xml_escape(atts[i + 1]);
+                state->station_xml += "</";
+                state->station_xml += atts[i];
+                state->station_xml += ">\n";
+            }
+        }
+        state->station_xml += "</StationData>\n";
+        state->location_count++;
+        return;
+    }
+
+    if (std::strcmp(name, "RootCert") == 0 ||
+        std::strcmp(name, "CACert") == 0 ||
+        std::strcmp(name, "SignedCert") == 0 ||
+        std::strcmp(name, "PrivateKey") == 0) {
+        state->capture = name;
+        state->text.clear();
+    }
+}
+
+void XMLCALL backup_text(void* opaque, const XML_Char* text, int len) {
+    auto* state = static_cast<BackupRestoreState*>(opaque);
+    if (state == nullptr || state->capture.empty() || text == nullptr || len <= 0) return;
+    state->text.append(text, static_cast<size_t>(len));
+}
+
+void XMLCALL backup_end(void* opaque, const XML_Char* name) {
+    auto* state = static_cast<BackupRestoreState*>(opaque);
+    if (state == nullptr || name == nullptr) return;
+
+    if (!state->capture.empty() && state->capture == name) {
+        std::string value = trim_copy(state->text);
+        if (state->capture == "RootCert") {
+            if (!value.empty()) state->root_certs.push_back(std::move(value));
+        } else if (state->capture == "CACert") {
+            if (!value.empty()) state->ca_certs.push_back(std::move(value));
+        } else if (state->capture == "SignedCert" && state->in_user) {
+            state->current_user.signed_cert = std::move(value);
+        } else if (state->capture == "PrivateKey" && state->in_user) {
+            state->current_user.private_key = std::move(value);
+        }
+        state->capture.clear();
+        state->text.clear();
+    }
+
+    if (std::strcmp(name, "UserCert") == 0 && state->in_user) {
+        if (state->current_user.callsign.empty() ||
+            (state->current_user.signed_cert.empty() && state->current_user.private_key.empty())) {
+            state->invalid = true;
+        } else {
+            state->user_certs.push_back(std::move(state->current_user));
+        }
+        state->current_user = BackupUserCert{};
+        state->in_user = false;
+    } else if (std::strcmp(name, "Locations") == 0) {
+        state->in_locations = false;
+    }
+}
+
+int gunzip_bytes(const std::vector<unsigned char>& compressed, std::string* output) {
+    if (compressed.empty() || output == nullptr) return BACKUP_DECOMPRESS_FAILED;
+
+    z_stream stream{};
+    if (inflateInit2(&stream, 15 + 32) != Z_OK) return BACKUP_DECOMPRESS_FAILED;
+
+    stream.next_in = const_cast<Bytef*>(compressed.data());
+    stream.avail_in = static_cast<uInt>(compressed.size());
+
+    std::string decoded;
+    std::vector<unsigned char> chunk(16 * 1024);
+    int rc = Z_OK;
+    while (rc == Z_OK) {
+        stream.next_out = chunk.data();
+        stream.avail_out = static_cast<uInt>(chunk.size());
+        rc = inflate(&stream, Z_NO_FLUSH);
+        const size_t produced = chunk.size() - stream.avail_out;
+        if (produced > 0) {
+            decoded.append(reinterpret_cast<const char*>(chunk.data()), produced);
+        }
+    }
+    inflateEnd(&stream);
+    wipe(chunk);
+
+    if (rc != Z_STREAM_END || decoded.empty()) {
+        wipe(decoded);
+        return BACKUP_DECOMPRESS_FAILED;
+    }
+    *output = std::move(decoded);
+    return OK;
+}
+
+int restore_backup_xml(const std::string& xml) {
+    BackupRestoreState state;
+    XML_Parser parser = XML_ParserCreate(nullptr);
+    if (parser == nullptr) return BACKUP_PARSE_FAILED;
+
+    XML_SetUserData(parser, &state);
+    XML_SetElementHandler(parser, backup_start, backup_end);
+    XML_SetCharacterDataHandler(parser, backup_text);
+
+    const int parsed = XML_Parse(parser, xml.data(), static_cast<int>(xml.size()), XML_TRUE);
+    XML_ParserFree(parser);
+
+    if (parsed == XML_STATUS_ERROR || state.invalid || state.user_certs.empty() ||
+        state.location_count <= 0) {
+        for (auto& user : state.user_certs) wipe(user.private_key);
+        wipe(state.current_user.private_key);
+        wipe(state.text);
+        wipe(state.station_xml);
+        return BACKUP_PARSE_FAILED;
+    }
+
+    for (const auto& cert : state.root_certs) {
+        const int rc = tqsl_importKeyPairEncoded(nullptr, "root", nullptr, cert.c_str());
+        if (rc != 0 && tQSL_Error != TQSL_CERT_ERROR) {
+            for (auto& user : state.user_certs) wipe(user.private_key);
+            wipe(state.station_xml);
+            return BACKUP_IMPORT_FAILED;
+        }
+    }
+    for (const auto& cert : state.ca_certs) {
+        const int rc = tqsl_importKeyPairEncoded(nullptr, "authorities", nullptr, cert.c_str());
+        if (rc != 0 && tQSL_Error != TQSL_CERT_ERROR) {
+            for (auto& user : state.user_certs) wipe(user.private_key);
+            wipe(state.station_xml);
+            return BACKUP_IMPORT_FAILED;
+        }
+    }
+
+    for (auto& user : state.user_certs) {
+        const char* key = user.private_key.empty() ? nullptr : user.private_key.c_str();
+        const char* cert = user.signed_cert.empty() ? nullptr : user.signed_cert.c_str();
+        const int rc = tqsl_importKeyPairEncoded(user.callsign.c_str(), "user", key, cert);
+        wipe(user.private_key);
+        if (rc != 0 && tQSL_Error != TQSL_CERT_ERROR) {
+            wipe(state.station_xml);
+            return BACKUP_IMPORT_FAILED;
+        }
+    }
+
+    state.station_xml += "</StationDataFile>\n";
+    const int merge = tqsl_mergeStationLocations(state.station_xml.c_str());
+    wipe(state.station_xml);
+    if (merge != 0) return BACKUP_IMPORT_FAILED;
+
     return OK;
 }
 
@@ -420,6 +662,31 @@ Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12(
 
     g_last_status = imported == 0 ? OK : PKCS12_IMPORT_FAILED;
     return g_last_status;
+}
+
+
+extern "C" JNIEXPORT jint JNICALL
+Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportBackup(
+        JNIEnv* env, jobject, jbyteArray backup) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+    auto compressed = bytes(env, backup);
+    if (compressed.empty()) {
+        g_last_status = INVALID_ARGUMENT;
+        return g_last_status;
+    }
+
+    std::string xml;
+    int status = gunzip_bytes(compressed, &xml);
+    wipe(compressed);
+    if (status != OK) {
+        g_last_status = status;
+        return g_last_status;
+    }
+
+    status = restore_backup_xml(xml);
+    wipe(xml);
+    g_last_status = status;
+    return status;
 }
 
 extern "C" JNIEXPORT jlong JNICALL
