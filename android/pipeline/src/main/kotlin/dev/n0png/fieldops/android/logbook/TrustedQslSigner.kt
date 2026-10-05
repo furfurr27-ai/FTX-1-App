@@ -40,6 +40,16 @@ class TrustedQslSigner internal constructor(
         )
     }
 
+    fun importBackup(backup: ByteArray) {
+        require(backup.isNotEmpty()) { "TQSL backup payload must not be empty" }
+        val copy = backup.copyOf()
+        try {
+            native.importBackup(copy)
+        } finally {
+            Arrays.fill(copy, 0)
+        }
+    }
+
     override fun importPkcs12(
         pkcs12: ByteArray,
         pkcs12Password: CharArray,
