@@ -14,7 +14,6 @@ extern "C" {
 #define TQSL_LOC_IGNORE 0
 #define TQSL_LOC_REPORT 1
 #define TQSL_LOC_UPDATE 2
-#define TQSL_CERT_ERROR 19
 
 typedef void* tQSL_Cert;
 typedef void* tQSL_Location;
