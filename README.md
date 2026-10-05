@@ -98,13 +98,14 @@ Prepared and host/CI-verified on the CP-0003C branch:
 - TrustedQSL is reproducibly cross-built for **Android arm64-v8a / AArch64** with OpenSSL, Expat, SQLite and zlib statically linked. The generated native library depends dynamically only on Android system libraries `libdl.so`, `libm.so`, and `libc.so`.
 - TrustedQSL writable state and resource roots are supplied explicitly from app-private directories before `tqsl_init()`; the Android build does not depend on desktop `HOME`/`CONFDIR` layout.
 - A TQSL `.tbk` restore path imports real Callsign Certificates/private keys and Station Locations into the app-private TrustedQSL environment. It intentionally does **not** import desktop preferences or the desktop duplicate-QSO database.
-- Focused CP-0003C prep regression is GREEN: signer **56**, transaction **53**, core **42,062**, pipeline **56**, inherited LoTW **19**.
-- Secret-hygiene workflow run `37342247174` is GREEN.
+- Focused CP-0003C prep regression is GREEN: signer **56**, transaction **53**, core **42,062**, pipeline **56**, inherited LoTW **19**. Final prep run `37344968960` also passed the sanitized-evidence validator self-test and CP-0003C finalizer dry-run.
+- Secret-hygiene workflow run `37344968953` is GREEN.
 - The device-validation APK workflow run `37343953055` is GREEN.
 - Validation APK SHA-256: `4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947`.
 - GitHub Actions artifact: `fieldops-cp0003c-validation-apk`, artifact id `11359961439`.
 - The validation APK embeds source SHA `607bffccfd1b81d8e4847583f1630d10b613ca37`, blocks screenshots/recents with `FLAG_SECURE`, does not persist credentials, provides a no-upload real-signing gate first, and requires explicit confirmation before one live LoTW upload.
 - Exact operator procedure is `research/tqsl/CP-0003C_DEVICE_VALIDATION.md`.
+- The evidence-gated finalizer for `CP-0003C-REAL_LOTW_VALIDATED` is prepared but cannot run until real sanitized S23 Ultra evidence exists.
 
 Still RED / external:
 
