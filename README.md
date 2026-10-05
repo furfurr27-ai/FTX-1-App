@@ -88,6 +88,35 @@ The transaction is host/CI verified with deterministic signer/transport/report f
 
 The shared queue is now mode-neutral, but automatic SSB/CW logger-save enqueue remains the separate CP-0005B item.
 
+### CP-0003C preparation — branch work, not yet a verified checkpoint
+
+Work on branch `cp-0003c-real-lotw-validation` has advanced CP-0003C to the **real-device/account boundary**. The latest immutable verified checkpoint is still CP-0003B until the S23 Ultra and live LoTW gates pass.
+
+Prepared and host/CI-verified on the CP-0003C branch:
+
+- Official TrustedQSL **2.8.6** source archive is pinned and hash-verified at `182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37`.
+- TrustedQSL is reproducibly cross-built for **Android arm64-v8a / AArch64** with OpenSSL, Expat, SQLite and zlib statically linked. The generated native library depends dynamically only on Android system libraries `libdl.so`, `libm.so`, and `libc.so`.
+- TrustedQSL writable state and resource roots are supplied explicitly from app-private directories before `tqsl_init()`; the Android build does not depend on desktop `HOME`/`CONFDIR` layout.
+- A TQSL `.tbk` restore path imports real Callsign Certificates/private keys and Station Locations into the app-private TrustedQSL environment. It intentionally does **not** import desktop preferences or the desktop duplicate-QSO database.
+- Focused CP-0003C prep regression is GREEN: signer **56**, transaction **53**, core **42,062**, pipeline **56**, inherited LoTW **19**.
+- Secret-hygiene workflow run `37342247174` is GREEN.
+- The device-validation APK workflow run `37341539916` is GREEN.
+- Validation APK SHA-256: `14417f9065c7f3a43a1245f22e8946a3a4d81831dac7fdec8b39ef71a859aa68`.
+- GitHub Actions artifact: `fieldops-cp0003c-validation-apk`, artifact id `11358268081`.
+- The validation APK embeds source SHA `11f5d17d6fe1c863d82bdc114474312cd29ec792`, blocks screenshots/recents with `FLAG_SECURE`, does not persist credentials, provides a no-upload real-signing gate first, and requires explicit confirmation before one live LoTW upload.
+- Exact operator procedure is `research/tqsl/CP-0003C_DEVICE_VALIDATION.md`.
+
+Still RED / external:
+
+- Install and run the validation APK on Chris's Samsung Galaxy S23 Ultra.
+- Import a fresh private TQSL backup on-device.
+- Generate a real TQ8 from the real Callsign Certificate and Station Location with **no upload**, then roll back.
+- Execute exactly one controlled genuine-QSO LoTW transaction: sign -> upload -> verify accepted-QSO report -> commit.
+- Run the authenticated confirmation-report query and capture the sanitized device result.
+- Review the returned evidence and only then create the immutable CP-0003C checkpoint.
+
+Automatic LoTW upload remains disabled.
+
 ### Inherited verified ancestry
 
 `CP-0003A-TRUSTEDQSL_SIGNER`, `CP-0002E-NATIVE_MODE_REGRESSION`, and all prior native-mode checkpoints remain verified ancestry.
@@ -304,6 +333,19 @@ Important references include FT8AF, JS8Call Android, rtlsdr-wsprd, fldigi, SDRan
 
 References are categorized as architecture/behavior/protocol/reusable implementation candidates. Do not copy code merely because it is public. Review licensing before vendoring any implementation.
 
+### CP-0003C processed sources
+
+The CP-0003C preparation directly inspected the official TrustedQSL 2.8.6 release/build interfaces and the ARRL LoTW developer/backup documentation. Established implementation facts now include:
+
+- TrustedQSL's library needs OpenSSL, Expat, SQLite and zlib for this signing path.
+- `tqsl_setDirectory()` controls writable TrustedQSL state while `tQSL_RsrcDir` controls the resource/config root; Android supplies both explicitly.
+- TQSL backup files are gzip/XML and carry Callsign Certificates/private keys and Station Locations needed to recreate the signing environment.
+- The FieldOps backup importer restores certificate/key and station-location data only; preferences and desktop duplicate history are excluded.
+- The LoTW upload service accepts self-authenticating signed TQ8 without web-login fields; LoTW web credentials are used for accepted-QSO and confirmation report queries.
+- HTTP upload acceptance remains insufficient for TrustedQSL commit; the CP-0003B accepted-report verification rule is unchanged.
+
+See `research/tqsl/CP-0003C_DEVICE_VALIDATION.md` and the pinned build scripts for exact evidence and versions.
+
 ## Repository/import notes
 
 The verified CP-0001 text/source tree has now been restored to GitHub `main`.
@@ -324,15 +366,19 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0003C — Real LoTW validation.**
+**CP-0003C — real S23 Ultra / LoTW device gate.**
 
-1. Build/package the official TrustedQSL dependency stack for Android arm64-v8a.
-2. Load it on the Galaxy S23 Ultra and import a real test Callsign Certificate/PKCS#12 through the production secret-storage boundary.
-3. Use a controlled test QSO/account flow to produce a real signed TQ8.
-4. Exercise the CP-0003B transaction against LoTW: sign -> upload -> verify accepted-QSO report -> commit.
-5. Run confirmation sync and verify the local confirmation metadata/cursors.
-6. Confirm no certificate/password/private-key material appears in logs, crash output, support bundles or repository files.
-7. Keep automatic upload disabled unless every CP-0003C device/test-account gate passes.
+The Android build/package, deterministic host regressions, validation APK, and repository secret-hygiene gate are already GREEN on the CP-0003C branch. Do not redo them unless verification fails.
+
+Continue on the Galaxy S23 Ultra using `research/tqsl/CP-0003C_DEVICE_VALIDATION.md`:
+
+1. Install the `fieldops-cp0003c-validation-apk` artifact from workflow run `37341539916`; APK SHA-256 must be `14417f9065c7f3a43a1245f22e8946a3a4d81831dac7fdec8b39ef71a859aa68`.
+2. Import a fresh TQSL `.tbk` backup and verify backup import PASS.
+3. Select exactly one genuine QSO not already uploaded to LoTW and run **signing only / NO UPLOAD** first.
+4. If signing passes, explicitly authorize exactly one live transaction: sign -> upload -> verify accepted-QSO report -> commit.
+5. Verify the confirmation-report query succeeds.
+6. Copy the app's sanitized validation evidence back into the project and commit that evidence before finalizing CP-0003C.
+7. Keep automatic LoTW upload disabled until the immutable CP-0003C checkpoint is created.
 
 ## README maintenance contract
 
