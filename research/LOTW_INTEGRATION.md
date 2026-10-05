@@ -63,3 +63,24 @@ Still YELLOW/RED:
 - real LoTW test-account/device validation and auto-upload enablement (CP-0003C)
 
 Evidence: `research/tqsl/CP-0003A_SOURCE_PIN.md` and `research/tqsl/CP-0003A_SIGNER_BRIDGE.md`.
+
+
+## CP-0003B transaction-safe upload
+
+Host/CI design now enforces:
+
+`sign -> upload TQ8 -> verify every QSO in LoTW accepted report -> commit TrustedQSL duplicate state`
+
+Failure rules:
+
+- signer/network/non-2xx failures roll back and remain retryable
+- endpoint rejection rolls back and is retained for operator action
+- HTTP upload acceptance alone is SUBMITTED, never ACCEPTED
+- partial/report-verification failure rolls back and never marks a batch ACCEPTED
+- only full report verification commits TrustedQSL duplicate state
+
+The local `LotwUploadQueue` is mode-neutral; SSB, CW and digital QSOs use the same queue/state machine. Automatic manual-logger enqueue remains CP-0005B.
+
+Automatic LoTW upload is still disabled. Real certificate/device/account validation remains CP-0003C.
+
+Evidence: `research/tqsl/CP-0003B_TRANSACTION_SAFE_UPLOAD.md`.
