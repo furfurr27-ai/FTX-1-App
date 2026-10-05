@@ -1,0 +1,60 @@
+name: CP-0002A JS8 RX
+
+on:
+  push:
+    branches:
+      - cp-0002a-js8-rx
+    paths:
+      - 'core/src/main/kotlin/**'
+      - 'android/compat/src/main/java/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/**'
+      - 'android/pipeline/src/test/kotlin/**'
+      - 'scripts/test_js8_rx.sh'
+      - 'research/js8/CP-0002A_JS8_RX_INTEGRATION.md'
+      - '.github/workflows/cp0002a-js8-rx.yml'
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/**'
+      - 'android/compat/src/main/java/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/**'
+      - 'android/pipeline/src/test/kotlin/**'
+      - 'scripts/test_js8_rx.sh'
+      - 'research/js8/CP-0002A_JS8_RX_INTEGRATION.md'
+      - '.github/workflows/cp0002a-js8-rx.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  host-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin compiler 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Run focused CP-0002A gate
+        shell: bash
+        run: bash scripts/test_js8_rx.sh
+
+      - name: Verify pinned evidence identifiers
+        shell: bash
+        run: |
+          set -euo pipefail
+          E=research/js8/CP-0002A_JS8_RX_INTEGRATION.md
+          grep -Fq '9996202f355569c5ee7b97fae539f3b763081dc2' "$E"
+          grep -Fq 'ee23c95a6d0b5ea2d85cee02c7a4ae5db8a5e780fc39ff9294ee483a074d4aba' "$E"
+          grep -Fq '6a5a9e707b49c5c8c9f2f262f48e22de69a02dfad2888f149be394bd8c8632e9' "$E"
+          grep -Fq 'Java_com_js8call_core_JS8Engine_00024Companion_nativeCreate' "$E"
