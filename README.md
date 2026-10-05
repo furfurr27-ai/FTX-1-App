@@ -266,9 +266,19 @@ References are categorized as architecture/behavior/protocol/reusable implementa
 
 ## Repository/import notes
 
-This repository was initialized from the verified CP-0001 recovery archive.
+The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 
-The original recovery package also contained generated build outputs and binary artifacts such as the extracted FT8AF native library, compiled classes/JARs, the checkpoint snapshot tarball, and a UI PNG. Those artifacts are not automatically treated as source code. See `artifacts/CP-0001-BINARY-ARTIFACTS.md` for recovery hashes/status.
+- GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
+- Restore workflow: **PASS**
+- Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
+- Current Git source baseline: `CP-0001-GITHUB_SURVEY`
+- Original external checkpoint package verification before import: **PASS, 157 file hashes**
+
+The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
+
+The original recovery package also contained generated build outputs and binary artifacts such as the extracted FT8AF native library, compiled classes/JARs, the checkpoint snapshot tarball, and a UI PNG. Those artifacts were intentionally not restored into this public Git source tree. See `artifacts/CP-0001-BINARY-ARTIFACTS.md` for recovery hashes/status.
+
+Because the original immutable checkpoint snapshot is intentionally absent from the public checkout, the old snapshot-based verifier is not expected to reproduce its original PASS directly against this Git tree. The original CP-0001 ZIP remains the verified evidence package; this Git commit is the durable recovered source baseline.
 
 The repository is currently **public**. Never commit credentials, private keys, PKCS#12 files, LoTW passwords, personal tokens, device secrets, or other sensitive material.
 
