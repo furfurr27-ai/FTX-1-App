@@ -1,0 +1,87 @@
+name: CP-0003C Validation Prep
+
+on:
+  push:
+    branches:
+      - cp-0003c-real-lotw-validation
+    paths:
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'native/tqsl/**'
+      - 'scripts/test_tqsl_signer.sh'
+      - 'scripts/test_lotw_transaction.sh'
+      - 'scripts/test_core_regression.sh'
+      - '.github/workflows/cp0003c-validation-prep.yml'
+  pull_request:
+    paths:
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'native/tqsl/**'
+      - 'scripts/test_tqsl_signer.sh'
+      - 'scripts/test_lotw_transaction.sh'
+      - 'scripts/test_core_regression.sh'
+      - '.github/workflows/cp0003c-validation-prep.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  signer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin and native prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y zlib1g-dev
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run TrustedQSL signer regression
+        run: bash scripts/test_tqsl_signer.sh
+
+  transaction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run transaction regression
+        run: bash scripts/test_lotw_transaction.sh
+
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run inherited core/LoTW regression
+        run: bash scripts/test_core_regression.sh
