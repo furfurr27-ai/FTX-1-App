@@ -9,9 +9,9 @@ The branch preparation is GREEN:
 - CP-0003B transaction regression: 53 PASS
 - inherited core/pipeline/LoTW: 42,062 / 56 / 19 PASS
 - repository secret-hygiene gate: PASS, run `37342247174`
-- device-validation APK: PASS, run `37341539916`
-- APK SHA-256: `14417f9065c7f3a43a1245f22e8946a3a4d81831dac7fdec8b39ef71a859aa68`
-- artifact: `fieldops-cp0003c-validation-apk` id `11358268081`
+- device-validation APK: PASS, run `37343953055`
+- APK SHA-256: `4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947`
+- artifact: `fieldops-cp0003c-validation-apk` id `11359961439`
 
 The latest immutable checkpoint remains `CP-0003B-LOTW_TRANSACTION_SAFE`. CP-0003C is **not complete** until the real-device/account gates pass.
 
