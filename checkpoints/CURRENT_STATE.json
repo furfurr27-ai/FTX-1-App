@@ -2,7 +2,7 @@
   "project_version": "v13-lotw-transaction-safe",
   "latest_checkpoint": "CP-0003B-LOTW_TRANSACTION_SAFE",
   "phase": "CP-0003C prepared to real Galaxy S23 Ultra / LoTW device-account gate; latest immutable checkpoint remains CP-0003B",
-  "test_status": "GREEN branch prep: Android arm64-v8a TQSL package PASS; validation APK PASS; signer=56 transaction=53 core=42062 pipeline=56 LoTW=19; secret-hygiene PASS. RED external: real S23 Ultra signing/live LoTW/confirmation evidence not yet returned.",
+  "test_status": "GREEN branch prep: Android arm64-v8a TQSL package PASS; validation APK PASS; signer=56 transaction=53 core=42062 pipeline=56 LoTW=19; evidence-validator/finalizer dry-run PASS; secret-hygiene PASS. RED external: real S23 Ultra signing/live LoTW/confirmation evidence not yet returned.",
   "completed": [
     "CP-0003B durable transaction remains sign -> TQ8 upload -> accepted-QSO report verification -> TrustedQSL commit",
     "HTTP upload acceptance alone remains SUBMITTED and never implies QSO acceptance",
@@ -12,7 +12,8 @@
     "CP-0003C branch restores TQSL .tbk Callsign Certificates/private keys and Station Locations while excluding desktop preferences and duplicate history",
     "CP-0003C prep regressions PASS: signer=56 transaction=53 core=42062 pipeline=56 LoTW=19",
     "CP-0003C validation APK PASS, run 37343953055, APK SHA-256 4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947",
-    "CP-0003C repository secret-hygiene gate PASS, run 37342247174"
+    "CP-0003C repository secret-hygiene gate PASS, run 37344968953",
+    "CP-0003C sanitized evidence validator self-test and checkpoint-finalizer dry-run PASS, run 37344968960"
   ],
   "blockers": [
     "Real Callsign Certificate/private-key signing has not yet been executed on Chris's Galaxy S23 Ultra",
@@ -37,7 +38,10 @@
     "tqsl_android_package_run": 37340593972,
     "tqsl_android_package_artifact_id": 11357878530,
     "tqsl_android_package_sha256": "27f0a1aec24ca4518fc14350bb5310a663f7df757383ecd83b1d98fa99c3b29c",
-    "secret_hygiene_run": 37342247174
+    "secret_hygiene_run": 37344968953,
+    "validation_prep_run": 37344968960,
+    "evidence_validator": "scripts/validate_cp0003c_device_evidence.py",
+    "finalizer": "scripts/finalize_cp0003c.py"
   },
-  "updated_utc": "2026-10-05T16:38:00+00:00"
+  "updated_utc": "2026-10-05T17:00:00+00:00"
 }
