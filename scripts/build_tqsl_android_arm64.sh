@@ -53,10 +53,34 @@ git -C "$BUILD_ROOT/vcpkg" checkout --quiet "$VCPKG_COMMIT"
 "$BUILD_ROOT/vcpkg/bootstrap-vcpkg.sh" -disableMetrics >/dev/null
 
 echo "[3/8] Cross-build static OpenSSL/Expat/SQLite/Zlib for arm64-android"
-"$BUILD_ROOT/vcpkg/vcpkg" install   openssl   expat   sqlite3   zlib   --triplet arm64-android   --clean-after-build
+"$BUILD_ROOT/vcpkg/vcpkg" install openssl expat sqlite3 zlib --triplet arm64-android --clean-after-build
+
+VCPKG_ANDROID_ROOT="$BUILD_ROOT/vcpkg/installed/arm64-android"
+test -f "$VCPKG_ANDROID_ROOT/include/openssl/opensslv.h"
+test -f "$VCPKG_ANDROID_ROOT/lib/libcrypto.a"
+test -f "$VCPKG_ANDROID_ROOT/lib/libexpat.a"
+test -f "$VCPKG_ANDROID_ROOT/lib/libsqlite3.a"
+test -f "$VCPKG_ANDROID_ROOT/lib/libz.a"
 
 echo "[4/8] Configure production TrustedQSL + FieldOps JNI for arm64-v8a"
-cmake -S "$ROOT/native/tqsl/android" -B "$BUILD_ROOT/cmake" -G Ninja   -DCMAKE_BUILD_TYPE=Release   -DCMAKE_TOOLCHAIN_FILE="$BUILD_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake"   -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake"   -DVCPKG_TARGET_TRIPLET=arm64-android   -DVCPKG_INSTALLED_DIR="$BUILD_ROOT/vcpkg_installed"   -DANDROID_ABI=arm64-v8a   -DANDROID_PLATFORM="android-$ANDROID_API"   -DANDROID_STL=c++_static   -DTQSL_SOURCE_DIR="$TQSL_ROOT/src"
+cmake_args=(
+  -S "$ROOT/native/tqsl/android"
+  -B "$BUILD_ROOT/cmake"
+  -G Ninja
+  -DCMAKE_BUILD_TYPE=Release
+  -DCMAKE_TOOLCHAIN_FILE="$BUILD_ROOT/vcpkg/scripts/buildsystems/vcpkg.cmake"
+  -DVCPKG_CHAINLOAD_TOOLCHAIN_FILE="$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake"
+  -DVCPKG_TARGET_TRIPLET=arm64-android
+  -DCMAKE_PREFIX_PATH="$VCPKG_ANDROID_ROOT"
+  -DOPENSSL_ROOT_DIR="$VCPKG_ANDROID_ROOT"
+  -DOPENSSL_USE_STATIC_LIBS=TRUE
+  -DZLIB_ROOT="$VCPKG_ANDROID_ROOT"
+  -DANDROID_ABI=arm64-v8a
+  -DANDROID_PLATFORM="android-$ANDROID_API"
+  -DANDROID_STL=c++_static
+  -DTQSL_SOURCE_DIR="$TQSL_ROOT/src"
+)
+cmake "${cmake_args[@]}"
 
 echo "[5/8] Build libfieldops_tqsl.so"
 cmake --build "$BUILD_ROOT/cmake" --target fieldops_tqsl --parallel 2
@@ -71,7 +95,16 @@ NM="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-nm"
 grep -Eq 'Machine:[[:space:]]+AArch64' "$BUILD_ROOT/elf-header.txt"
 
 "$NM" -D --defined-only "$SO" > "$BUILD_ROOT/jni-symbols.txt"
-for sym in   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeRollback   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeClose; do
+symbols=(
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeRollback
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeClose
+)
+for sym in "${symbols[@]}"; do
   grep -Fq "$sym" "$BUILD_ROOT/jni-symbols.txt" || {
     echo "missing JNI export: $sym" >&2
     exit 1
