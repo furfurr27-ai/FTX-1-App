@@ -1,0 +1,37 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+
+# Kotlin / Java generated output
+*.class
+*.jar
+
+# Native build output
+.cxx/
+obj/
+*.so
+
+# Checkpoint/recovery binary artifacts
+*.apk
+*.zip
+*.tar.gz
+*.tgz
+
+# Signing / credentials / secrets
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.pem
+*.key
+.env
+.env.*
+secrets.properties
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+*~
