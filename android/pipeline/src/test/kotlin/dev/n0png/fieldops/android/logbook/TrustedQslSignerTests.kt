@@ -4,8 +4,10 @@ import dev.n0png.fieldops.core.logbook.LotwSigningRequest
 import dev.n0png.fieldops.core.logbook.LotwStationProfile
 import dev.n0png.fieldops.core.logbook.LotwSigningSessionState
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 object TrustedQslSignerTests {
     private var assertions = 0
@@ -101,6 +103,10 @@ object TrustedQslSignerTests {
                 "key-pass".toCharArray(),
             )
         }
+
+        val backup = testBackup()
+        signer.importBackup(backup)
+        checkThat(backup.isNotEmpty(), "caller backup buffer was unexpectedly modified")
 
         val container = byteArrayOf(7, 6, 5, 4, 3, 2, 1)
         val p12Password = "p12-pass".toCharArray()
@@ -225,6 +231,28 @@ object TrustedQslSignerTests {
 
     private fun gunzip(payload: ByteArray): String =
         GZIPInputStream(ByteArrayInputStream(payload)).bufferedReader().use { it.readText() }
+
+    private fun testBackup(): ByteArray {
+        val xml = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <TQSL_Configuration>
+              <Certificates>
+                <RootCert>ROOT-CERT</RootCert>
+                <CACert>CA-CERT</CACert>
+                <UserCert CallSign="N0PNG" dxcc="230" serial="1">
+                  <SignedCert>USER-CERT</SignedCert>
+                  <PrivateKey>PRIVATE-KEY-MATERIAL</PrivateKey>
+                </UserCert>
+              </Certificates>
+              <Locations>
+                <Location name="Home" CALL="N0PNG" DXCC="230" GRIDSQUARE="JN49" CQZ="14" ITUZ="28" />
+              </Locations>
+            </TQSL_Configuration>
+        """.trimIndent()
+        val out = ByteArrayOutputStream()
+        GZIPOutputStream(out).use { it.write(xml.toByteArray()) }
+        return out.toByteArray()
+    }
 
     private fun testAdif(): String = """
         <ADIF_VER:5>3.1.6
