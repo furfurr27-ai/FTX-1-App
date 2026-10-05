@@ -14,6 +14,8 @@ on:
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
       - 'scripts/validate_cp0003c_device_evidence.py'
+      - 'scripts/finalize_cp0003c.py'
+      - 'research/tqsl/CP-0003C_APK_BASELINE.json'
       - '.github/workflows/cp0003c-validation-prep.yml'
   pull_request:
     paths:
@@ -26,6 +28,8 @@ on:
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
       - 'scripts/validate_cp0003c_device_evidence.py'
+      - 'scripts/finalize_cp0003c.py'
+      - 'research/tqsl/CP-0003C_APK_BASELINE.json'
       - '.github/workflows/cp0003c-validation-prep.yml'
 
 permissions:
@@ -96,3 +100,16 @@ jobs:
       - name: Self-test sanitized device-evidence validator
         shell: bash
         run: python3 scripts/validate_cp0003c_device_evidence.py --self-test
+
+      - name: Dry-run CP-0003C finalizer
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0003c.py
+          python3 scripts/finalize_cp0003c.py
+          grep -Fq 'CP-0003C-REAL_LOTW_VALIDATED' README.md
+          grep -Fq 'CP-0004A — FTX-1 CAT USB port' NEXT_ACTION.md
+          grep -Fq 'CP-0003C — Real LoTW validation' checkpoints/CHECKPOINT_HISTORY.md
+          git diff --check
