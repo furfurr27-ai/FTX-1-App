@@ -269,7 +269,7 @@ References are categorized as architecture/behavior/protocol/reusable implementa
 The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
-- Restore workflow: **PASS**
+- Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
 - Current Git source baseline: `CP-0001-GITHUB_SURVEY`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
