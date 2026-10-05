@@ -60,11 +60,6 @@ data class LotwSyncSummary(
     val cursor: LotwSyncCursor = LotwSyncCursor()
 )
 
-/** Signing is intentionally isolated so the app never treats a plain ADIF upload as valid LoTW. */
-interface LotwSigner {
-    fun signAdif(adif: String, stationProfileId: String): ByteArray // .tq8 payload
-}
-
 interface LotwTransport {
     fun uploadTq8(payload: ByteArray, filename: String = "fieldops-upload.tq8"): LotwUploadResponse
     fun query(credentials: LotwCredentials, params: Map<String, String>): String
