@@ -101,6 +101,33 @@ extern "C" int tqsl_importPKCS12Base64(
     return 0;
 }
 
+
+extern "C" int tqsl_importKeyPairEncoded(
+        const char *callsign,
+        const char *type,
+        const char *keybuf,
+        const char *certbuf) {
+    if (!g_initialized || type == nullptr) return 1;
+    const std::string t(type);
+    if (t == "root" || t == "authorities") {
+        return (certbuf != nullptr && *certbuf != '\0') ? 0 : 1;
+    }
+    if (t == "user") {
+        if (callsign == nullptr || *callsign == '\0') return 1;
+        if ((keybuf == nullptr || *keybuf == '\0') && (certbuf == nullptr || *certbuf == '\0')) return 1;
+        g_imported = true;
+        return 0;
+    }
+    return 1;
+}
+
+extern "C" int tqsl_mergeStationLocations(const char *locdata) {
+    if (!g_initialized || locdata == nullptr) return 1;
+    const std::string xml(locdata);
+    return (xml.find("<StationDataFile>") != std::string::npos &&
+            xml.find("<StationData name=\"Home\">") != std::string::npos) ? 0 : 1;
+}
+
 extern "C" int tqsl_getStationLocation(tQSL_Location *loc, const char *name) {
     if (!g_initialized || loc == nullptr || name == nullptr) return 1;
     const std::string n(name);
