@@ -105,10 +105,37 @@ object Js8RxTests {
     }
 
     private fun testUtcRollover() {
-        val now = Instant.parse("2026-10-05T23:59:58Z").toEpochMilli()
-        val next = Js8EngineAdapter.nearestUtcMillis(5, now)
-        checkThat(next == Instant.parse("2026-10-06T00:00:05Z").toEpochMilli(), "next-day UTC rollover mismatch")
-        val invalid = Js8EngineAdapter.nearestUtcMillis(256199, now)
-        checkThat(invalid == now, "invalid upstream UTC should fall back to callback time")
+        fun decodeAt(now: String, utc: Int): Long {
+            val nowMillis = Instant.parse(now).toEpochMilli()
+            lateinit var callback: Js8EngineAdapter.Callbacks
+            val adapter = Js8EngineAdapter(
+                factory = Js8EngineAdapter.EngineFactory { cb ->
+                    callback = cb
+                    object : Js8EngineAdapter.NativeEngine {
+                        override fun start() = true
+                        override fun stop() = Unit
+                        override fun submitAudio(samples: ShortArray, timestampNs: Long) = true
+                        override fun close() = Unit
+                    }
+                },
+                nowMillis = { nowMillis },
+            )
+            val got = mutableListOf<DecodeResult>()
+            adapter.start(got::add)
+            callback.onDecoded(utc, -10, 0f, 1500f, "TEST", 0, 1f, 0, 0)
+            adapter.close()
+            return got.single().utcMillis
+        }
+
+        checkThat(
+            decodeAt("2026-10-05T23:59:58Z", 5) ==
+                Instant.parse("2026-10-06T00:00:05Z").toEpochMilli(),
+            "next-day UTC rollover mismatch",
+        )
+        checkThat(
+            decodeAt("2026-10-05T00:00:02Z", 235959) ==
+                Instant.parse("2026-10-04T23:59:59Z").toEpochMilli(),
+            "previous-day UTC rollover mismatch",
+        )
     }
 }
