@@ -27,3 +27,8 @@ FieldOps receive path:
 `12 kHz real PCM -> mix at 1500 Hz -> FIR /4 -> FIR /4 -> FIR /2 -> 375 sps complex I/Q -> pinned wspr_decode()`
 
 No WSPR RF transmit waveform is implemented in CP-0002C. `get_wspr_channel_symbols()` is used only to generate deterministic receive fixtures and by the upstream decoder's own subtraction logic.
+
+
+## CP-0002D TX use
+
+CP-0002D promotes the already-vendored upstream `get_wspr_channel_symbols()` call from a receive-fixture helper to the production WSPR message-to-channel-symbol boundary. FieldOps still does not modify the pinned upstream files. FieldOps' own Kotlin layer performs the 12 kHz continuous-phase 4-FSK audio synthesis and the guarded radio session owns all CAT/PTT/USB-audio transmission.

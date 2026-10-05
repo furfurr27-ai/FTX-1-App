@@ -24,7 +24,8 @@ echo "[3/5] Compile pinned JS8 Kotlin API mirror and production DSP slice"
 mkdir -p "$JS8_API_DIR" "$DSP_DIR"
 kotlinc   "$ROOT/android/pipeline/src/test/kotlin/com/js8call/core/JS8Engine.kt"   -d "$JS8_API_DIR"
 
-kotlinc   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/FtFamilyNativeEngine.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprRxFrontEnd.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprEngineAdapter.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/Js8EngineAdapter.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/Js8CallAndroidEngineFactory.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/FieldOpsDspStack.kt"   -cp "$MAIN_JAR:$ABI_DIR:$JS8_API_DIR"   -d "$DSP_DIR"
+kotlinc   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/FtFamilyNativeEngine.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprRxFrontEnd.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprTxWaveformSynthesizer.kt" \
+  "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/WsprEngineAdapter.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/Js8EngineAdapter.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/Js8CallAndroidEngineFactory.kt"   "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/FieldOpsDspStack.kt"   -cp "$MAIN_JAR:$ABI_DIR:$JS8_API_DIR"   -d "$DSP_DIR"
 
 echo "[4/5] Compile deterministic JS8 RX tests separately"
 kotlinc   "$ROOT/android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/dsp/Js8RxTests.kt"   -cp "$MAIN_JAR:$DSP_DIR:$JS8_API_DIR:$ABI_DIR"   -include-runtime   -d "$TEST_JAR"

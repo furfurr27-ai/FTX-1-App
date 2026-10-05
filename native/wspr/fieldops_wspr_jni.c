@@ -1,5 +1,5 @@
 /*
- * JNI surface for FieldOps WSPR receive integration.
+ * JNI surface for FieldOps pinned WSPR decode and channel-symbol encoding.
  *
  * FieldOps-specific code added 2026-10-05. The linked upstream decoder is
  * GNU GPL v3. See native/wspr/upstream/LICENSE and UPSTREAM.md.

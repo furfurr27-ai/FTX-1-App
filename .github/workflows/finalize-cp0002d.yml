@@ -1,4 +1,4 @@
-name: Finalize CP-0002C checkpoint
+name: Finalize CP-0002D checkpoint
 
 on:
   push:
@@ -7,17 +7,19 @@ on:
     paths:
       - 'native/wspr/**'
       - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/Wspr*.kt'
-      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/dsp/WsprRxTests.kt'
+      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/dsp/Wspr*.kt'
+      - 'scripts/test_wspr_tx.sh'
       - 'scripts/test_wspr_rx.sh'
       - 'scripts/test_js8_native.sh'
-      - 'scripts/finalize_cp0002c.py'
-      - 'research/wspr/CP-0002C_WSPR_RX_INTEGRATION.md'
+      - 'scripts/test_js8_rx.sh'
+      - 'scripts/finalize_cp0002d.py'
+      - 'research/wspr/CP-0002D_WSPR_TX_INTEGRATION.md'
 
 permissions:
   contents: write
 
 jobs:
-  wspr-rx:
+  wspr-tx:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -52,9 +54,9 @@ jobs:
             }
           done < native/wspr/UPSTREAM_BLOBS.tsv
 
-      - name: Re-run focused CP-0002C WSPR RX gate on merged main
+      - name: Re-run focused CP-0002D WSPR TX gate on merged main
         shell: bash
-        run: bash scripts/test_wspr_rx.sh
+        run: bash scripts/test_wspr_tx.sh
 
   js8-regression:
     runs-on: ubuntu-latest
@@ -81,7 +83,7 @@ jobs:
         run: bash scripts/test_js8_native.sh
 
   checkpoint:
-    needs: [wspr-rx, js8-regression]
+    needs: [wspr-tx, js8-regression]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,9 +94,9 @@ jobs:
         shell: bash
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0002c.py
+        run: python3 scripts/finalize_cp0002d.py
 
-      - name: Create immutable CP-0002C snapshot
+      - name: Create immutable CP-0002D snapshot
         shell: bash
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -102,25 +104,27 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0002C-WSPR_NATIVE_RX \
-            --parent CP-0002B-JS8_NATIVE_TX \
-            --summary "Pinned WSPR receive decoder integrated from 12 kHz real FieldOps audio through 375 sps complex I/Q" \
-            --phase "Native modes: JS8 RX/TX and WSPR RX host-integrated; WSPR TX next" \
-            --test-status "GREEN host/CI: core=42062 pipeline=56 LoTW=19 WSPR_RX=22 JS8_RX=19 JS8_TX=39; exact pinned WSPR blobs verified; Android/device proof not run; finalizer run $FINALIZE_RUN_ID" \
+            --id CP-0002D-WSPR_NATIVE_TX \
+            --parent CP-0002C-WSPR_NATIVE_RX \
+            --summary "Pinned WSPR channel-symbol encoder plus complete guarded FieldOps 12 kHz 4-FSK transmit path" \
+            --phase "Native modes: JS8 RX/TX and WSPR RX/TX host-integrated; native-mode regression next" \
+            --test-status "GREEN host/CI: core=42062 pipeline=56 LoTW=19 WSPR_RX=21 WSPR_TX=56 JS8_RX=19 JS8_TX=39; exact pinned WSPR blobs verified; Android/device/RF proof not run; finalizer run $FINALIZE_RUN_ID" \
             --source-pin "Guenael/rtlsdr-wsprd@1ca9b83dd2562ce9ef2453aacdd5bc3aab982c7d" \
-            --completed "Exact pinned WSPR decoder sources vendored unchanged and Git blob identities verified in CI" \
-            --completed "One 120-second 12 kHz real window converts to exactly 45,000 complex I/Q samples at 375 sps" \
-            --completed "Pinned wspr_decode reached through a FieldOps JNI/native bridge with an explicit-stack decoder worker" \
-            --completed "Pinned native K1JT FN20QI 20 encoder fixture synthesized at 12 kHz and recovered end-to-end as K1JT FN20 20" \
-            --completed "Focused deterministic WSPR RX suite PASS 22 assertions" \
-            --completed "Inherited JS8 RX PASS 19 and JS8 TX PASS 39 after WSPR integration" \
-            --completed "Production WSPR adapter deliberately rejects TX until CP-0002D" \
-            --blocker "Android arm64-v8a build/package of the WSPR decoder plus FFTW3 dependency has not been validated" \
-            --blocker "Actual Samsung Galaxy S23 Ultra execution has not been tested" \
-            --blocker "Actual Yaesu FTX-1 USB receive routing/levels and off-air WSPR decode have not been tested" \
-            --next "CP-0002D: use pinned upstream channel-symbol encoder and synthesize the complete 12 kHz WSPR 4-FSK waveform" \
-            --next "Prove 162 symbols, 8192 samples per symbol, 1.46484375 Hz spacing, 1327104 samples and 110.592 second duration" \
-            --next "Route WSPR TX only through the FieldOps arbiter/PTT/audio path and prove TX0/audio-stop/ownership-release on failure or cancel"
+            --completed "Pinned upstream get_wspr_channel_symbols promoted to the production WSPR message codec boundary" \
+            --completed "Continuous-phase 12 kHz WSPR 4-FSK synthesis proves 162 symbols, 8192 samples/symbol, 1.46484375 Hz spacing, 1327104 samples and 110.592 seconds" \
+            --completed "Production pinned-symbol waveform round-trips through FieldOps RX and the pinned native decoder as K1JT FN20 20" \
+            --completed "WSPR physical TX path is restricted to Ftx1RadioSession under Owner.WSPR" \
+            --completed "Competing JS8 TX owner cannot be stolen or disturbed by WSPR" \
+            --completed "Normal completion, cancel and injected audio-write failure attempt TX0, close audio and release WSPR ownership" \
+            --completed "Malformed nonempty WSPR input fails before CAT PTT, TX audio open or radio ownership" \
+            --completed "Focused WSPR TX PASS 56; WSPR RX PASS 21; inherited JS8 RX PASS 19 and JS8 TX PASS 39" \
+            --blocker "Android arm64-v8a WSPR plus FFTW3 packaging has not been validated" \
+            --blocker "Actual Samsung Galaxy S23 Ultra plus Yaesu FTX-1 USB TX output rate/routing/level has not been tested" \
+            --blocker "WSPR RF power, ALC, spectral purity, frequency accuracy and off-air transmission have not been tested" \
+            --blocker "WSPR even-minute beacon scheduling is not proven by this checkpoint" \
+            --next "CP-0002E: run FT8/FT4/FT2, JS8, WSPR and APRS regression families separately" \
+            --next "Verify shared audio/timing/TX-ownership composition and keep mode-family gates independent" \
+            --next "Create one immutable native-modes checkpoint only after every required regression family is green; then proceed to CP-0003A TrustedQSL signer bridge"
 
           python3 scripts/verify_checkpoint.py --root . --latest
 
@@ -132,7 +136,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0002C-WSPR_NATIVE_RX.json
-          git add -f checkpoints/snapshots/CP-0002C-WSPR_NATIVE_RX.tar.gz
-          git commit -m "Checkpoint CP-0002C WSPR native RX"
+          git add checkpoints/manifests/CP-0002D-WSPR_NATIVE_TX.json
+          git add -f checkpoints/snapshots/CP-0002D-WSPR_NATIVE_TX.tar.gz
+          git commit -m "Checkpoint CP-0002D WSPR native TX"
           git push
