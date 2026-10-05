@@ -33,3 +33,10 @@ grep -InE 'sqlite3|openssl/|expat|zlib|gzopen|deflate|inflate'   "$ROOT/src/"*.{
 
 echo "=== config/data-directory behavior ==="
 grep -RIn -C 4 -E 'CONFDIR|config\.xml|tqsl_setDirectory|tQSL_BaseDir' "$ROOT/src"/*.cpp "$ROOT/src"/*.h 2>/dev/null || true
+
+
+echo "=== tqsllib runtime directory implementation ==="
+sed -n '180,440p' "$ROOT/src/tqsllib.cpp"
+
+echo "=== config loading implementation ==="
+sed -n '450,525p' "$ROOT/src/location.cpp"
