@@ -156,7 +156,7 @@ Parent: `CP-0003B-LOTW_TRANSACTION_SAFE`
 
 Official TrustedQSL 2.8.6 was packaged for Android arm64-v8a and validated on Chris's Galaxy S23 Ultra with a real TQSL backup and one genuine LoTW QSO. Real signing-only succeeded with rollback, then the CP-0003B sign/upload/accepted-report/commit transaction succeeded. The authenticated confirmation-report query also succeeded.
 
-Validation APK source: `{source_sha}`  
+Validation APK source: `{source_sha}`
 Validation APK SHA-256: `{apk_sha}`
 
 Final gates: signer 56; transaction 53; core 42,062; pipeline 56; LoTW 19; Android package PASS; secret hygiene PASS; sanitized device evidence PASS.
