@@ -35,7 +35,7 @@ gcc -std=gnu11 -O2 -fPIC -shared \
   "$ROOT/native/wspr/upstream/fano.c" \
   "$ROOT/native/wspr/upstream/nhash.c" \
   "$ROOT/native/wspr/upstream/tab.c" \
-  -lfftw3f -lm \
+  -lfftw3f -lm -pthread \
   -o "$NATIVE_DIR/libfieldops_wspr.so"
 
 nm -D --defined-only "$NATIVE_DIR/libfieldops_wspr.so" > "$BUILD/wspr-symbols.txt"
