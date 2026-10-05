@@ -1,5 +1,5 @@
 /*
- * FieldOps adaptation layer around Guenael/rtlsdr-wsprd.
+ * FieldOps adaptation layer around the pinned Guenael/rtlsdr-wsprd WSPR codec.
  *
  * FieldOps-specific code added 2026-10-05. The linked upstream decoder is
  * GNU GPL v3. See native/wspr/upstream/LICENSE and UPSTREAM.md.
