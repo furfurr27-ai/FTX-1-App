@@ -98,6 +98,7 @@ grep -Eq 'Machine:[[:space:]]+AArch64' "$BUILD_ROOT/elf-header.txt"
 symbols=(
   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize
   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12
+  Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportBackup
   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning
   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload
   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit
