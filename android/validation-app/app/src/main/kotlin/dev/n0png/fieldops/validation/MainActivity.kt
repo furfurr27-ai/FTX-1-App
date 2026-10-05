@@ -2,7 +2,11 @@ package dev.n0png.fieldops.validation
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
@@ -12,6 +16,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import dev.n0png.fieldops.android.logbook.LotwHttpTransport
 import dev.n0png.fieldops.android.logbook.TrustedQslSigner
 import dev.n0png.fieldops.core.logbook.AdifCodec
@@ -134,6 +139,11 @@ class MainActivity : Activity() {
         content.addView(Button(this).apply {
             text = "4. RUN LIVE LoTW TRANSACTION"
             setOnClickListener { confirmLiveUpload() }
+        })
+
+        content.addView(Button(this).apply {
+            text = "Copy sanitized validation result"
+            setOnClickListener { copyEvidence() }
         })
 
         status = TextView(this).apply {
@@ -413,6 +423,20 @@ class MainActivity : Activity() {
     private fun requireField(record: Map<String, String>, name: String): String =
         record[name]?.takeIf { it.isNotBlank() }
             ?: throw IllegalArgumentException("ADIF is missing $name")
+
+    private fun copyEvidence() {
+        val current = if (::status.isInitialized) status.text.toString() else "No status"
+        val evidence = buildString {
+            appendLine("FieldOps CP-0003C validation")
+            appendLine("source_sha=" + BuildConfig.SOURCE_SHA)
+            appendLine("device=" + Build.MANUFACTURER + " " + Build.MODEL)
+            appendLine("android_sdk=" + Build.VERSION.SDK_INT)
+            appendLine("result=" + current.replace('\n', ' '))
+        }
+        val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboard.setPrimaryClip(ClipData.newPlainText("CP-0003C validation", evidence))
+        Toast.makeText(this, "Sanitized result copied", Toast.LENGTH_SHORT).show()
+    }
 
     private fun setStatus(message: String) {
         if (::status.isInitialized) status.text = message
