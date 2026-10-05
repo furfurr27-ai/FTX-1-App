@@ -24,10 +24,10 @@ Do **not** redo this unless a gate fails:
 - CP-0003B transaction regression: **53 PASS**.
 - Inherited core/pipeline/LoTW: **42,062 / 56 / 19 PASS**.
 - Secret-hygiene gate: **PASS**, run `37342247174`.
-- Device-validation APK: **PASS**, run `37341539916`.
-- Validation APK artifact: `fieldops-cp0003c-validation-apk`, artifact id `11358268081`.
-- Validation APK source SHA: `11f5d17d6fe1c863d82bdc114474312cd29ec792`.
-- Validation APK SHA-256: `14417f9065c7f3a43a1245f22e8946a3a4d81831dac7fdec8b39ef71a859aa68`.
+- Device-validation APK: **PASS**, run `37343953055`.
+- Validation APK artifact: `fieldops-cp0003c-validation-apk`, artifact id `11359961439`.
+- Validation APK source SHA: `607bffccfd1b81d8e4847583f1630d10b613ca37`.
+- Validation APK SHA-256: `4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947`.
 - Exact device procedure: `research/tqsl/CP-0003C_DEVICE_VALIDATION.md`.
 
 ## Remaining RED gates
