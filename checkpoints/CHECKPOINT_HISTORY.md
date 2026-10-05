@@ -52,3 +52,17 @@ Host/CI gate: core 42,062; pipeline 56; LoTW 19; WSPR RX 21; WSPR TX 56; JS8 RX 
 Finalization workflow run: `37314097215`.
 
 Evidence: `research/wspr/CP-0002D_WSPR_TX_INTEGRATION.md`.
+
+## CP-0002E — Native-mode regression
+
+Parent: `CP-0002D-WSPR_NATIVE_TX`
+
+Independent host/CI gates now cover FT8, FT4, FT2, JS8, WSPR and APRS, followed by a shared composition test for the 48 kHz / 12 kHz audio split, continuous-vs-windowed timing and the common radio TX owner. This checkpoint adds regression evidence rather than a new operating mode.
+
+Host/CI gate: core 42,062; pipeline 56; LoTW 19; FT8 20; FT4 20; FT2 20; JS8 RX 19; JS8 TX 39; WSPR RX 21; WSPR TX 56; APRS 2,048; composition 130 assertions, all PASS.
+
+The public repository still omits the extracted ARM64 FT8AF native binary, so FT-family host execution uses deterministic ABI fixtures after separately compiling the production ABI declarations/adapter. Actual phone/radio proof remains hardware-gated.
+
+Finalization workflow run: `37316846958`.
+
+Evidence: `research/CP-0002E_NATIVE_MODE_REGRESSION.md`.

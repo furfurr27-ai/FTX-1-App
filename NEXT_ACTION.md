@@ -1,7 +1,7 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0002E — Native-mode regression**
+**CP-0003A — TrustedQSL signer bridge**
 
-Run the FT8/FT4/FT2, JS8, WSPR and APRS regression families separately. Keep their gates independent, verify the shared audio/timing/TX-ownership composition, and create one immutable native-modes checkpoint only after every required family is green.
+Pin the official TrustedQSL source/version. Add a narrow JNI API for PKCS#12 certificate import, explicit station-location selection, and ADIF -> signed GABBI/TQ8 output. Fail closed if signing material or location is unavailable/ambiguous, and never write certificates, passwords or keys to logs or this public repository.
 
-Do **not** begin CP-0003A TrustedQSL signer integration until CP-0002E is durable. Android/FTX-1 device and RF status remain separately hardware-gated.
+Keep signing separate from upload/reconciliation. CP-0003B will own the transaction-safe sign -> upload -> verify -> duplicate-state commit flow. Automatic LoTW upload remains disabled until later real-device/test-account validation.

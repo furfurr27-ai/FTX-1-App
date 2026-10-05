@@ -1,30 +1,30 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0002D-WSPR_NATIVE_TX**
-Project version: `v10-wspr-native-tx`
-Phase: **Native modes: JS8 RX/TX and WSPR RX/TX host-integrated; native-mode regression next**
-Test status: **GREEN host/CI: core=42062 pipeline=56 LoTW=19 WSPR_RX=21 WSPR_TX=56 JS8_RX=19 JS8_TX=39; exact pinned WSPR blobs verified; Android/device/RF proof not run; finalizer run 37314097215**
+Latest verified checkpoint: **CP-0002E-NATIVE_MODE_REGRESSION**
+Project version: `v11-native-modes-regression`
+Phase: **Native-mode foundation regression-locked; TrustedQSL signer bridge next**
+Test status: **GREEN host/CI: core=42062 pipeline=56 LoTW=19 FT8=20 FT4=20 FT2=20 JS8_RX=19 JS8_TX=39 WSPR_RX=21 WSPR_TX=56 APRS=2048 composition=130; Android/device/RF proof not run; finalizer run 37316846958**
 
 ## What is complete in this checkpoint
-- Pinned upstream get_wspr_channel_symbols promoted to the production WSPR message codec boundary
-- Continuous-phase 12 kHz WSPR 4-FSK synthesis proves 162 symbols, 8192 samples/symbol, 1.46484375 Hz spacing, 1327104 samples and 110.592 seconds
-- Production pinned-symbol waveform round-trips through FieldOps RX and the pinned native decoder as K1JT FN20 20
-- WSPR physical TX path is restricted to Ftx1RadioSession under Owner.WSPR
-- Competing JS8 TX owner cannot be stolen or disturbed by WSPR
-- Normal completion, cancel and injected audio-write failure attempt TX0, close audio and release WSPR ownership
-- Malformed nonempty WSPR input fails before CAT PTT, TX audio open or radio ownership
-- Focused WSPR TX PASS 56; WSPR RX PASS 21; inherited JS8 RX PASS 19 and JS8 TX PASS 39
+- Independent FT8 host adapter regression PASS 20 assertions
+- Independent FT4 host adapter regression PASS 20 assertions
+- Independent FT2 host adapter regression PASS 20 assertions
+- Independent JS8 RX PASS 19 and TX PASS 39 assertions
+- Independent WSPR RX PASS 21 and TX PASS 56 assertions with exact pinned WSPR blobs verified
+- Independent APRS AX.25/KISS/Bell-202/SmartBeaconing regression PASS 2048 assertions
+- Shared 48 kHz/12 kHz, continuous/windowed timing and all-mode TX-ownership composition PASS 130 assertions
+- Inherited core PASS 42062, pipeline PASS 56 and LoTW PASS 19
 
 ## Known blockers / red items
-- Android arm64-v8a WSPR plus FFTW3 packaging has not been validated
-- Actual Samsung Galaxy S23 Ultra plus Yaesu FTX-1 USB TX output rate/routing/level has not been tested
-- WSPR RF power, ALC, spectral purity, frequency accuracy and off-air transmission have not been tested
-- WSPR even-minute beacon scheduling is not proven by this checkpoint
+- Public Git tree omits the extracted ARM64 libft8af.so, so CP-0002E does not execute actual FT8AF native DSP on x86_64 CI
+- Actual Samsung Galaxy S23 Ultra plus Yaesu FTX-1 CAT/USB audio runtime has not been tested
+- Actual FT-family and JS8 native execution on the phone, Android arm64 WSPR/FFTW3 packaging and real APRS off-air reception remain untested
+- Actual RF TX level, ALC, spectral purity and watchdog behavior remain untested
 
 ## Continue with these exact actions
-1. CP-0002E: run FT8/FT4/FT2, JS8, WSPR and APRS regression families separately
-2. Verify shared audio/timing/TX-ownership composition and keep mode-family gates independent
-3. Create one immutable native-modes checkpoint only after every required regression family is green; then proceed to CP-0003A TrustedQSL signer bridge
+1. CP-0003A: pin official TrustedQSL source/version and build a narrow JNI signer bridge
+2. Support PKCS#12 certificate import, explicit station-location selection and ADIF to signed GABBI/TQ8 output; fail closed if signer material or location is unavailable
+3. Keep signing separate from upload/reconciliation; CP-0003B will own transaction-safe sign-upload-verify-commit behavior
 
 ## Verification before continuing
 Run:
