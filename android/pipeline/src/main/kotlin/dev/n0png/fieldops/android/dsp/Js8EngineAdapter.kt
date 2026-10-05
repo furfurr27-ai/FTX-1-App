@@ -87,7 +87,10 @@ class Js8EngineAdapter(
             sink = onDecode
             val native = engine ?: factory.create(callbacks).also { engine = it }
             if (!started) {
-                check(native.start()) { "JS8 native engine failed to start" }
+                if (!native.start()) {
+                    sink = null
+                    error("JS8 native engine failed to start")
+                }
                 started = true
             }
         }
@@ -103,12 +106,13 @@ class Js8EngineAdapter(
 
     override fun accept12k(block: TimedPcmBlock) {
         require(block.sampleRate == 12_000) { "JS8 native RX requires continuous 12 kHz PCM" }
-        val native = synchronized(lock) {
+        val pcm = toPcm16(block.samples)
+        val accepted = synchronized(lock) {
             check(started) { "JS8 native RX engine is not started" }
-            checkNotNull(engine)
+            checkNotNull(engine).submitAudio(pcm, block.utcStartNanos)
         }
 
-        if (!native.submitAudio(toPcm16(block.samples), block.utcStartNanos)) {
+        if (!accepted) {
             errorSink("JS8 native engine rejected RX audio block sequence=${block.sequence}")
         }
     }
