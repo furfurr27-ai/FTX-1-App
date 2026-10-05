@@ -19,6 +19,7 @@
 
 #include <tqsllib.h>
 #include <tqslconvert.h>
+#include <tqslerrno.h>
 
 namespace {
 
