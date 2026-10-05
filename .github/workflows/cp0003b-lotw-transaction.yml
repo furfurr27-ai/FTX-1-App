@@ -1,0 +1,95 @@
+name: CP-0003B Transaction-safe LoTW
+
+on:
+  push:
+    branches:
+      - cp-0003b-lotw-transaction
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'native/tqsl/**'
+      - 'scripts/test_lotw_transaction.sh'
+      - 'scripts/test_tqsl_signer.sh'
+      - 'scripts/test_core_regression.sh'
+      - 'research/tqsl/CP-0003B_TRANSACTION_SAFE_UPLOAD.md'
+      - 'research/LOTW_INTEGRATION.md'
+      - 'scripts/finalize_cp0003b.py'
+      - '.github/workflows/cp0003b-lotw-transaction.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  transaction:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Run focused CP-0003B transaction gate
+        shell: bash
+        run: bash scripts/test_lotw_transaction.sh
+
+  signer-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin 1.9.22 and native prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y zlib1g-dev
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Re-run CP-0003A signer regression independently
+        shell: bash
+        run: bash scripts/test_tqsl_signer.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Run inherited core/LoTW regression independently
+        shell: bash
+        run: bash scripts/test_core_regression.sh
