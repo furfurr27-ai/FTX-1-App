@@ -14,7 +14,9 @@ SIGNER_DIR="$BUILD/signer"
 TEST_JAR="$BUILD/tqsl-signer-tests.jar"
 NATIVE_DIR="$BUILD/native"
 DATA_DIR="$BUILD/tqsl-data"
-mkdir -p "$SIGNER_DIR" "$NATIVE_DIR" "$DATA_DIR"
+RESOURCE_DIR="$BUILD/tqsl-resource"
+mkdir -p "$SIGNER_DIR" "$NATIVE_DIR" "$DATA_DIR" "$RESOURCE_DIR"
+printf '%s\n' '<tqslconfig majorversion="1" minorversion="0"/>' > "$RESOURCE_DIR/config.xml"
 
 echo "[1/8] Fetch and verify official TrustedQSL release pin"
 curl -fL --retry 3 --retry-delay 2 -o "$BUILD/tqsl.tar.gz" "$TQSL_URL"
@@ -49,7 +51,7 @@ echo "[6/8] Compile signer tests separately"
 kotlinc   "$ROOT/android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/logbook/TrustedQslSignerTests.kt"   -cp "$MAIN_JAR:$SIGNER_DIR"   -include-runtime   -d "$TEST_JAR"
 
 echo "[7/8] Run focused TrustedQSL signer bridge tests"
-LD_LIBRARY_PATH="$NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" java -Djava.library.path="$NATIVE_DIR"   -cp "$TEST_JAR:$MAIN_JAR:$SIGNER_DIR"   dev.n0png.fieldops.android.logbook.TrustedQslSignerTests "$DATA_DIR"
+LD_LIBRARY_PATH="$NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" java -Djava.library.path="$NATIVE_DIR"   -cp "$TEST_JAR:$MAIN_JAR:$SIGNER_DIR"   dev.n0png.fieldops.android.logbook.TrustedQslSignerTests "$DATA_DIR" "$RESOURCE_DIR"
 
 echo "[8/8] Enforce signer implementation separation from HTTP transport"
 ! grep -Eq 'LotwTransport|HttpURLConnection|uploadTq8' \
