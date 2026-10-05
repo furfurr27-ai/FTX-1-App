@@ -10,6 +10,7 @@ on:
       - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/**'
       - 'android/pipeline/src/test/kotlin/**'
       - 'scripts/test_js8_rx.sh'
+      - 'scripts/create_checkpoint.py'
       - 'research/js8/CP-0002A_JS8_RX_INTEGRATION.md'
       - '.github/workflows/cp0002a-js8-rx.yml'
   pull_request:
@@ -32,7 +33,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
@@ -48,6 +49,23 @@ jobs:
       - name: Run focused CP-0002A gate
         shell: bash
         run: bash scripts/test_js8_rx.sh
+
+      - name: Checkpoint tooling smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          TMP="$(mktemp -d)"
+          mkdir -p "$TMP/scripts"
+          echo "test" > "$TMP/VERSION"
+          cp scripts/create_checkpoint.py scripts/verify_checkpoint.py "$TMP/scripts/"
+          python3 "$TMP/scripts/create_checkpoint.py" \
+            --root "$TMP" \
+            --id CP-0002A-PARSER_TEST \
+            --summary "parser smoke test" \
+            --phase "test" \
+            --source-pin "example/repo@deadbeef"
+          python3 "$TMP/scripts/verify_checkpoint.py" --root "$TMP" --latest
+          rm -rf "$TMP"
 
       - name: Verify pinned evidence identifiers
         shell: bash
