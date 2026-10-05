@@ -47,7 +47,7 @@ def main():
     args=ap.parse_args()
 
     if not re.fullmatch(r"CP-\d{4}-[A-Z0-9][A-Z0-9_-]*", args.id):
-        raise SystemExit("Checkpoint id must look like CP-0001-NAME")
+        raise SystemExit("Checkpoint id must look like CP-0001-NAME or CP-0002A-NAME")
 
     root=pathlib.Path(args.root).resolve()
     cp=root/"checkpoints"
