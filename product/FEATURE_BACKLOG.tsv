@@ -1,0 +1,44 @@
+ID	Priority	Area	Feature	Status
+LOG-001	P1	Logging	Manual/assisted SSB logger	BACKLOG_LOCKED
+LOG-002	P1	Logging	Manual/assisted CW logger	BACKLOG_LOCKED
+LOG-003	P1	Logging	Auto LoTW queue for manually logged QSOs	BACKLOG_LOCKED
+AWD-001	P1	Awards	Awards Center worked/confirmed/claimable progress	BACKLOG_LOCKED
+AWD-002	P1	Awards	Official rules/info/claim links catalog	BACKLOG_LOCKED
+AWD-003	P1	Awards	Mode/band-specific award progress	BACKLOG_LOCKED
+MAP-001	P1	Map	Live/heard digital-signal layer	BACKLOG_LOCKED
+MAP-002	P1	Map	Propagation intelligence layer	BACKLOG_LOCKED
+MAP-003	P1	Map	Award-area progress layer	BACKLOG_LOCKED
+MAP-004	P1	Map	Logged QSO layer with hour-to-all-time scale	BACKLOG_LOCKED
+SSB-001	P1	SSB	SSB operating workspace	BACKLOG_LOCKED
+SSB-002	P1	SSB	Offline SSB cheat sheets	BACKLOG_LOCKED
+CW-001	P1	CW	CW operating workspace	BACKLOG_LOCKED
+CW-002	P1	CW	Offline CW cheat sheets	BACKLOG_LOCKED
+JS8-UX-001	P1	JS8	Conversation/thread UI	BACKLOG_LOCKED
+JS8-UX-002	P1	JS8	Quick-select/canned message macros	BACKLOG_LOCKED
+MODE-001	P2	Digital	Extensible modem/provider API	BACKLOG_LOCKED
+MODE-002	P2	Digital	RTTY RX/TX/logging	BACKLOG_LOCKED
+MODE-003	P2	Digital	PSK31/PSK variants	BACKLOG_LOCKED
+MODE-004	P2	Digital	Olivia	BACKLOG_LOCKED
+MODE-005	P2	Digital	MFSK16	BACKLOG_LOCKED
+MODE-006	P3	Digital	Contestia	BACKLOG_LOCKED
+MODE-007	P3	Digital	DominoEX	BACKLOG_LOCKED
+MODE-008	P3	Digital	THOR	BACKLOG_LOCKED
+MODE-009	P3	Digital	Hellschreiber	BACKLOG_LOCKED
+MODE-010	P3	Digital	MT63	BACKLOG_LOCKED
+MODE-011	P3	Digital	Optional SSTV/other modules	BACKLOG_LOCKED
+DISC-001	P2	Discovery	Waterfall measurement/mode-identification aids	BACKLOG_LOCKED
+DISC-002	P2	Discovery	Mode Library/reference browser	BACKLOG_LOCKED
+ARCH-001	P0	Architecture	FTX-1-only concrete radio driver; no generic multi-radio backend	DESIGN_ACCEPTED
+ARCH-002	P0	Architecture	DigitalModeProvider extensibility above common radio layer	DESIGN_ACCEPTED
+ARCH-003	P1	Architecture	OperatingSession model for portable/location/activity context	DESIGN_ACCEPTED
+ARCH-004	P1	Architecture	MapLayerProvider normalized geo-layer contract	DESIGN_ACCEPTED
+ARCH-005	P1	Architecture	AwardEvaluator rule/evidence engine	DESIGN_ACCEPTED
+SYNC-001	P1	Logging	Provider-specific immutable QSO sync states	DESIGN_ACCEPTED
+PROP-001	P1	Propagation	Separate observed vs predicted propagation datasets	DESIGN_ACCEPTED
+PROP-002	P1	Propagation	Fused band/path confidence explanation layer	BACKLOG_LOCKED
+CP-001	P0	Engineering	Immutable checkpoint manifests/snapshots/resume protocol	IMPLEMENTED
+CP-002	P0	Engineering	Verify latest checkpoint before resuming interrupted work	IMPLEMENTED
+REF-001	P0	Research	Pinned GitHub amateur-radio reference matrix	IMPLEMENTED
+REF-002	P1	Research	Deep-dive fldigi modem API before provider API freeze	BACKLOG_LOCKED
+REF-003	P1	Research	Deep-dive Wavelog generic award engine patterns	BACKLOG_LOCKED
+REF-004	P1	Research	Deep-dive wfview FTX-safe startup/reconnect queue patterns	BACKLOG_LOCKED

@@ -1,0 +1,28 @@
+Repository	Commit	CommitDate	Role	InspectionLevel
+patrickrb/FT8AF	c2f63e8b37fcd484fd2eb2049494425dd2414971	2026-07-08	Android FT8/USB/CAT/UI	APK + GitHub pinned
+JS8Call-improved/Android-port	9996202f355569c5ee7b97fae539f3b763081dc2	2026-09-30	JS8 Android native/JNI	Source/API + CI artifact
+kgoba/ft8_lib	9fec6ca39886edbf96f4f5e71edc76da5074e871	2025-08-24	FT8/FT4 codec	Pinned/reference
+Guenael/rtlsdr-wsprd	1ca9b83dd2562ce9ef2453aacdd5bc3aab982c7d	2026-03-06	WSPR codec	Source directly inspected
+w1hkj/fldigi	61b97f4133c488063f3de1795c894d22d5032e8a	2022-06-23	Multi-mode modem architecture	Source search inspected
+f4exb/sdrangel	95c0622a69808aa5625a525cbfbdd7adf9a59b04	2026-10-03	DSP plugin architecture	Source search inspected
+jketterl/openwebrx	640c5b0b3e19b10d823a7ee703f2a683ec848eac	2024-12-11	Decoder orchestration/waterfall	README inspected
+jketterl/digiham	410853cf284809b0bd2f02f56d80bd7909bd8f74	2024-02-04	Digital voice decoder components	README inspected
+DJ2LS/FreeDATA	2b3f037db7aefa5c693acbbf51548fd43cd0e1c3	2026-07-27	ARQ/chat/state queues	Source search inspected
+wb2osz/direwolf	eda1383f5fa9d8ba3cb27f99db1d2c79494404c9	2026-05-19	APRS/AX.25 modem layering	README inspected
+Xastir/Xastir	68647b36b8027b67254180f59815915bf0db3e22	2026-09-24	APRS mapping/layers	Source search inspected
+Hamlib/Hamlib	7a556dbfc80649ddbceedf5b8f8627b990671594	2026-10-03	Rig API/state/cache patterns	README + source search inspected
+w1hkj/flrig	915d98c5781fc8a39b37699a23d63bea4a235451	2023-05-15	Rig polling/UI	Source search inspected
+wf-group/wfview	098568546731aff25c7e9ea93c0f009eeee19137	2026-09-27	Rig startup/command queues	Source search inspected
+foldynl/QLog	cbb75f2f2555a4a84c9761e38075754f4821c27c	2026-09-18	Log/LoTW/credentials/maps	README inspected
+wavelog/wavelog	3af1ba557a54da9ba318daf9d4a5ed8e937db1b8	2026-09-23	Awards/maps/LoTW	README + source search inspected
+ea4k/klog	6819f98a5e8542e3dc657f2048cf3d305c1c7d10	2026-09-10	Log/LoTW/award mode semantics	README + source search inspected
+magicbug/Cloudlog	c1e1834ff151f917078e5d033e2e7358ddfb761b	2026-09-10	Logbook service/reference	README inspected
+mbridak/not1mm	72fbc5e270af1956f10f8a83c676c46449ad7ced	2026-10-02	Fast contest logging	README inspected
+ham2k/polo.ham2k.com	7f99987f64c7936853d7e4cc9194dc4717481fa3	2026-04-27	Portable operations/activity UX	Docs searched
+skyelaird/dvoacap-python	96f75a62c8db492f2916ad127cd6f3021941e967	2026-05-01	HF propagation model/dashboard	README inspected
+la5nta/pat	2e6a8d14baf0268f4e2aa4d01784a54ca935cf52	2026-04-19	Messaging/mailbox/multi-transport	README inspected
+k3ng/k3ng_cw_keyer	89081784fdb2c3423ecf84fe054d5a86c3c7ee40	2026-06-27	CW keyer/macros	README inspected
+drowe67/freedv-gui	03c876fe167b9702d3cc451507bcb55215106cf3	2026-10-03	Streaming digital voice	Pinned/reference
+ON4QZ/QSSTV	8c27d6d169d8c6c197eb47c2089870e39bc06a02	2026-03-14	SSTV/image modes	Pinned/reference
+rt-bishop/Look4Sat	782b438a072e26ee5be8629de508530092586136	2026-09-27	Modern Android/offline maps	README inspected
+N0BOY/FT8CN	a98fbfaec379a0c7a07d2a50c27be223aef948d8	2025-01-06	Native Android FT8/mobile constraints	README inspected
