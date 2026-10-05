@@ -8,7 +8,8 @@ The branch preparation is GREEN:
 - CP-0003C signer regression: 56 PASS
 - CP-0003B transaction regression: 53 PASS
 - inherited core/pipeline/LoTW: 42,062 / 56 / 19 PASS
-- repository secret-hygiene gate: PASS, run `37342247174`
+- evidence-validator + finalizer dry-run: PASS, run `37344968960`
+- repository secret-hygiene gate: PASS, run `37344968953`
 - device-validation APK: PASS, run `37343953055`
 - APK SHA-256: `4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947`
 - artifact: `fieldops-cp0003c-validation-apk` id `11359961439`
