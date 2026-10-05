@@ -1,0 +1,12 @@
+{
+  "source_sha": "607bffccfd1b81d8e4847583f1630d10b613ca37",
+  "apk_sha256": "4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947",
+  "workflow_run": 37343953055,
+  "artifact_id": 11359961439,
+  "artifact_name": "fieldops-cp0003c-validation-apk",
+  "artifact_archive_sha256": "02dfa5a26cafb26c5962cd6f3cea0b5c5dd6070bc130c8723d777ea97d8b2787",
+  "tqsl_version": "2.8.6",
+  "tqsl_archive_sha256": "182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37",
+  "target_device_family": "Samsung Galaxy S23 Ultra / SM-S918",
+  "automatic_upload": "DISABLED"
+}
