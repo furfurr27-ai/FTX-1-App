@@ -1,0 +1,71 @@
+name: CP-0003A TrustedQSL Signer
+
+on:
+  push:
+    branches:
+      - cp-0003a-trustedqsl-signer
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'native/tqsl/**'
+      - 'scripts/test_tqsl_signer.sh'
+      - 'scripts/test_core_regression.sh'
+      - 'research/tqsl/CP-0003A_SOURCE_PIN.md'
+      - 'research/tqsl/CP-0003A_SIGNER_BRIDGE.md'
+      - 'scripts/finalize_cp0003a.py'
+      - '.github/workflows/cp0003a-tqsl-signer.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  signer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin 1.9.22 and native prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y zlib1g-dev
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Run focused CP-0003A signer gate
+        shell: bash
+        run: bash scripts/test_tqsl_signer.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Run inherited core/LoTW regression independently
+        shell: bash
+        run: bash scripts/test_core_regression.sh
