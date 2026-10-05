@@ -89,6 +89,15 @@ Focused branch run `37304795600`:
 - WSPR RX deterministic assertions: **22 PASS**
 - focused gate: **PASS**
 
+Comprehensive branch run `37305021201` independently re-ran the WSPR gate and the inherited JS8 gate:
+
+- WSPR RX: **22/22 PASS**
+- JS8 RX: **19/19 PASS**
+- JS8 TX: **39/39 PASS**
+- core: **42,062 PASS**
+- pipeline: **56 PASS**
+- LoTW: **19 PASS**
+
 ## Evidence boundary
 
 Verified/host-tested:
