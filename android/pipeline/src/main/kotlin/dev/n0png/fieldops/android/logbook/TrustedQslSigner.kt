@@ -86,9 +86,11 @@ class TrustedQslSigner internal constructor(
             check(current == LotwSigningSessionState.OPEN) { "TrustedQSL signing session is already terminal" }
             val h = handle
             native.commit(h)
-            native.close(h)
-            handle = 0L
+            // The duplicate database is now committed. Cleanup failure must not
+            // make the caller think the transaction is still roll-backable.
             current = LotwSigningSessionState.COMMITTED
+            handle = 0L
+            runCatching { native.close(h) }
         }
 
         @Synchronized
@@ -96,9 +98,9 @@ class TrustedQslSigner internal constructor(
             check(current == LotwSigningSessionState.OPEN) { "TrustedQSL signing session is already terminal" }
             val h = handle
             native.rollback(h)
-            native.close(h)
-            handle = 0L
             current = LotwSigningSessionState.ROLLED_BACK
+            handle = 0L
+            runCatching { native.close(h) }
         }
 
         @Synchronized
