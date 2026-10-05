@@ -13,6 +13,7 @@ on:
       - 'scripts/test_tqsl_signer.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/validate_cp0003c_device_evidence.py'
       - '.github/workflows/cp0003c-validation-prep.yml'
   pull_request:
     paths:
@@ -24,6 +25,7 @@ on:
       - 'scripts/test_tqsl_signer.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/validate_cp0003c_device_evidence.py'
       - '.github/workflows/cp0003c-validation-prep.yml'
 
 permissions:
@@ -85,3 +87,12 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run inherited core/LoTW regression
         run: bash scripts/test_core_regression.sh
+
+
+  evidence-validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Self-test sanitized device-evidence validator
+        shell: bash
+        run: python3 scripts/validate_cp0003c_device_evidence.py --self-test
