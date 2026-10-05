@@ -17,7 +17,7 @@ object WsprTxWaveformSynthesizer {
     const val SAMPLES_PER_SYMBOL = 8_192
     const val TOTAL_SAMPLES = SYMBOL_COUNT * SAMPLES_PER_SYMBOL
     const val TONE_SPACING_HZ = 375.0 / 256.0
-    const val DURATION_SECONDS = TOTAL_SAMPLES.toDouble() / SAMPLE_RATE.toDouble()
+    const val DURATION_SECONDS = 110.592
     const val DEFAULT_AMPLITUDE = 0.8f
 
     fun toneHz(centerAudioHz: Double, symbol: Int): Double {
