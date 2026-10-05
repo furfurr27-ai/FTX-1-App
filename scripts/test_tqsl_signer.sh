@@ -51,9 +51,12 @@ kotlinc   "$ROOT/android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/log
 echo "[7/8] Run focused TrustedQSL signer bridge tests"
 LD_LIBRARY_PATH="$NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" java -Djava.library.path="$NATIVE_DIR"   -cp "$TEST_JAR:$MAIN_JAR:$SIGNER_DIR"   dev.n0png.fieldops.android.logbook.TrustedQslSignerTests "$DATA_DIR"
 
-echo "[8/8] Enforce CP-0003A separation from HTTP upload"
-! grep -q 'TransactionalLotwSigner\|TrustedQslSigner'   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/logbook/LotwSyncManager.kt" || {
-  echo "CP-0003A must not wire transactional signing into upload yet" >&2
+echo "[8/8] Enforce signer implementation separation from HTTP transport"
+! grep -Eq 'LotwTransport|HttpURLConnection|uploadTq8' \
+  "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/TrustedQslSigner.kt" \
+  "$ROOT/android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/TrustedQslJniBridge.kt" \
+  "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp" || {
+  echo "TrustedQSL signer implementation must not own HTTP upload" >&2
   exit 1
 }
 
