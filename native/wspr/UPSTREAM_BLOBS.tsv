@@ -1,0 +1,14 @@
+UpstreamPath	GitBlobSHA1	VendoredPath
+LICENSE	f288702d2fa16d3cdf0035b15a9fcbc552cd88e7	native/wspr/upstream/LICENSE
+wsprd/wsprd.h	4be7fe4c95bf12fa726ccc320b81dbf1a74a988a	native/wspr/upstream/wsprd.h
+wsprd/wsprd.c	2b0ba1d12a5fa4eabb186e13c2c2206c0a8ef485	native/wspr/upstream/wsprd.c
+wsprd/wsprsim_utils.h	a6d208f3e79595907df916bfb3ba5451cd0007c0	native/wspr/upstream/wsprsim_utils.h
+wsprd/wsprsim_utils.c	286db0089ece1c5b868b7acca4d6e77a7b12adc3	native/wspr/upstream/wsprsim_utils.c
+wsprd/wsprd_utils.h	31e94220b0aac1016946c424ad220c8a05498106	native/wspr/upstream/wsprd_utils.h
+wsprd/wsprd_utils.c	5442a391cf6545a139ff73da4851c9e8128b8998	native/wspr/upstream/wsprd_utils.c
+wsprd/fano.h	43c74651c7457f1f92debd9eb2a5beac91fc9a41	native/wspr/upstream/fano.h
+wsprd/fano.c	2a124d22c718c2ee9432faac5fbbd1e243e1c776	native/wspr/upstream/fano.c
+wsprd/nhash.h	cbe8b411a2b9754ea2da9d86beec21ea3fa28f8d	native/wspr/upstream/nhash.h
+wsprd/nhash.c	b5f8677d81a21b3759c05f4bcc29985cd16c06aa	native/wspr/upstream/nhash.c
+wsprd/tab.c	d1c5c27ba412f880b59ecb246abbfa6db1a5c002	native/wspr/upstream/tab.c
+wsprd/metric_tables.h	7db6e275c0de4718507680877b1d9f84089bcdd5	native/wspr/upstream/metric_tables.h
