@@ -304,6 +304,8 @@ Important references include FT8AF, JS8Call Android, rtlsdr-wsprd, fldigi, SDRan
 
 References are categorized as architecture/behavior/protocol/reusable implementation candidates. Do not copy code merely because it is public. Review licensing before vendoring any implementation.
 
+Community-demand research is tracked separately from technical source pins. The 2026-10-05 /r/amateurradio discussion on modes people actually enjoy/use reinforces keyboard-conversation modes (JS8, PSK31, Olivia, Hellschreiber), practical messaging (Winlink/VARA), SSTV interest, and the need for activity-discovery UX. JTTY, VarAC and FreeDV are watch/research items rather than immediate implementation commitments. See `research/community/REDDIT_DIGITAL_MODES_2026-10-05.md`.
+
 ## Repository/import notes
 
 The verified CP-0001 text/source tree has now been restored to GitHub `main`.
