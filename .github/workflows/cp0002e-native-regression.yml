@@ -1,0 +1,198 @@
+name: CP-0002E Native Mode Regression
+
+on:
+  push:
+    branches:
+      - cp-0002e-native-regression
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/**'
+      - 'core/src/test/kotlin/**'
+      - 'android/compat/src/main/java/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/**'
+      - 'android/pipeline/src/test/**'
+      - 'native/wspr/**'
+      - 'scripts/test_core_regression.sh'
+      - 'scripts/test_ft_family_mode.sh'
+      - 'scripts/test_aprs_regression.sh'
+      - 'scripts/test_js8_native.sh'
+      - 'scripts/test_wspr_tx.sh'
+      - 'scripts/test_native_mode_composition.sh'
+      - 'research/CP-0002E_NATIVE_MODE_REGRESSION.md'
+      - 'scripts/finalize_cp0002e.py'
+      - '.github/workflows/cp0002e-native-regression.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run inherited core regression
+        run: bash scripts/test_core_regression.sh
+
+  ft8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run isolated FT8 regression
+        run: bash scripts/test_ft_family_mode.sh FT8
+
+  ft4:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run isolated FT4 regression
+        run: bash scripts/test_ft_family_mode.sh FT4
+
+  ft2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run isolated FT2 regression
+        run: bash scripts/test_ft_family_mode.sh FT2
+
+  aprs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run isolated APRS regression
+        run: bash scripts/test_aprs_regression.sh
+
+  js8:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run isolated JS8 RX/TX regression
+        run: bash scripts/test_js8_native.sh
+
+  wspr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22 and FFTW3
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libfftw3-dev
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Verify exact pinned WSPR blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS=$'	' read -r upstream expected vendored; do
+            [[ "$upstream" == "UpstreamPath" ]] && continue
+            actual="$(git hash-object "$vendored")"
+            [[ "$actual" == "$expected" ]] || {
+              echo "vendored blob mismatch: $vendored expected=$expected actual=$actual" >&2
+              exit 1
+            }
+          done < native/wspr/UPSTREAM_BLOBS.tsv
+      - name: Run isolated WSPR RX/TX regression
+        run: bash scripts/test_wspr_tx.sh
+
+  composition:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run shared audio/timing/TX ownership regression
+        run: bash scripts/test_native_mode_composition.sh
+
+      - name: Dry-run CP-0002E checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0002e.py
+          python3 scripts/finalize_cp0002e.py
+          grep -Fq 'CP-0002E-NATIVE_MODE_REGRESSION' README.md
+          grep -Fq 'CP-0003A — TrustedQSL signer bridge' NEXT_ACTION.md
+          grep -Fq 'CP-0002E — Native-mode regression' checkpoints/CHECKPOINT_HISTORY.md
+          git diff --check
