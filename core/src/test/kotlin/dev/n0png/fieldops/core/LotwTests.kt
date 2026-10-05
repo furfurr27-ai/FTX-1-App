@@ -46,10 +46,8 @@ object LotwTests {
                 if (params["qso_qsl"] == "yes") qslText else reportText
         }
         val mgr = LotwSyncManager(fake)
-        val signer = object : LotwSigner {
-            override fun signAdif(adif: String, stationProfileId: String): ByteArray = byteArrayOf(0x1f, 0x8b.toByte(), 1, 2)
-        }
-        eq(true, mgr.upload(listOf(q), signer, "home").accepted)
+        val queue = LotwUploadQueue()
+        eq(LotwUploadState.QUEUED, queue.enqueue(q, "home").qso.lotwUpload)
         val accepted = mgr.fetchAccepted(LotwCredentials("n0png", "secret"), "2026-10-01")
         val confirmed = mgr.fetchConfirmations(LotwCredentials("n0png", "secret"), "2026-10-01")
         val (updated, summary) = mgr.reconcile(listOf(q), accepted, confirmed)
@@ -60,12 +58,8 @@ object LotwTests {
         eq("2026-10-03 20:20:00", summary.cursor.lastQsoRx)
         eq("2026-10-03 20:21:00", summary.cursor.lastQsl)
 
-        // Multiple station callsigns must never be signed into one upload batch.
-        var rejected = false
-        try {
-            mgr.upload(listOf(q, q.copy(id = 2, stationCallsign = "N0PNG/P")), signer, "home")
-        } catch (_: IllegalArgumentException) { rejected = true }
-        checkThat(rejected)
+        // Queue is mode-neutral; acceptance batching invariants are exercised by CP-0003B focused tests.
+        eq(1, queue.size())
 
         eq(30_000L, LotwSyncPolicy.VERIFY_AFTER_UPLOAD_MILLIS)
         eq(300_000L, LotwSyncPolicy.retryDelayMillis(0))
