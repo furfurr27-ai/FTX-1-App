@@ -11,6 +11,7 @@
 #include <vector>
 
 int tQSL_Error = 0;
+const char *tQSL_RsrcDir = nullptr;
 
 namespace {
 
