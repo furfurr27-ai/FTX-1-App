@@ -11,9 +11,9 @@ import java.util.Arrays
 /**
  * Production FieldOps TrustedQSL signing facade.
  *
- * CP-0003A deliberately stops at signed payload creation. It does not perform
- * LoTW HTTP upload and it does not commit TrustedQSL duplicate state
- * automatically; CP-0003B will own that transaction boundary.
+ * Signing remains separate from LoTW HTTP transport. CP-0003B owns the
+ * sign/upload/verify/commit transaction; CP-0003C supplies explicit Android
+ * data/resource directories and validates the real native runtime.
  */
 class TrustedQslSigner internal constructor(
     private val native: TrustedQslJniBridge,
@@ -21,8 +21,9 @@ class TrustedQslSigner internal constructor(
 
     constructor(
         dataDirectory: String,
+        resourceDirectory: String = dataDirectory,
         libraryLoader: () -> Unit = { System.loadLibrary(TrustedQslJniBridge.LIBRARY_NAME) },
-    ) : this(TrustedQslJniBridge(dataDirectory, libraryLoader))
+    ) : this(TrustedQslJniBridge(dataDirectory, resourceDirectory, libraryLoader))
 
     override fun importPkcs12(
         pkcs12: ByteArray,
