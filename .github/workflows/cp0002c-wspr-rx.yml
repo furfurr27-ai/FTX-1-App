@@ -1,0 +1,57 @@
+name: CP-0002C WSPR RX
+
+on:
+  push:
+    branches:
+      - cp-0002c-wspr-rx
+  pull_request:
+    paths:
+      - 'native/wspr/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/Wspr*.kt'
+      - 'android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/dsp/WsprRxTests.kt'
+      - 'scripts/test_wspr_rx.sh'
+      - 'research/wspr/CP-0002C_WSPR_RX_INTEGRATION.md'
+      - '.github/workflows/cp0002c-wspr-rx.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  wspr-rx:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin compiler 1.9.22 and FFTW3
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y libfftw3-dev
+          curl -fsSL -o /tmp/kotlin.zip \
+            https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Verify vendored files are exact pinned upstream blobs
+        shell: bash
+        run: |
+          set -euo pipefail
+          while IFS=$'\t' read -r upstream expected vendored; do
+            [[ "$upstream" == "UpstreamPath" ]] && continue
+            actual="$(git hash-object "$vendored")"
+            [[ "$actual" == "$expected" ]] || {
+              echo "vendored blob mismatch: $vendored expected=$expected actual=$actual" >&2
+              exit 1
+            }
+          done < native/wspr/UPSTREAM_BLOBS.tsv
+
+      - name: Run focused CP-0002C gate
+        shell: bash
+        run: bash scripts/test_wspr_rx.sh
