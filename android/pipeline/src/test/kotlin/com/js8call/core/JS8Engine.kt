@@ -18,6 +18,33 @@ class JS8Engine private constructor() : AutoCloseable {
     fun start(): Boolean = true
     fun stop() = Unit
     fun submitAudio(samples: ShortArray, timestampNs: Long = 0L): Boolean = true
+
+    fun transmitMessage(
+        text: String,
+        myCall: String,
+        myGrid: String,
+        selectedCall: String = "",
+        submode: Int = 0,
+        audioFrequencyHz: Double,
+        txDelaySec: Double = 0.0,
+        forceIdentify: Boolean = false,
+        forceData: Boolean = false,
+    ): Boolean = true
+
+    fun transmitFrame(
+        frame: String,
+        bits: Int,
+        submode: Int,
+        audioFrequencyHz: Double,
+        txDelaySec: Double = 0.0,
+    ): Boolean = true
+
+    fun stopTransmit() = Unit
+    fun isTransmitting(): Boolean = false
+    fun isTransmittingAudio(): Boolean = false
+    fun txMillisecondsUntilAudio(): Int = -1
+    fun setTransmitReady(ready: Boolean) = Unit
+
     override fun close() = Unit
 
     interface CallbackHandler {
