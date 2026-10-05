@@ -1,0 +1,21 @@
+name: CP-0003C Inspect TrustedQSL Android Requirements
+
+on:
+  push:
+    branches:
+      - cp-0003c-real-lotw-validation
+    paths:
+      - 'scripts/inspect_tqsl_android_requirements.sh'
+      - '.github/workflows/cp0003c-inspect-tqsl.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Inspect exact TrustedQSL 2.8.6 release
+        shell: bash
+        run: bash scripts/inspect_tqsl_android_requirements.sh
