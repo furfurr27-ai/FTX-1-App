@@ -51,6 +51,13 @@ class MainActivity : Activity() {
     private var signer: TrustedQslSigner? = null
     private var selectedRecord: Map<String, String>? = null
 
+    // In-memory only. These are deliberately not persisted; copied evidence is
+    // a sanitized gate summary, not a credential or QSO record.
+    private var backupImportPassed = false
+    private var signingOnlyPassed = false
+    private var liveTransactionPassed = false
+    private var confirmationSyncPassed = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -188,11 +195,19 @@ class MainActivity : Activity() {
                 try {
                     val result = runCatching { activeSigner.importBackup(bytes) }
                     if (result.isSuccess) {
+                        backupImportPassed = true
+                        signingOnlyPassed = false
+                        liveTransactionPassed = false
+                        confirmationSyncPassed = false
                         setStatus(
                             "TQSL backup import PASS. Callsign certificates and station locations " +
                                 "were restored into app-private storage. Duplicate-history data was not imported."
                         )
                     } else {
+                        backupImportPassed = false
+                        signingOnlyPassed = false
+                        liveTransactionPassed = false
+                        confirmationSyncPassed = false
                         setStatus("FAIL: TQSL backup import failed. No upload was attempted.")
                     }
                 } finally {
@@ -233,6 +248,7 @@ class MainActivity : Activity() {
 
     private fun runSigningOnly() {
         val activeSigner = signer ?: return setStatus("FAIL: native signer is unavailable.")
+        if (!backupImportPassed) return setStatus("Import a TQSL backup successfully before signing.")
         val record = selectedRecord ?: return setStatus("Select a one-QSO ADIF first.")
         val station = stationCallsign.text.toString().trim().uppercase()
         val location = stationLocation.text.toString().trim()
@@ -241,9 +257,9 @@ class MainActivity : Activity() {
         val secret = keyPassword.text.toString().toCharArray()
         keyPassword.setText("")
 
-        if (station.isBlank() || location.isBlank() || secret.isEmpty()) {
+        if (station.isBlank() || location.isBlank()) {
             Arrays.fill(secret, '\u0000')
-            return setStatus("Station callsign, station location, and private-key password are required.")
+            return setStatus("Station callsign and station location are required.")
         }
 
         setStatus("Signing on device… no network upload will occur.")
@@ -270,11 +286,17 @@ class MainActivity : Activity() {
             Arrays.fill(secret, '\u0000')
             runOnUiThread {
                 if (result.isSuccess) {
+                    signingOnlyPassed = true
+                    liveTransactionPassed = false
+                    confirmationSyncPassed = false
                     setStatus(
                         "DEVICE SIGNING PASS: real TrustedQSL produced a ${result.getOrThrow()}-byte TQ8 " +
                             "payload on this phone. Duplicate state was rolled back. Nothing was uploaded."
                     )
                 } else {
+                    signingOnlyPassed = false
+                    liveTransactionPassed = false
+                    confirmationSyncPassed = false
                     setStatus("DEVICE SIGNING FAIL. Duplicate state was not committed and nothing was uploaded.")
                 }
             }
@@ -282,6 +304,8 @@ class MainActivity : Activity() {
     }
 
     private fun confirmLiveUpload() {
+        if (!backupImportPassed) return setStatus("Import a TQSL backup successfully first.")
+        if (!signingOnlyPassed) return setStatus("Pass the real signing-only / NO UPLOAD gate first.")
         if (selectedRecord == null) return setStatus("Select a one-QSO ADIF first.")
         AlertDialog.Builder(this)
             .setTitle("Upload one real QSO to LoTW?")
@@ -310,9 +334,9 @@ class MainActivity : Activity() {
         keyPassword.setText("")
 
         if (station.isBlank() || location.isBlank() || username.isBlank() ||
-            webPassword.isBlank() || secret.isEmpty()) {
+            webPassword.isBlank()) {
             Arrays.fill(secret, '\u0000')
-            return setStatus("Station, LoTW login, and private-key password fields are required.")
+            return setStatus("Station and LoTW web login fields are required.")
         }
 
         setStatus(
@@ -355,6 +379,7 @@ class MainActivity : Activity() {
                 if (tx.outcome != LotwTransactionOutcome.ACCEPTED) {
                     ValidationResult(
                         accepted = false,
+                        confirmationSyncPassed = false,
                         message = "LIVE validation stopped with ${tx.outcome}. TrustedQSL duplicate state was not committed.",
                     )
                 } else {
@@ -363,6 +388,7 @@ class MainActivity : Activity() {
                     val confirmed = confirmations.records.any { recordKey(it) == target }
                     ValidationResult(
                         accepted = true,
+                        confirmationSyncPassed = true,
                         message =
                             "CP-0003C LIVE TRANSACTION PASS: LoTW accepted and verified the QSO; " +
                                 "TrustedQSL duplicate state committed. Confirmation-sync query also PASS " +
@@ -373,14 +399,16 @@ class MainActivity : Activity() {
 
             Arrays.fill(secret, '\u0000')
             runOnUiThread {
-                setStatus(
-                    result.getOrElse {
-                        ValidationResult(
-                            accepted = false,
-                            message = "LIVE validation FAIL. No credentials were saved by this app.",
-                        )
-                    }.message
-                )
+                val final = result.getOrElse {
+                    ValidationResult(
+                        accepted = false,
+                        confirmationSyncPassed = false,
+                        message = "LIVE validation FAIL. No credentials were saved by this app.",
+                    )
+                }
+                liveTransactionPassed = final.accepted
+                confirmationSyncPassed = final.confirmationSyncPassed
+                setStatus(final.message)
             }
         }.start()
     }
@@ -431,6 +459,11 @@ class MainActivity : Activity() {
             appendLine("source_sha=" + BuildConfig.SOURCE_SHA)
             appendLine("device=" + Build.MANUFACTURER + " " + Build.MODEL)
             appendLine("android_sdk=" + Build.VERSION.SDK_INT)
+            appendLine("backup_import=" + if (backupImportPassed) "PASS" else "FAIL")
+            appendLine("signing_only=" + if (signingOnlyPassed) "PASS" else "FAIL")
+            appendLine("live_transaction=" + if (liveTransactionPassed) "PASS" else "FAIL")
+            appendLine("confirmation_sync=" + if (confirmationSyncPassed) "PASS" else "FAIL")
+            appendLine("automatic_upload=DISABLED")
             appendLine("result=" + current.replace('\n', ' '))
         }
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -447,6 +480,7 @@ class MainActivity : Activity() {
 
     private data class ValidationResult(
         val accepted: Boolean,
+        val confirmationSyncPassed: Boolean,
         val message: String,
     )
 
