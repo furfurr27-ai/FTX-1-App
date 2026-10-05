@@ -1,6 +1,7 @@
 package dev.n0png.fieldops.android.logbook
 
 import dev.n0png.fieldops.core.logbook.LotwSigningRequest
+import dev.n0png.fieldops.core.logbook.LotwStationProfile
 import dev.n0png.fieldops.core.logbook.LotwSigningSessionState
 import java.io.ByteArrayInputStream
 import java.io.File
@@ -42,10 +43,39 @@ object TrustedQslSignerTests {
         testMissingResourceConfigFailsClosed(dataDirectory, resourceDirectory)
 
         val signer = TrustedQslSigner(dataDirectory, resourceDirectory)
+        val homeProfile = LotwStationProfile(
+            id = "home",
+            name = "Home",
+            stationCallsign = "N0PNG",
+            gridSquare = "JN49",
+            dxcc = 230,
+            cqZone = 14,
+            ituZone = 28,
+            country = "Germany",
+        )
+        signer.ensureStationLocation(homeProfile, "Home")
+
+        expectFailure(
+            containsCode = "133",
+            forbidden = listOf("Home", "JO40"),
+        ) {
+            signer.ensureStationLocation(
+                homeProfile.copy(gridSquare = "JO40"),
+                "Home",
+            )
+        }
+
+        val wiesbadenProfile = homeProfile.copy(
+            id = "wiesbaden",
+            name = "Wiesbaden",
+        )
+        signer.ensureStationLocation(wiesbadenProfile, "Wiesbaden")
+        signer.ensureStationLocation(wiesbadenProfile, "Wiesbaden")
+
         val request = LotwSigningRequest(
             adif = testAdif(),
-            stationProfileId = "home",
-            stationLocationName = "Home",
+            stationProfileId = "wiesbaden",
+            stationLocationName = "Wiesbaden",
             expectedStationCallsign = "N0PNG",
             expectedDxcc = 230,
         )
