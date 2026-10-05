@@ -4,6 +4,7 @@
  * FieldOps-specific code added 2026-10-05. The linked upstream decoder is
  * GNU GPL v3. See native/wspr/upstream/LICENSE and UPSTREAM.md.
  */
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -90,7 +91,9 @@ int fieldops_wspr_encode_symbols(
 ) {
     if (!message || !symbols) return 0;
 
-    char *mutable_message = strdup(message);
+    size_t message_len = strlen(message);
+    char *mutable_message = (char *)malloc(message_len + 1);
+    if (mutable_message) memcpy(mutable_message, message, message_len + 1);
     char *hashtab = (char *)calloc(HASHTAB_SIZE, HASHTAB_ENTRY_LEN);
     char *loctab = (char *)calloc(HASHTAB_SIZE, LOCTAB_ENTRY_LEN);
     if (!mutable_message || !hashtab || !loctab) {
