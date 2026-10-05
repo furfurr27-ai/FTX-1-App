@@ -23,7 +23,8 @@ Do **not** redo this unless a gate fails:
 - Signer regression: **56 PASS**.
 - CP-0003B transaction regression: **53 PASS**.
 - Inherited core/pipeline/LoTW: **42,062 / 56 / 19 PASS**.
-- Secret-hygiene gate: **PASS**, run `37342247174`.
+- Sanitized device-evidence validator self-test + CP-0003C finalizer dry-run: **PASS**, run `37344968960`.
+- Secret-hygiene gate: **PASS**, run `37344968953`.
 - Device-validation APK: **PASS**, run `37343953055`.
 - Validation APK artifact: `fieldops-cp0003c-validation-apk`, artifact id `11359961439`.
 - Validation APK source SHA: `607bffccfd1b81d8e4847583f1630d10b613ca37`.
