@@ -18,7 +18,10 @@ namespace {
 struct FakeLocation {
     std::string name;
     std::string callsign;
-    int dxcc;
+    int dxcc = 0;
+    std::string grid;
+    int cq = 0;
+    int itu = 0;
 };
 
 struct FakeCert {
@@ -42,6 +45,7 @@ struct FakeConverter {
 bool g_initialized = false;
 bool g_imported = false;
 std::string g_directory;
+std::vector<FakeLocation> g_saved_locations;
 
 void copy_string(const std::string& value, char* buf, int size) {
     if (buf == nullptr || size <= 0) return;
@@ -128,16 +132,28 @@ extern "C" int tqsl_mergeStationLocations(const char *locdata) {
             xml.find("<StationData name=\"Home\">") != std::string::npos) ? 0 : 1;
 }
 
+extern "C" int tqsl_initStationLocationCapture(tQSL_Location *loc) {
+    if (!g_initialized || loc == nullptr) return 1;
+    *loc = new FakeLocation();
+    return 0;
+}
+
 extern "C" int tqsl_getStationLocation(tQSL_Location *loc, const char *name) {
     if (!g_initialized || loc == nullptr || name == nullptr) return 1;
     const std::string n(name);
     if (n == "Home") {
-        *loc = new FakeLocation{"Home", "N0PNG", 230};
+        *loc = new FakeLocation{"Home", "N0PNG", 230, "JN49", 14, 28};
         return 0;
     }
     if (n == "Portable") {
-        *loc = new FakeLocation{"Portable", "N0PNG/P", 230};
+        *loc = new FakeLocation{"Portable", "N0PNG/P", 230, "JN49", 14, 28};
         return 0;
+    }
+    for (const auto& saved : g_saved_locations) {
+        if (saved.name == n) {
+            *loc = new FakeLocation(saved);
+            return 0;
+        }
     }
     return 1;
 }
@@ -151,6 +167,68 @@ extern "C" int tqsl_getLocationCallSign(tQSL_Location loc, char *buf, int bufsiz
 extern "C" int tqsl_getLocationDXCCEntity(tQSL_Location loc, int *dxcc) {
     if (loc == nullptr || dxcc == nullptr) return 1;
     *dxcc = static_cast<FakeLocation*>(loc)->dxcc;
+    return 0;
+}
+
+extern "C" int tqsl_getStationLocationField(
+        tQSL_Location loc, const char *name, char *buf, int bufsiz) {
+    if (loc == nullptr || name == nullptr || buf == nullptr || bufsiz <= 0) return 1;
+    const auto* l = static_cast<FakeLocation*>(loc);
+    const std::string field(name);
+    if (field == "GRIDSQUARE") copy_string(l->grid, buf, bufsiz);
+    else if (field == "CQZ") copy_string(std::to_string(l->cq), buf, bufsiz);
+    else if (field == "ITUZ") copy_string(std::to_string(l->itu), buf, bufsiz);
+    else if (field == "CALL") copy_string(l->callsign, buf, bufsiz);
+    else if (field == "DXCC") copy_string(std::to_string(l->dxcc), buf, bufsiz);
+    else return 1;
+    return 0;
+}
+
+extern "C" int tqsl_setLocationCallSign(tQSL_Location loc, const char *callsign, int dxcc) {
+    if (loc == nullptr || callsign == nullptr || *callsign == '\0' || dxcc <= 0) return 1;
+    auto* l = static_cast<FakeLocation*>(loc);
+    l->callsign = callsign;
+    l->dxcc = dxcc;
+    return 0;
+}
+
+extern "C" int tqsl_setLocationField(
+        tQSL_Location loc, const char *field, const char *value) {
+    if (loc == nullptr || field == nullptr || value == nullptr) return 1;
+    auto* l = static_cast<FakeLocation*>(loc);
+    const std::string f(field);
+    if (f == "GRIDSQUARE") l->grid = value;
+    else if (f == "CQZ") l->cq = std::atoi(value);
+    else if (f == "ITUZ") l->itu = std::atoi(value);
+    else return 1;
+    return 0;
+}
+
+extern "C" int tqsl_updateStationLocationCapture(tQSL_Location loc) {
+    if (loc == nullptr) return 1;
+    const auto* l = static_cast<FakeLocation*>(loc);
+    return (l->callsign.empty() || l->dxcc <= 0 || l->grid.size() < 4 ||
+            l->cq < 1 || l->itu < 1) ? 1 : 0;
+}
+
+extern "C" int tqsl_setStationLocationCaptureName(tQSL_Location loc, const char *name) {
+    if (loc == nullptr || name == nullptr || *name == '\0') return 1;
+    static_cast<FakeLocation*>(loc)->name = name;
+    return 0;
+}
+
+extern "C" int tqsl_saveStationLocationCapture(tQSL_Location loc, int overwrite) {
+    if (loc == nullptr) return 1;
+    const auto* l = static_cast<FakeLocation*>(loc);
+    if (l->name.empty() || l->callsign.empty() || l->dxcc <= 0) return 1;
+    auto it = std::find_if(g_saved_locations.begin(), g_saved_locations.end(),
+        [&](const FakeLocation& value) { return value.name == l->name; });
+    if (it != g_saved_locations.end()) {
+        if (!overwrite) return 1;
+        *it = *l;
+    } else {
+        g_saved_locations.push_back(*l);
+    }
     return 0;
 }
 
