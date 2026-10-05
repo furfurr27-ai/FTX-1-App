@@ -1,27 +1,27 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0001-GITHUB_SURVEY**
-Project version: `v6-reference-checkpoint`
-Phase: **Architecture/reference consolidation before native JS8/WSPR replacement**
-Test status: **PASS core=42062 pipeline=56 LoTW=19; FT-family JNI symbols present; Kotlin adapter compile PASS**
+Latest verified checkpoint: **CP-0002A-JS8_NATIVE_RX**
+Project version: `v7-js8-native-rx`
+Phase: **Native modes: JS8 RX complete; JS8 TX next**
+Test status: **GREEN host/CI: JS8 RX gate PASS 19 assertions; exact pinned ARM64 JNI exports checked; device/RF proof not run; finalizer run 37296091037**
 
 ## What is complete in this checkpoint
-- Scanned GitHub ham-radio/amateur-radio topic sets and targeted categories; over 100 repository hits surfaced.
-- Pinned 27 high-value reference repositories to exact commits and documented applicable design lessons.
-- Accepted FTX-1-only hardware architecture; extensibility moves to modem/award/map/sync/propagation layers.
-- Implemented immutable checkpoint manifests, SHA-256 snapshots, LATEST/CURRENT_STATE, RESUME_HERE, create/verify tools.
-- Re-ran current host tests successfully and recorded the saved-code discrepancy for JS8/WSPR.
+- JS8 RX routed as continuous 12 kHz stream; no slot assembler
+- Production FieldOps binding imports pinned com.js8call.core.JS8Engine API
+- Native decode callback maps to FieldOps DecodeResult
+- Upstream TX audio tap disabled and no JS8 TX API exposed in CP-0002A
+- Focused deterministic JS8 RX suite PASS 19 assertions
+- Exact successful upstream ARM64 JNI artifact checked for nativeCreate/start/stop/destroy/submitAudio exports
 
 ## Known blockers / red items
-- Saved working tree still uses JS8 and WSPR Bridge stubs; native implementations are not durably integrated yet.
-- TrustedQSL/tqsllib ARM64 Android signer remains missing; live LoTW upload stays gated.
-- Android SDK/NDK/device/FTX-1 USB and RF validation remains outstanding.
+- Actual Samsung Galaxy S23 Ultra + Yaesu FTX-1 JS8 RX has not been device-tested
+- Final Android AAR/APK packaging of the pinned JS8 native runtime remains unfinished
+- Project-library FTX1_FieldOps_CP-0002_JS8_NATIVE.zip remains inaccessible for raw-byte comparison
 
 ## Continue with these exact actions
-1. Replace JS8 Bridge stub with pinned JS8Call Android continuous JNI engine while preserving FieldOps-owned PTT/audio.
-2. Vendor/build pinned WSPR C core and replace WSPR Bridge stub; add native self-decode/golden tests.
-3. Create a post-native checkpoint before starting TrustedQSL signing integration.
-4. Deep-dive fldigi/Wavelog/wfview reference files before freezing DigitalModeProvider, AwardEvaluator and reconnect APIs.
+1. CP-0002B: enable upstream TX audio tap while keeping upstream rig/PTT ownership disabled
+2. Route JS8 TX chunks only through FieldOps TX arbiter/PTT and USB audio path
+3. Prove TX0/audio-stop/ownership-release on error and close, then checkpoint CP-0002B
 
 ## Verification before continuing
 Run:

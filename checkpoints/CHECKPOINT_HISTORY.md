@@ -8,3 +8,12 @@ SHA-256: `2f8d524f31c5681a21d3c42ec0e4f34ed2de58d52f3e0a9c4dfa850ae1cbcb62`
 This is the immutable pre-survey baseline created after the one-stop-shop requirements were locked. It is stored outside this project directory in the conversation artifact area and is the recovery point immediately before the GitHub-wide reference survey/checkpoint-system work.
 
 Subsequent checkpoints are created by `scripts/create_checkpoint.py` and verified by `scripts/verify_checkpoint.py`.
+
+## CP-0002A — JS8 native RX
+
+Parent: `CP-0001-GITHUB_SURVEY`
+
+FieldOps JS8 RX now uses the pinned JS8Call Android native-engine boundary on the continuous 12 kHz stream. The deterministic host gate passes 19 assertions, the production binding compiles against the pinned upstream API surface, and the exact successful upstream ARM64 artifact was checked for the required JNI exports. No JS8 TX behavior is included.
+
+Evidence: `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.
+

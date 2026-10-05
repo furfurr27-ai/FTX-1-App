@@ -39,30 +39,41 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Imported recovery baseline:** `CP-0001-GITHUB_SURVEY`
+**Latest verified checkpoint:** `CP-0002A-JS8_NATIVE_RX`
 
-The original `FTX1_FieldOps_v6_GitHub_reference_checkpoint.zip` was checked before this GitHub import and its checkpoint verifier reported:
+Parent: `CP-0001-GITHUB_SURVEY`.
 
-- checkpoint: `CP-0001-GITHUB_SURVEY`
-- checkpoint verification: **PASS**
-- manifest: **157 file hashes verified**
-- core tests: **42,062 assertions PASS**
-- pipeline tests: **56 PASS**
-- LoTW tests: **19 PASS**
-- FT-family JNI symbol checks: **PASS**
-- Kotlin adapter compile: **PASS**
+CP-0002A is a **GREEN host/CI integration checkpoint with YELLOW hardware status**. It establishes the JS8 receive boundary without claiming S23 Ultra / FTX-1 device proof.
 
-The verified CP-0001 code baseline includes the shared 48 kHz audio domain, the 48 -> 12 kHz weak-signal path, FT8/FT4/FT2 JNI compatibility, APRS AX.25/KISS/Bell-202/SmartBeaconing core, FTX-1 CAT/transport and synchronized TX arbitration, LoTW local state/ADIF/HTTP/retry/cursor/reconciliation foundations, the GitHub reference survey, and checkpoint tooling.
+CP-0002A adds and proves:
+
+- JS8 uses the shared continuous 12 kHz PCM branch and no longer passes through `SlotWindowAssembler`.
+- `Js8EngineAdapter` maps continuous PCM and native decode callbacks into the FieldOps decode model.
+- `Js8CallAndroidEngineFactory` binds the production boundary to `com.js8call.core.JS8Engine` from the pinned Android port.
+- CP-0002A exposes no JS8 transmit API and keeps the upstream TX audio tap disabled.
+- Focused host compilation compiles core main once, then the production DSP slice and deterministic tests separately.
+- Deterministic JS8 RX tests pass with **19 assertions**.
+- The exact successful upstream ARM64 JNI artifact was inspected and the required lifecycle/RX JNI exports were present.
+
+Pinned upstream JS8 source:
+
+`JS8Call-improved/Android-port@9996202f355569c5ee7b97fae539f3b763081dc2`
+
+Exact upstream Android Build run checked: `36659533828`, conclusion **success**.
+
+Exact checked artifact evidence is recorded in `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.
+
+- CP-0002A finalization workflow run: `37296091037`
+
+### CP-0001 inherited baseline
+
+The CP-0001 baseline remains part of the verified ancestry. Its original recovery package passed its verifier with **157 file hashes**, core **42,062 assertions**, pipeline **56**, LoTW **19**, FT-family JNI symbols present, and Kotlin adapter compile PASS.
 
 ### Important recovery boundary
 
-The project conversation contains a later handoff describing substantial post-CP-0001 work, including native JS8/WSPR, TrustedQSL, FTX-1 USB, universal logging/awards, map/propagation work, embedded HFcast, and a claimed `CP-0011-HFCAST-PREDICTION-VERIFIED` state.
+A later project handoff describes additional post-CP-0001 work beyond CP-0002A, and a project-library archive named `FTX1_FieldOps_CP-0002_JS8_NATIVE.zip` is known to exist. Its raw bytes remain inaccessible to the current tool path, so it is still a recovery/comparison lead rather than a verified Git baseline. Do not silently promote unrecovered later work.
 
-That later state is currently a **recovery lead, not a GitHub-verified baseline**. Do not erase or blindly recreate it.
-
-A newer archive named `FTX1_FieldOps_CP-0002_JS8_NATIVE.zip` is known to have existed in project storage. The immediate recovery priority is to obtain and verify the newest surviving checkpoint archive before restarting work from CP-0001.
-
-If no newer verified artifact can be recovered, the CP-0001 work queue's next engineering slice is `CP-0002A — JS8 native RX only`.
+Actual S23 Ultra + FTX-1 JS8 RX, final Android AAR/APK packaging, and JS8 TX remain outside CP-0002A.
 
 ## Engineering rules
 
@@ -271,7 +282,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0001-GITHUB_SURVEY`
+- Current Git source baseline before this finalization run: `CP-0002A-JS8_NATIVE_RX`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -284,16 +295,16 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**Recovery first.**
+**CP-0002B — JS8 native TX only.**
 
-1. Recover the newest surviving FieldOps source/checkpoint archive, especially `FTX1_FieldOps_CP-0002_JS8_NATIVE.zip` or anything later.
-2. Run its checkpoint verifier.
-3. Compare it against this CP-0001 Git baseline.
-4. Import only proven newer work.
-5. Update this README, `LATEST`, `CURRENT_STATE`, and `RESUME_HERE` together.
-6. Only if no newer verified checkpoint survives, resume from `CP-0002A — JS8 native RX only`.
+1. Enable the pinned upstream TX audio tap.
+2. Capture native JS8 TX PCM without allowing upstream rig/PTT ownership.
+3. Route JS8 TX audio only through the FieldOps-owned radio arbiter/PTT path.
+4. Adapt the native TX sample rate to the FTX-1 USB output rate as required.
+5. Prove that JS8 TX cannot bypass the arbiter and that every failure/close path guarantees `TX0`, audio stop, and ownership release.
+6. Keep real-device/RF status YELLOW/RED until tested on the actual S23 Ultra + FTX-1.
 
-Do **not** blindly redo JS8, WSPR, TrustedQSL, USB, logging/awards, maps, propagation, or HFcast while a newer checkpoint may still be recoverable.
+The inaccessible later JS8 archive remains a recovery/comparison source if its raw bytes become available, but it no longer blocks processing the explicit checkpoint queue.
 
 ## README maintenance contract
 

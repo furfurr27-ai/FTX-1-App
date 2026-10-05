@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0001-GITHUB_SURVEY",
-  "created_utc": "2026-10-04T09:20:29+00:00",
-  "manifest": "checkpoints/manifests/CP-0001-GITHUB_SURVEY.json",
-  "snapshot": "checkpoints/snapshots/CP-0001-GITHUB_SURVEY.tar.gz",
-  "snapshot_sha256": "115829a241e090e7c4927e1b721f04520d3a5d130da1e4ef607e289654bb1219"
+  "checkpoint_id": "CP-0002A-JS8_NATIVE_RX",
+  "created_utc": "2026-10-05T10:22:20+00:00",
+  "manifest": "checkpoints/manifests/CP-0002A-JS8_NATIVE_RX.json",
+  "snapshot": "checkpoints/snapshots/CP-0002A-JS8_NATIVE_RX.tar.gz",
+  "snapshot_sha256": "a83da9f02efb7fdbe0a44bcf2caaef2bda952de28b8157b81b72053cf8555dc0"
 }
