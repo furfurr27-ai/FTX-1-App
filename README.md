@@ -100,10 +100,10 @@ Prepared and host/CI-verified on the CP-0003C branch:
 - A TQSL `.tbk` restore path imports real Callsign Certificates/private keys and Station Locations into the app-private TrustedQSL environment. It intentionally does **not** import desktop preferences or the desktop duplicate-QSO database.
 - Focused CP-0003C prep regression is GREEN: signer **56**, transaction **53**, core **42,062**, pipeline **56**, inherited LoTW **19**.
 - Secret-hygiene workflow run `37342247174` is GREEN.
-- The device-validation APK workflow run `37341539916` is GREEN.
-- Validation APK SHA-256: `14417f9065c7f3a43a1245f22e8946a3a4d81831dac7fdec8b39ef71a859aa68`.
-- GitHub Actions artifact: `fieldops-cp0003c-validation-apk`, artifact id `11358268081`.
-- The validation APK embeds source SHA `11f5d17d6fe1c863d82bdc114474312cd29ec792`, blocks screenshots/recents with `FLAG_SECURE`, does not persist credentials, provides a no-upload real-signing gate first, and requires explicit confirmation before one live LoTW upload.
+- The device-validation APK workflow run `37343953055` is GREEN.
+- Validation APK SHA-256: `4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947`.
+- GitHub Actions artifact: `fieldops-cp0003c-validation-apk`, artifact id `11359961439`.
+- The validation APK embeds source SHA `607bffccfd1b81d8e4847583f1630d10b613ca37`, blocks screenshots/recents with `FLAG_SECURE`, does not persist credentials, provides a no-upload real-signing gate first, and requires explicit confirmation before one live LoTW upload.
 - Exact operator procedure is `research/tqsl/CP-0003C_DEVICE_VALIDATION.md`.
 
 Still RED / external:
@@ -372,7 +372,7 @@ The Android build/package, deterministic host regressions, validation APK, and r
 
 Continue on the Galaxy S23 Ultra using `research/tqsl/CP-0003C_DEVICE_VALIDATION.md`:
 
-1. Install the `fieldops-cp0003c-validation-apk` artifact from workflow run `37341539916`; APK SHA-256 must be `14417f9065c7f3a43a1245f22e8946a3a4d81831dac7fdec8b39ef71a859aa68`.
+1. Install the `fieldops-cp0003c-validation-apk` artifact from workflow run `37343953055`; APK SHA-256 must be `4f57334dbf9f4388e707e0b80d6332a9a12b65dbae6b43de2057330b49d1c947`.
 2. Import a fresh TQSL `.tbk` backup and verify backup import PASS.
 3. Select exactly one genuine QSO not already uploaded to LoTW and run **signing only / NO UPLOAD** first.
 4. If signing passes, explicitly authorize exactly one live transaction: sign -> upload -> verify accepted-QSO report -> commit.
