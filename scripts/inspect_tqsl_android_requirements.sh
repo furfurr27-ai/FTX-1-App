@@ -40,3 +40,7 @@ sed -n '180,440p' "$ROOT/src/tqsllib.cpp"
 
 echo "=== config loading implementation ==="
 sed -n '450,525p' "$ROOT/src/location.cpp"
+
+
+echo "=== station-location/public import APIs ==="
+grep -nE 'StationLocation|LocationCapture|setLocation|import.*(PKCS12|Certificate|Backup|Station)|export.*Station|restore|backup'   "$ROOT/src/tqsllib.h" "$ROOT/src/location.h" "$ROOT/src/location.cpp" "$ROOT/src/openssl_cert.h" "$ROOT/src/openssl_cert.cpp"   | head -500 || true
