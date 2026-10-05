@@ -12,13 +12,13 @@ import dev.n0png.fieldops.core.dsp.WindowedDspEngine
  * Composition root for the shared receive DSP path.
  *
  * Exactly one 48 kHz capture stream enters [audio]. APRS continuously consumes
- * that raw stream. The selected weak-signal mode consumes the common 12 kHz
- * branch through [WeakSignalCoordinator]. No modem owns AudioRecord directly.
+ * that raw stream. Slotted weak-signal modes consume complete windows from the
+ * common 12 kHz branch; JS8 consumes that branch continuously.
  */
 class FieldOpsDspStack(
     private val audio: SharedAudioPipeline,
     ftFamily: FtFamilyNativeEngine,
-    js8: Js8EngineAdapter,
+    private val js8: Js8EngineAdapter,
     wspr: WsprEngineAdapter,
     private val onDecode: (DecodeResult) -> Unit,
 ) : AutoCloseable {
@@ -27,15 +27,19 @@ class FieldOpsDspStack(
         aprs.accept48k(block.utcStartNanos, block.samples).forEach(onDecode)
     }
 
-    private val engines: Map<DigitalMode, WindowedDspEngine> = mapOf(
+    private val windowedEngines: Map<DigitalMode, WindowedDspEngine> = mapOf(
         DigitalMode.FT8 to ftFamily,
         DigitalMode.FT4 to ftFamily,
         DigitalMode.FT2 to ftFamily,
-        DigitalMode.JS8 to js8,
         DigitalMode.WSPR to wspr,
     )
 
-    private val weak = WeakSignalCoordinator(audio, engines, onDecode)
+    private val weak = WeakSignalCoordinator(
+        audio = audio,
+        windowedEngines = windowedEngines,
+        streaming12kEngines = mapOf(DigitalMode.JS8 to js8),
+        onDecode = onDecode,
+    )
 
     init {
         audio.add48kConsumer(aprsConsumer)
@@ -48,5 +52,6 @@ class FieldOpsDspStack(
     override fun close() {
         audio.remove48kConsumer(aprsConsumer)
         weak.close()
+        js8.close()
     }
 }

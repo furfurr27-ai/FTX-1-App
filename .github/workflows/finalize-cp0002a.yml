@@ -1,0 +1,174 @@
+name: Finalize CP-0002A checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/dsp/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/**'
+      - 'android/pipeline/src/test/kotlin/**'
+      - 'scripts/test_js8_rx.sh'
+      - 'research/js8/CP-0002A_JS8_RX_INTEGRATION.md'
+
+permissions:
+  contents: write
+
+jobs:
+  checkpoint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Kotlin compiler 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+
+      - name: Re-run focused CP-0002A gate on merged main
+        shell: bash
+        run: bash scripts/test_js8_rx.sh
+
+      - name: Update durable handoff documents
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import re
+
+          root = pathlib.Path(".")
+          (root / "VERSION").write_text("v7-js8-native-rx\n")
+
+          readme = (root / "README.md").read_text()
+          baseline = """## Verified durable baseline
+
+          **Latest verified checkpoint:** `CP-0002A-JS8_NATIVE_RX`
+
+          Parent: `CP-0001-GITHUB_SURVEY`.
+
+          CP-0002A is a **GREEN host/CI integration checkpoint with YELLOW hardware status**. It establishes the JS8 receive boundary without claiming S23 Ultra / FTX-1 device proof.
+
+          CP-0002A adds and proves:
+
+          - JS8 uses the shared continuous 12 kHz PCM branch and no longer passes through `SlotWindowAssembler`.
+          - `Js8EngineAdapter` maps continuous PCM and native decode callbacks into the FieldOps decode model.
+          - `Js8CallAndroidEngineFactory` binds the production boundary to `com.js8call.core.JS8Engine` from the pinned Android port.
+          - CP-0002A exposes no JS8 transmit API and keeps the upstream TX audio tap disabled.
+          - Focused host compilation compiles core main once, then the production DSP slice and deterministic tests separately.
+          - Deterministic JS8 RX tests pass with **19 assertions**.
+          - The exact successful upstream ARM64 JNI artifact was inspected and the required lifecycle/RX JNI exports were present.
+
+          Pinned upstream JS8 source:
+
+          `JS8Call-improved/Android-port@9996202f355569c5ee7b97fae539f3b763081dc2`
+
+          Exact upstream Android Build run checked: `36659533828`, conclusion **success**.
+
+          Exact checked artifact evidence is recorded in `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.
+
+          ### CP-0001 inherited baseline
+
+          The CP-0001 baseline remains part of the verified ancestry. Its original recovery package passed its verifier with **157 file hashes**, core **42,062 assertions**, pipeline **56**, LoTW **19**, FT-family JNI symbols present, and Kotlin adapter compile PASS.
+
+          ### Important recovery boundary
+
+          A later project handoff describes additional post-CP-0001 work beyond CP-0002A, and a project-library archive named `FTX1_FieldOps_CP-0002_JS8_NATIVE.zip` is known to exist. Its raw bytes remain inaccessible to the current tool path, so it is still a recovery/comparison lead rather than a verified Git baseline. Do not silently promote unrecovered later work.
+
+          Actual S23 Ultra + FTX-1 JS8 RX, final Android AAR/APK packaging, and JS8 TX remain outside CP-0002A.
+
+          """
+          readme = re.sub(
+              r"## Verified durable baseline\n.*?\n## Engineering rules",
+              baseline + "## Engineering rules",
+              readme,
+              flags=re.S,
+          )
+
+          readme = readme.replace(
+              "- Current Git source baseline: `CP-0001-GITHUB_SURVEY`",
+              "- Current Git source baseline before this finalization run: `CP-0002A-JS8_NATIVE_RX`",
+          )
+
+          next_section = """## Current exact next action
+
+          **CP-0002B — JS8 native TX only.**
+
+          1. Enable the pinned upstream TX audio tap.
+          2. Capture native JS8 TX PCM without allowing upstream rig/PTT ownership.
+          3. Route JS8 TX audio only through the FieldOps-owned radio arbiter/PTT path.
+          4. Adapt the native TX sample rate to the FTX-1 USB output rate as required.
+          5. Prove that JS8 TX cannot bypass the arbiter and that every failure/close path guarantees `TX0`, audio stop, and ownership release.
+          6. Keep real-device/RF status YELLOW/RED until tested on the actual S23 Ultra + FTX-1.
+
+          The inaccessible later JS8 archive remains a recovery/comparison source if its raw bytes become available, but it no longer blocks processing the explicit checkpoint queue.
+
+          """
+          readme = re.sub(
+              r"## Current exact next action\n.*?\n## README maintenance contract",
+              next_section + "## README maintenance contract",
+              readme,
+              flags=re.S,
+          )
+
+          run_id = os.environ["FINALIZE_RUN_ID"]
+          marker = "- CP-0002A finalization workflow run:"
+          if marker not in readme:
+              readme = readme.replace(
+                  "Exact checked artifact evidence is recorded in `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.",
+                  "Exact checked artifact evidence is recorded in `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.\n\n"
+                  f"- CP-0002A finalization workflow run: `{run_id}`",
+              )
+          (root / "README.md").write_text(readme)
+
+          history = root / "checkpoints" / "CHECKPOINT_HISTORY.md"
+          text = history.read_text()
+          entry = """
+          ## CP-0002A — JS8 native RX
+
+          Parent: `CP-0001-GITHUB_SURVEY`
+
+          FieldOps JS8 RX now uses the pinned JS8Call Android native-engine boundary on the continuous 12 kHz stream. The deterministic host gate passes 19 assertions, the production binding compiles against the pinned upstream API surface, and the exact successful upstream ARM64 artifact was checked for the required JNI exports. No JS8 TX behavior is included.
+
+          Evidence: `research/js8/CP-0002A_JS8_RX_INTEGRATION.md`.
+
+          """
+          if "## CP-0002A — JS8 native RX" not in text:
+              history.write_text(text.rstrip() + "\n\n" + entry.lstrip())
+          PY
+
+      - name: Create immutable CP-0002A snapshot
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py             --root .             --id CP-0002A-JS8_NATIVE_RX             --parent CP-0001-GITHUB_SURVEY             --summary "JS8 native receive integration on continuous 12 kHz FieldOps audio"             --phase "Native modes: JS8 RX complete; JS8 TX next"             --test-status "GREEN host/CI: JS8 RX gate PASS 19 assertions; exact pinned ARM64 JNI exports checked; device/RF proof not run; finalizer run $FINALIZE_RUN_ID"             --source-pin "JS8Call-improved/Android-port@9996202f355569c5ee7b97fae539f3b763081dc2"             --completed "JS8 RX routed as continuous 12 kHz stream; no slot assembler"             --completed "Production FieldOps binding imports pinned com.js8call.core.JS8Engine API"             --completed "Native decode callback maps to FieldOps DecodeResult"             --completed "Upstream TX audio tap disabled and no JS8 TX API exposed in CP-0002A"             --completed "Focused deterministic JS8 RX suite PASS 19 assertions"             --completed "Exact successful upstream ARM64 JNI artifact checked for nativeCreate/start/stop/destroy/submitAudio exports"             --blocker "Actual Samsung Galaxy S23 Ultra + Yaesu FTX-1 JS8 RX has not been device-tested"             --blocker "Final Android AAR/APK packaging of the pinned JS8 native runtime remains unfinished"             --blocker "Project-library FTX1_FieldOps_CP-0002_JS8_NATIVE.zip remains inaccessible for raw-byte comparison"             --next "CP-0002B: enable upstream TX audio tap while keeping upstream rig/PTT ownership disabled"             --next "Route JS8 TX chunks only through FieldOps TX arbiter/PTT and USB audio path"             --next "Prove TX0/audio-stop/ownership-release on error and close, then checkpoint CP-0002B"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0002A-JS8_NATIVE_RX.json
+          git add -f checkpoints/snapshots/CP-0002A-JS8_NATIVE_RX.tar.gz
+          git commit -m "Checkpoint CP-0002A JS8 native RX"
+          git push

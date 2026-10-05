@@ -35,7 +35,7 @@ def source_files(root: pathlib.Path):
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--root", default=".")
-    ap.add_argument("--id", required=True, help="e.g. CP-0001-GITHUB-SURVEY")
+    ap.add_argument("--id", required=True, help="e.g. CP-0001-GITHUB-SURVEY or CP-0002A-JS8_NATIVE_RX")
     ap.add_argument("--summary", required=True)
     ap.add_argument("--phase", required=True)
     ap.add_argument("--parent")
@@ -43,10 +43,11 @@ def main():
     ap.add_argument("--completed", action="append", default=[])
     ap.add_argument("--blocker", action="append", default=[])
     ap.add_argument("--next", dest="next_actions", action="append", default=[])
+    ap.add_argument("--source-pin", dest="source_pins", action="append", default=[], help="Exact upstream source pin, e.g. owner/repo@commit")
     args=ap.parse_args()
 
-    if not re.fullmatch(r"CP-\d{4}-[A-Z0-9][A-Z0-9_-]*", args.id):
-        raise SystemExit("Checkpoint id must look like CP-0001-NAME")
+    if not re.fullmatch(r"CP-\d{4}[A-Z]?-[A-Z0-9][A-Z0-9_-]*", args.id):
+        raise SystemExit("Checkpoint id must look like CP-0001-NAME or CP-0002A-NAME")
 
     root=pathlib.Path(args.root).resolve()
     cp=root/"checkpoints"
@@ -77,6 +78,7 @@ def main():
         "completed":args.completed,
         "blockers":args.blocker,
         "next_actions":args.next_actions,
+        "source_pins":args.source_pins,
         "files":files,
         "snapshot_file":sp.relative_to(root).as_posix(),
         "snapshot_sha256":None,
