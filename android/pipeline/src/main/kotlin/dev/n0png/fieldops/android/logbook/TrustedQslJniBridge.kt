@@ -67,6 +67,11 @@ internal class TrustedQslJniBridge(
         status("PKCS#12 import", nativeImportPkcs12(pkcs12, p12PasswordUtf8, keyPasswordUtf8))
     }
 
+    fun importBackup(backup: ByteArray) {
+        require(backup.isNotEmpty()) { "TQSL backup payload must not be empty" }
+        status("backup import", nativeImportBackup(backup))
+    }
+
     fun beginSigning(
         adif: String,
         stationLocationName: String,
@@ -127,6 +132,7 @@ internal class TrustedQslJniBridge(
         p12PasswordUtf8: ByteArray,
         keyPasswordUtf8: ByteArray,
     ): Int
+    private external fun nativeImportBackup(backup: ByteArray): Int
     private external fun nativeBeginSigning(
         adif: String,
         stationLocationName: String,
