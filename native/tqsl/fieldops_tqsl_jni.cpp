@@ -32,6 +32,9 @@ enum Status : int {
     LOCATION_NOT_FOUND = 130,
     LOCATION_CALLSIGN_MISMATCH = 131,
     LOCATION_DXCC_MISMATCH = 132,
+    LOCATION_PROFILE_MISMATCH = 133,
+    LOCATION_CREATE_FAILED = 134,
+    LOCATION_SAVE_FAILED = 135,
     CERTIFICATE_SELECT_FAILED = 140,
     NO_CERTIFICATE = 141,
     SIGNING_INIT_FAILED = 150,
@@ -274,6 +277,99 @@ Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize(
     }
 
     g_initialized = true;
+    g_last_status = OK;
+    return OK;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeEnsureStationLocation(
+        JNIEnv* env,
+        jobject,
+        jstring location_name_value,
+        jstring callsign_value,
+        jint dxcc,
+        jstring grid_value,
+        jint cq_zone,
+        jint itu_zone) {
+    std::lock_guard<std::mutex> lock(g_mutex);
+
+    const std::string location_name = jstring_utf8(env, location_name_value);
+    const std::string callsign = upper_ascii(jstring_utf8(env, callsign_value));
+    const std::string grid = upper_ascii(jstring_utf8(env, grid_value));
+
+    if (!g_initialized) {
+        g_last_status = INIT_FAILED;
+        return g_last_status;
+    }
+    if (location_name.empty() || callsign.empty() || grid.size() < 4 ||
+        dxcc <= 0 || cq_zone < 1 || cq_zone > 40 || itu_zone < 1 || itu_zone > 90) {
+        g_last_status = INVALID_ARGUMENT;
+        return g_last_status;
+    }
+
+    tQSL_Location existing = nullptr;
+    if (tqsl_getStationLocation(&existing, location_name.c_str()) == 0 && existing != nullptr) {
+        char existing_call[128] = {0};
+        char existing_grid[128] = {0};
+        char existing_cq[32] = {0};
+        char existing_itu[32] = {0};
+        int existing_dxcc = 0;
+
+        const bool readable =
+            tqsl_getLocationCallSign(existing, existing_call, static_cast<int>(sizeof(existing_call))) == 0 &&
+            tqsl_getLocationDXCCEntity(existing, &existing_dxcc) == 0 &&
+            tqsl_getStationLocationField(existing, "GRIDSQUARE", existing_grid, static_cast<int>(sizeof(existing_grid))) == 0 &&
+            tqsl_getStationLocationField(existing, "CQZ", existing_cq, static_cast<int>(sizeof(existing_cq))) == 0 &&
+            tqsl_getStationLocationField(existing, "ITUZ", existing_itu, static_cast<int>(sizeof(existing_itu))) == 0;
+
+        const bool matches = readable &&
+            upper_ascii(existing_call) == callsign &&
+            existing_dxcc == dxcc &&
+            upper_ascii(existing_grid) == grid &&
+            std::atoi(existing_cq) == cq_zone &&
+            std::atoi(existing_itu) == itu_zone;
+
+        (void)tqsl_endStationLocationCapture(&existing);
+        g_last_status = matches ? OK : LOCATION_PROFILE_MISMATCH;
+        return g_last_status;
+    }
+    if (existing != nullptr) {
+        (void)tqsl_endStationLocationCapture(&existing);
+    }
+
+    tQSL_Location created = nullptr;
+    if (tqsl_initStationLocationCapture(&created) != 0 || created == nullptr) {
+        g_last_status = LOCATION_CREATE_FAILED;
+        return g_last_status;
+    }
+
+    const std::string cq = std::to_string(cq_zone);
+    const std::string itu = std::to_string(itu_zone);
+    const bool configured =
+        tqsl_setLocationCallSign(created, callsign.c_str(), dxcc) == 0 &&
+        tqsl_setLocationField(created, "GRIDSQUARE", grid.c_str()) == 0 &&
+        tqsl_setLocationField(created, "CQZ", cq.c_str()) == 0 &&
+        tqsl_setLocationField(created, "ITUZ", itu.c_str()) == 0 &&
+        tqsl_updateStationLocationCapture(created) == 0 &&
+        tqsl_setStationLocationCaptureName(created, location_name.c_str()) == 0;
+
+    if (!configured) {
+        (void)tqsl_endStationLocationCapture(&created);
+        g_last_status = LOCATION_CREATE_FAILED;
+        return g_last_status;
+    }
+
+    if (tqsl_saveStationLocationCapture(created, 0) != 0) {
+        (void)tqsl_endStationLocationCapture(&created);
+        g_last_status = LOCATION_SAVE_FAILED;
+        return g_last_status;
+    }
+
+    if (tqsl_endStationLocationCapture(&created) != 0) {
+        g_last_status = CLEANUP_FAILED;
+        return g_last_status;
+    }
+
     g_last_status = OK;
     return OK;
 }
