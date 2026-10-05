@@ -3,6 +3,7 @@ package dev.n0png.fieldops.android.logbook
 import dev.n0png.fieldops.core.logbook.LotwSigningRequest
 import dev.n0png.fieldops.core.logbook.LotwSigningSessionState
 import java.io.ByteArrayInputStream
+import java.io.File
 import java.util.zip.GZIPInputStream
 
 object TrustedQslSignerTests {
@@ -31,12 +32,16 @@ object TrustedQslSignerTests {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 1) { "usage: TrustedQslSignerTests <data-directory>" }
+        require(args.size == 2) {
+            "usage: TrustedQslSignerTests <data-directory> <resource-directory>"
+        }
         val dataDirectory = args[0]
+        val resourceDirectory = args[1]
 
-        testUnavailableLibraryFailsClosed(dataDirectory)
+        testUnavailableLibraryFailsClosed(dataDirectory, resourceDirectory)
+        testMissingResourceConfigFailsClosed(dataDirectory, resourceDirectory)
 
-        val signer = TrustedQslSigner(dataDirectory)
+        val signer = TrustedQslSigner(dataDirectory, resourceDirectory)
         val request = LotwSigningRequest(
             adif = testAdif(),
             stationProfileId = "home",
@@ -145,17 +150,46 @@ object TrustedQslSignerTests {
         expectFailure { rolled.commit() }
         rolled.close()
 
+        val alternateResource = File(resourceDirectory).resolveSibling("alternate-tqsl-resource")
+        alternateResource.mkdirs()
+        File(alternateResource, "config.xml").writeText("<tqslconfig/>")
+        expectFailure(
+            containsCode = "101",
+            forbidden = listOf(dataDirectory, resourceDirectory),
+        ) {
+            TrustedQslSigner(dataDirectory, alternateResource.absolutePath)
+        }
+
         println("TrustedQSL signer bridge tests: PASS assertions=" + assertions)
     }
 
-    private fun testUnavailableLibraryFailsClosed(dataDirectory: String) {
+    private fun testUnavailableLibraryFailsClosed(
+        dataDirectory: String,
+        resourceDirectory: String,
+    ) {
         expectFailure(
             forbidden = listOf("loader-secret"),
         ) {
             TrustedQslSigner(
                 dataDirectory = dataDirectory,
+                resourceDirectory = resourceDirectory,
                 libraryLoader = { throw UnsatisfiedLinkError("loader-secret") },
             )
+        }
+    }
+
+    private fun testMissingResourceConfigFailsClosed(
+        dataDirectory: String,
+        resourceDirectory: String,
+    ) {
+        val missing = File(resourceDirectory).resolveSibling("missing-tqsl-resource")
+        missing.mkdirs()
+        File(missing, "config.xml").delete()
+        expectFailure(
+            containsCode = "102",
+            forbidden = listOf(dataDirectory, missing.absolutePath),
+        ) {
+            TrustedQslSigner(dataDirectory, missing.absolutePath)
         }
     }
 
