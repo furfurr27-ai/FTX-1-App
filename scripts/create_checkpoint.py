@@ -35,7 +35,7 @@ def source_files(root: pathlib.Path):
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--root", default=".")
-    ap.add_argument("--id", required=True, help="e.g. CP-0001-GITHUB-SURVEY")
+    ap.add_argument("--id", required=True, help="e.g. CP-0001-GITHUB-SURVEY or CP-0002A-JS8_NATIVE_RX")
     ap.add_argument("--summary", required=True)
     ap.add_argument("--phase", required=True)
     ap.add_argument("--parent")
