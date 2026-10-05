@@ -21,6 +21,7 @@ typedef struct { int year; int month; int day; } tQSL_Date;
 typedef struct { int _unused; } TQSL_PROVIDER;
 
 extern int tQSL_Error;
+extern const char *tQSL_RsrcDir;
 
 int tqsl_init(void);
 int tqsl_setDirectory(const char *dir);
