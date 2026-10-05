@@ -47,7 +47,7 @@ grep -nE 'StationLocation|LocationCapture|setLocation|import.*(PKCS12|Certificat
 
 
 echo "=== location config field names ==="
-grep -nE '<Page|<Field|fieldname=|name="(CALL|DXCC|GRIDSQUARE|CQZ|ITUZ|STATE|CNTY|COUNTRY)' "$ROOT/src/config.xml"   | head -350 || true
+grep -niE '<page|<field|fieldname=|CALL|DXCC|GRIDSQUARE|CQZ|ITUZ|STATE|CNTY|COUNTRY' "$ROOT/src/config.xml"   | head -350 || true
 
 
 echo "=== config.xml first 600 lines ==="
