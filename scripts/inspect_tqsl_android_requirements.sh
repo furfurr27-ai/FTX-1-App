@@ -74,3 +74,15 @@ if [[ -n "$restore_line" ]]; then
   end=$(( restore_line + 520 ))
   sed -n "${start},${end}p" "$ROOT/apps/tqsl.cpp"
 fi
+
+
+echo "=== exact restore parser lines 5520-5745 ==="
+sed -n '5520,5745p' "$ROOT/apps/tqsl.cpp"
+
+echo "=== exact ParseLocations implementation ==="
+parse_line="$(grep -n 'TQSLConfig::ParseLocations' "$ROOT/apps/tqsl.cpp" | head -n1 | cut -d: -f1 || true)"
+if [[ -n "$parse_line" ]]; then
+  start=$(( parse_line > 40 ? parse_line - 40 : 1 ))
+  end=$(( parse_line + 340 ))
+  sed -n "${start},${end}p" "$ROOT/apps/tqsl.cpp"
+fi
