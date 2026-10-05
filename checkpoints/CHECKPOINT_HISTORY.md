@@ -28,3 +28,15 @@ Host/CI gate: core 42,062; pipeline 56; LoTW 19; JS8 RX 19; JS8 TX 39 assertions
 Finalization workflow run: `37298037260`.
 
 Evidence: `research/js8/CP-0002B_JS8_TX_INTEGRATION.md`.
+
+## CP-0002C — WSPR native RX
+
+Parent: `CP-0002B-JS8_NATIVE_TX`
+
+FieldOps now receives WSPR through the exact pinned rtlsdr-wsprd decoder. The 12 kHz real receive window is mixed and FIR-decimated to the decoder's 375 sps complex-I/Q domain, and a pinned native encoder fixture is recovered end-to-end as `K1JT FN20 20`. Exact vendored upstream Git blobs are verified in CI. WSPR transmit remains unavailable until CP-0002D.
+
+Host/CI gate: core 42,062; pipeline 56; LoTW 19; WSPR RX 22; JS8 RX 19; JS8 TX 39 assertions, all PASS.
+
+Finalization workflow run: `37305788342`.
+
+Evidence: `research/wspr/CP-0002C_WSPR_RX_INTEGRATION.md`.

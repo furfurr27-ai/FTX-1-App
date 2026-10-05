@@ -1,7 +1,7 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0002C — WSPR native RX only**
+**CP-0002D — WSPR native TX only**
 
-Vendor and integrate the pinned pure-C WSPR decoder from `Guenael/rtlsdr-wsprd@1ca9b83dd2562ce9ef2453aacdd5bc3aab982c7d`. Feed it from the existing 12 kHz receive branch through a complex-baseband mixer, low-pass filter and /32 decimation to 375 Hz. Prove the complete receive path with a pinned/native encoder fixture and synthesized WSPR waveform that decodes to the expected message.
+Use the pinned WSPR channel-symbol encoder and synthesize the complete 12 kHz 4-FSK waveform: 162 symbols, 8192 samples per symbol, 1.46484375 Hz tone spacing, 1,327,104 samples total, 110.592 seconds. Route that waveform only through the common FieldOps TX arbiter/PTT/audio path and prove no competing owner can transmit and all error/cancel paths collapse to RX with `TX0`, audio stopped and ownership released.
 
-Do **not** implement WSPR TX in this checkpoint.
+Do **not** start the broader CP-0002E native-mode regression until CP-0002D is green. Actual RF output/ALC/spectrum remains hardware-gated.
