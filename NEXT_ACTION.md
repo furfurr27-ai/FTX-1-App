@@ -1,7 +1,11 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0003A — TrustedQSL signer bridge**
+**CP-0003B — Transaction-safe LoTW upload**
 
-Pin the official TrustedQSL source/version. Add a narrow JNI API for PKCS#12 certificate import, explicit station-location selection, and ADIF -> signed GABBI/TQ8 output. Fail closed if signing material or location is unavailable/ambiguous, and never write certificates, passwords or keys to logs or this public repository.
+Migrate the upload path to the CP-0003A transactional signer session:
 
-Keep signing separate from upload/reconciliation. CP-0003B will own the transaction-safe sign -> upload -> verify -> duplicate-state commit flow. Automatic LoTW upload remains disabled until later real-device/test-account validation.
+`sign -> upload TQ8 -> verify LoTW acceptance -> commit TrustedQSL duplicate state`
+
+Any signing/network/rejection/verification failure must roll back the signer transaction and must not mark the QSO accepted locally. HTTP upload success alone is not LoTW acceptance.
+
+Manual SSB/CW and digital QSOs use the same queue and transaction rules. Automatic upload remains disabled until CP-0003C real device/test-account validation.

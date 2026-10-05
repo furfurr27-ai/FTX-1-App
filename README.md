@@ -39,51 +39,60 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** `CP-0002E-NATIVE_MODE_REGRESSION`
+**Latest verified checkpoint:** `CP-0003A-TRUSTEDQSL_SIGNER`
 
-Parent: `CP-0002D-WSPR_NATIVE_TX`.
+Parent: `CP-0002E-NATIVE_MODE_REGRESSION`.
 
-CP-0002E is a **GREEN host/CI native-mode regression checkpoint with YELLOW/RED Android/device/RF status**. It does not add another operating mode. Its purpose is to prove that the already-integrated FT8/FT4/FT2, JS8, WSPR and APRS paths remain independently testable and still compose correctly around the shared audio/timing/TX-ownership architecture.
+CP-0003A is a **GREEN host/CI TrustedQSL signer-bridge checkpoint with YELLOW Android/native-runtime and RED real-account status**. It pins the official TrustedQSL release, compiles the production FieldOps JNI bridge directly against that official API, and adds a transactional signing boundary without prematurely coupling signing to LoTW HTTP upload.
 
-CP-0002E independently proves:
+CP-0003A adds and proves:
 
-- FT8 adapter regression: **20/20 PASS**.
-- FT4 adapter regression: **20/20 PASS**.
-- FT2 adapter regression: **20/20 PASS**.
-- JS8 RX: **19/19 PASS** and JS8 TX: **39/39 PASS**.
-- WSPR RX: **21/21 PASS** and WSPR TX: **56/56 PASS**.
-- APRS/AX.25/KISS/Bell-202/SmartBeaconing regression: **2,048/2,048 PASS**.
-- Shared native-mode composition: **130/130 PASS**.
-- Inherited core: **42,062 PASS**, pipeline: **56 PASS**, LoTW: **19 PASS**.
-- The common 48 kHz capture / 12 kHz weak-signal fanout still preserves JS8 continuous-stream behavior and FT-family UTC-window behavior.
-- FT8, FT4, FT2, JS8, WSPR and APRS TX owners cannot steal a radio already transmitting for another owner.
-- The common `Ftx1RadioSession` still produces the same guarded `TX1 -> audio -> TX0 -> release` lifecycle for all six mode owners.
+- Official TrustedQSL build pin: **2.8.6**, `tqsl-2.8.6.tar.gz`.
+- SourceForge-published archive SHA-256:
+  `182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37`.
+- The production JNI source compiles against the exact `tqsllib.h` and `tqslconvert.h` from that verified release.
+- Current official SourceForge master reviewed for API continuity at `78a143276e9bde53b2c9535839cc19ab45b686f0`; the stable build pin remains release 2.8.6.
+- In-memory PKCS#12 import goes through official tqsllib Base64/import APIs.
+- TrustedQSL station location is explicit and must match the expected FieldOps station callsign and DXCC before signing.
+- Certificate selection and private-key signing initialization remain inside official tqsllib calls.
+- ADIF conversion uses the official converter/GABBI API with duplicate tracking enabled and QTH behavior fixed to REPORT rather than UPDATE.
+- Signed GABBI is packaged as compressed `.tq8` output.
+- Core now exposes `TransactionalLotwSigner` / `LotwSigningSession`.
+- A new signing session is OPEN and does **not** automatically commit TrustedQSL's duplicate database.
+- Explicit `commit()` and `rollback()` are retained so CP-0003B can make the network transaction atomic.
+- Closing an OPEN session rolls back.
+- An unavailable signer, missing location, callsign mismatch, DXCC mismatch, missing certificate, or signing-init error fails closed.
+- Transient PKCS#12/password copies are zero-filled and raw tqsllib error strings are not surfaced through the FieldOps bridge.
+- The existing `LotwSyncManager.upload()` is deliberately unchanged in CP-0003A so signing and network upload remain separate.
+- Focused signer bridge tests pass **43/43**.
+- Inherited core regression remains **42,062 core, 56 pipeline, 19 LoTW assertions PASS**.
 
-### FT-family host-test boundary
+Exact source/API and test evidence:
 
-The public repository intentionally omits the extracted ARM64 `libft8af.so`. CP-0002E therefore compiles the real production Java ABI declarations and `FtFamilyNativeEngine`, then executes the production Kotlin adapter against deterministic host-only ABI fixtures. This verifies adapter routing/mapping and FT8/FT4/FT2 symbol/timing/waveform-selection logic, but **does not** claim x86_64 execution of the actual FT8AF native DSP binary.
+- `research/tqsl/CP-0003A_SOURCE_PIN.md`
+- `research/tqsl/CP-0003A_SIGNER_BRIDGE.md`
 
-The omitted historical ARM64 binary remains recorded as SHA-256:
+- CP-0003A finalization workflow run: `37322373366`
 
-`858a6ab58bb89bbc3e9f9e81effb899a03c121c9cccdc81b2803440e97d348a1`
+### Evidence boundary
 
-Pinned/reference sources retained through this checkpoint:
+The runtime CI fixture implements the exact API subset deterministically so JNI lifecycle and transaction behavior can run on x86_64. It is **not** a substitute for real TrustedQSL cryptography.
 
-- `patrickrb/FT8AF@c2f63e8b37fcd484fd2eb2049494425dd2414971`
-- `JS8Call-improved/Android-port@9996202f355569c5ee7b97fae539f3b763081dc2`
-- `Guenael/rtlsdr-wsprd@1ca9b83dd2562ce9ef2453aacdd5bc3aab982c7d`
+Still unverified:
 
-Full regression evidence is recorded in `research/CP-0002E_NATIVE_MODE_REGRESSION.md`.
+- complete official TrustedQSL + dependency build/link for Android arm64-v8a
+- runtime loading on the Galaxy S23 Ultra
+- Chris's real Callsign Certificate / PKCS#12 import
+- real private-key cryptographic signing
+- LoTW server acceptance
+- transaction-safe sign -> upload -> verify -> commit behavior
+- automatic upload
 
-- CP-0002E finalization workflow run: `37316846958`
+Those claims remain later checkpoints. CP-0003B owns transaction-safe upload integration; CP-0003C owns real device/test-account validation.
 
 ### Inherited verified ancestry
 
-`CP-0002D-WSPR_NATIVE_TX`, `CP-0002C-WSPR_NATIVE_RX`, `CP-0002B-JS8_NATIVE_TX`, `CP-0002A-JS8_NATIVE_RX`, and `CP-0001-GITHUB_SURVEY` remain verified ancestry.
-
-### Android/device/RF boundary
-
-CP-0002E is a host/CI regression checkpoint, not a hardware checkpoint. Actual Galaxy S23 Ultra execution, FTX-1 CAT/USB enumeration and routing, FT-family native decode on the phone, JS8 native execution on the phone, Android arm64 WSPR/FFTW3 packaging, real APRS off-air reception, and RF TX/ALC/spectral/watchdog behavior remain unverified.
+`CP-0002E-NATIVE_MODE_REGRESSION` and all prior native-mode checkpoints remain verified ancestry.
 
 ## Engineering rules
 
@@ -304,7 +313,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0002E-NATIVE_MODE_REGRESSION`
+- Current Git source baseline: `CP-0003A-TRUSTEDQSL_SIGNER`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -317,14 +326,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0003A — TrustedQSL signer bridge.**
+**CP-0003B — Transaction-safe LoTW upload.**
 
-1. Pin the official TrustedQSL source/version before implementing the signer.
-2. Build a narrow JNI boundary for PKCS#12 certificate import, explicit station-location selection, and ADIF -> signed GABBI/TQ8 generation.
-3. Keep certificate material, PKCS#12 passwords and signing secrets out of logs, crash reports, support bundles and this public repository.
-4. Fail closed if the signer/certificate/station location is unavailable or ambiguous; do not fall back to unsigned LoTW upload.
-5. Keep signing separate from HTTP upload/reconciliation so CP-0003B can make the full LoTW transaction atomic.
-6. Do not enable automatic LoTW upload until later real-device/test-account validation passes.
+1. Replace the legacy one-shot signer/upload path with the CP-0003A transactional signer session.
+2. Execute the sequence: sign -> upload TQ8 -> verify LoTW acceptance -> commit TrustedQSL duplicate state.
+3. If signing, network upload, server rejection, or acceptance verification fails, roll back the signer transaction and do not mark local duplicate/upload state as committed.
+4. Keep HTTP upload success distinct from LoTW QSO acceptance; only report ACCEPTED after the QSO appears in the acceptance report.
+5. Route manual SSB/CW and digital QSOs through the same local queue and transaction rules.
+6. Preserve explicit station-profile/location binding and all secret-handling rules.
+7. Automatic upload remains disabled until CP-0003C real device/test-account validation passes.
 
 ## README maintenance contract
 

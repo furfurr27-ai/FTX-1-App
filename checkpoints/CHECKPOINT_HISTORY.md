@@ -66,3 +66,17 @@ The public repository still omits the extracted ARM64 FT8AF native binary, so FT
 Finalization workflow run: `37316846958`.
 
 Evidence: `research/CP-0002E_NATIVE_MODE_REGRESSION.md`.
+
+## CP-0003A — TrustedQSL signer bridge
+
+Parent: `CP-0002E-NATIVE_MODE_REGRESSION`
+
+Official TrustedQSL 2.8.6 is pinned by SourceForge SHA-256 and the production JNI bridge compiles directly against its exact headers. FieldOps now has a fail-closed transactional signing boundary for PKCS#12 import, explicit station-location/callsign/DXCC validation, official ADIF/GABBI conversion calls, compressed TQ8 output, and explicit TrustedQSL duplicate-state commit/rollback.
+
+CP-0003A intentionally does not connect that transaction to the network upload path yet. Runtime CI uses an exact-API deterministic fixture; real TrustedQSL Android ARM64 linking, real certificate cryptography, and LoTW acceptance remain unverified.
+
+Host/CI gate: signer 43; inherited core 42,062; pipeline 56; LoTW 19 assertions, all PASS.
+
+Finalization workflow run: `37322373366`.
+
+Evidence: `research/tqsl/CP-0003A_SOURCE_PIN.md` and `research/tqsl/CP-0003A_SIGNER_BRIDGE.md`.

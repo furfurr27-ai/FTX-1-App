@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0002E-NATIVE_MODE_REGRESSION",
-  "created_utc": "2026-10-05T13:27:53+00:00",
-  "manifest": "checkpoints/manifests/CP-0002E-NATIVE_MODE_REGRESSION.json",
-  "snapshot": "checkpoints/snapshots/CP-0002E-NATIVE_MODE_REGRESSION.tar.gz",
-  "snapshot_sha256": "f3d429606f6106e8490bf4e997aa975f0de9154775656cf423b93f3c02e18ba0"
+  "checkpoint_id": "CP-0003A-TRUSTEDQSL_SIGNER",
+  "created_utc": "2026-10-05T14:10:09+00:00",
+  "manifest": "checkpoints/manifests/CP-0003A-TRUSTEDQSL_SIGNER.json",
+  "snapshot": "checkpoints/snapshots/CP-0003A-TRUSTEDQSL_SIGNER.tar.gz",
+  "snapshot_sha256": "40cdadb375444d89851ec8e834cbe4169064412cf993b7f2758c187d329cc3cc"
 }
