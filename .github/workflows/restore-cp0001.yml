@@ -1,18 +1,19 @@
-name: Restore CP-0001 source tree
+name: Manual CP-0001 source recovery
 
 on:
-  push:
-    paths:
-      - 'recovery/cp0001-source.part*'
-      - '.github/workflows/restore-cp0001.yml'
   workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type RESTORE_CP0001 to overwrite matching files with the CP-0001 recovery source'
+        required: true
+        type: string
 
 permissions:
   contents: write
 
 jobs:
   restore:
-    if: github.actor != 'github-actions[bot]'
+    if: github.event.inputs.confirmation == 'RESTORE_CP0001'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,5 +41,5 @@ jobs:
             echo "No source changes to commit."
             exit 0
           fi
-          git commit -m "Restore verified CP-0001 text source tree"
+          git commit -m "Manually restore verified CP-0001 text source tree"
           git push
