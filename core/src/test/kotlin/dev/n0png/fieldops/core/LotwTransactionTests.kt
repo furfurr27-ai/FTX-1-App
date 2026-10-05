@@ -92,6 +92,7 @@ object LotwTransactionTests {
         successCommitsOnlyAfterEveryQsoAppears()
         httpSuccessWithoutAcceptanceRollsBack()
         networkFailureRollsBack()
+        httpFailureRollsBack()
         serverRejectionRollsBack()
         reportFailureRollsBack()
         signingFailureNeverUploads()
@@ -180,6 +181,26 @@ object LotwTransactionTests {
         sampleBatch().forEach { queue.enqueue(it, "home") }
         queue.applyResult(result)
         eq(3, queue.pending("home").size, "network failure must remain retryable in the shared queue")
+    }
+
+    private fun httpFailureRollsBack() {
+        val transport = FakeTransport().apply {
+            uploadResponse = LotwUploadResponse(true, "synthetic upstream failure", 503)
+        }
+        val signer = FakeSigner()
+        val result = LotwSyncManager(transport).uploadTransactional(
+            sampleBatch(),
+            signer,
+            context(),
+            "key-secret".toCharArray(),
+            LotwAcceptancePolicy(attempts = 1, initialDelayMillis = 0, retryDelayMillis = 0),
+            LotwVerificationDelay { },
+        )
+
+        eq(LotwTransactionOutcome.UPLOAD_FAILED, result.outcome, "HTTP failure outcome")
+        checkThat(result.qsos.all { it.lotwUpload == LotwUploadState.QUEUED }, "HTTP failure must remain retryable")
+        eq(1, signer.lastSession!!.rollbacks, "HTTP failure rollback count")
+        eq(0, transport.queryParams.size, "HTTP failure must not query acceptance")
     }
 
     private fun serverRejectionRollsBack() {
