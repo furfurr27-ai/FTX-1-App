@@ -14,9 +14,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 find_package(OpenSSL REQUIRED)
-find_package(EXPAT REQUIRED)
+find_package(expat CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(SQLite3 REQUIRED)
+find_package(unofficial-sqlite3 CONFIG REQUIRED)
 
 set(TQSL_SOURCES
   "${TQSL_SOURCE_DIR}/tqsllib.cpp"
@@ -59,9 +59,9 @@ target_compile_options(fieldops_tqsl PRIVATE
 target_link_libraries(fieldops_tqsl PRIVATE
   OpenSSL::SSL
   OpenSSL::Crypto
-  EXPAT::EXPAT
+  expat::expat
   ZLIB::ZLIB
-  SQLite::SQLite3
+  unofficial::sqlite3::sqlite3
   dl
   m
 )
