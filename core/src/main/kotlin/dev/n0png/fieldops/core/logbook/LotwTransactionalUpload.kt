@@ -88,7 +88,7 @@ class LotwUploadQueue {
     fun pending(stationProfileId: String? = null): List<Entry> =
         entries.values.filter {
             (stationProfileId == null || it.stationProfileId == stationProfileId) &&
-                it.qso.lotwUpload != LotwUploadState.ACCEPTED
+                it.qso.lotwUpload in setOf(LotwUploadState.QUEUED, LotwUploadState.SUBMITTED)
         }
 
     @Synchronized
