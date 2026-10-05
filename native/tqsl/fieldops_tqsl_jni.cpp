@@ -24,6 +24,8 @@ namespace {
 enum Status : int {
     OK = 0,
     INIT_FAILED = 100,
+    INIT_DIRECTORY_CONFLICT = 101,
+    RESOURCE_CONFIG_MISSING = 102,
     INVALID_ARGUMENT = 110,
     PKCS12_ENCODE_FAILED = 120,
     PKCS12_IMPORT_FAILED = 121,
@@ -46,6 +48,8 @@ enum Status : int {
 thread_local int g_last_status = OK;
 std::mutex g_mutex;
 std::string g_data_directory;
+std::string g_resource_directory;
+bool g_initialized = false;
 std::atomic<jlong> g_next_handle{1};
 
 struct Session {
@@ -215,20 +219,61 @@ int fail_session(std::unique_ptr<Session>& session, int status) {
 
 extern "C" JNIEXPORT jint JNICALL
 Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize(
-        JNIEnv* env, jobject, jstring data_directory) {
+        JNIEnv* env,
+        jobject,
+        jstring data_directory,
+        jstring resource_directory) {
     std::lock_guard<std::mutex> lock(g_mutex);
-    const std::string dir = jstring_utf8(env, data_directory);
-    if (dir.empty()) {
+    const std::string data_dir = jstring_utf8(env, data_directory);
+    const std::string resource_dir = jstring_utf8(env, resource_directory);
+    if (data_dir.empty() || resource_dir.empty()) {
         g_last_status = INVALID_ARGUMENT;
         return g_last_status;
     }
 
-    if (tqsl_setDirectory(dir.c_str()) != 0 || tqsl_init() != 0) {
+    // tqsl_init() has process-global one-time state. Once initialized, silently
+    // switching its certificate/database/resource roots would be unsafe.
+    if (g_initialized) {
+        if (g_data_directory == data_dir && g_resource_directory == resource_dir) {
+            g_last_status = OK;
+            return OK;
+        }
+        g_last_status = INIT_DIRECTORY_CONFLICT;
+        return g_last_status;
+    }
+
+    const std::string config_path = resource_dir + "/config.xml";
+    std::ifstream config(config_path, std::ios::binary);
+    if (!config.good()) {
+        g_last_status = RESOURCE_CONFIG_MISSING;
+        return g_last_status;
+    }
+    config.close();
+
+    g_data_directory = data_dir;
+    g_resource_directory = resource_dir;
+
+    // tqsl_setDirectory() sets the writable tQSL_BaseDir. Android does not
+    // have TrustedQSL's desktop install layout, so point the exported resource
+    // root at the app-private directory containing the verified config.xml
+    // before tqsl_init() performs any resource lookup.
+    if (tqsl_setDirectory(g_data_directory.c_str()) != 0) {
+        g_data_directory.clear();
+        g_resource_directory.clear();
+        g_last_status = INIT_FAILED;
+        return g_last_status;
+    }
+    tQSL_RsrcDir = g_resource_directory.c_str();
+
+    if (tqsl_init() != 0) {
+        tQSL_RsrcDir = nullptr;
+        g_data_directory.clear();
+        g_resource_directory.clear();
         g_last_status = INIT_FAILED;
         return g_last_status;
     }
 
-    g_data_directory = dir;
+    g_initialized = true;
     g_last_status = OK;
     return OK;
 }
