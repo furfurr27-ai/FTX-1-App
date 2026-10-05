@@ -46,6 +46,19 @@ jobs:
         shell: bash
         run: bash scripts/test_lotw_transaction.sh
 
+      - name: Dry-run CP-0003B checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0003b.py
+          python3 scripts/finalize_cp0003b.py
+          grep -Fq 'CP-0003B-LOTW_TRANSACTION_SAFE' README.md
+          grep -Fq 'CP-0003C — Real LoTW validation' NEXT_ACTION.md
+          grep -Fq 'CP-0003B — Transaction-safe LoTW upload' checkpoints/CHECKPOINT_HISTORY.md
+          git diff --check
+
   signer-regression:
     runs-on: ubuntu-latest
     steps:
