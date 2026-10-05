@@ -60,6 +60,19 @@ jobs:
         shell: bash
         run: bash scripts/test_wspr_tx.sh
 
+      - name: Dry-run CP-0002D checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0002d.py
+          python3 scripts/finalize_cp0002d.py
+          grep -Fq 'CP-0002D-WSPR_NATIVE_TX' README.md
+          grep -Fq 'CP-0002E — Native-mode regression' NEXT_ACTION.md
+          grep -Fq 'CP-0002D — WSPR native TX' checkpoints/CHECKPOINT_HISTORY.md
+          git diff --check
+
   js8-regression:
     runs-on: ubuntu-latest
     steps:
