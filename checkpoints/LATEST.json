@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0003A-TRUSTEDQSL_SIGNER",
-  "created_utc": "2026-10-05T14:10:09+00:00",
-  "manifest": "checkpoints/manifests/CP-0003A-TRUSTEDQSL_SIGNER.json",
-  "snapshot": "checkpoints/snapshots/CP-0003A-TRUSTEDQSL_SIGNER.tar.gz",
-  "snapshot_sha256": "40cdadb375444d89851ec8e834cbe4169064412cf993b7f2758c187d329cc3cc"
+  "checkpoint_id": "CP-0003B-LOTW_TRANSACTION_SAFE",
+  "created_utc": "2026-10-05T15:02:18+00:00",
+  "manifest": "checkpoints/manifests/CP-0003B-LOTW_TRANSACTION_SAFE.json",
+  "snapshot": "checkpoints/snapshots/CP-0003B-LOTW_TRANSACTION_SAFE.tar.gz",
+  "snapshot_sha256": "d4e551eb209216fd81def3409033e24795fb32147111736d21dde4d6f4b016a0"
 }

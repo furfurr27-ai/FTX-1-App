@@ -39,60 +39,58 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** `CP-0003A-TRUSTEDQSL_SIGNER`
+**Latest verified checkpoint:** `CP-0003B-LOTW_TRANSACTION_SAFE`
 
-Parent: `CP-0002E-NATIVE_MODE_REGRESSION`.
+Parent: `CP-0003A-TRUSTEDQSL_SIGNER`.
 
-CP-0003A is a **GREEN host/CI TrustedQSL signer-bridge checkpoint with YELLOW Android/native-runtime and RED real-account status**. It pins the official TrustedQSL release, compiles the production FieldOps JNI bridge directly against that official API, and adds a transactional signing boundary without prematurely coupling signing to LoTW HTTP upload.
+CP-0003B is a **GREEN host/CI LoTW transaction checkpoint with RED real-account/device status**. The old one-shot signer/upload path is retired. LoTW upload now preserves the CP-0003A TrustedQSL transaction through server acceptance verification.
 
-CP-0003A adds and proves:
+The verified transaction is:
 
-- Official TrustedQSL build pin: **2.8.6**, `tqsl-2.8.6.tar.gz`.
-- SourceForge-published archive SHA-256:
-  `182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37`.
-- The production JNI source compiles against the exact `tqsllib.h` and `tqslconvert.h` from that verified release.
-- Current official SourceForge master reviewed for API continuity at `78a143276e9bde53b2c9535839cc19ab45b686f0`; the stable build pin remains release 2.8.6.
-- In-memory PKCS#12 import goes through official tqsllib Base64/import APIs.
-- TrustedQSL station location is explicit and must match the expected FieldOps station callsign and DXCC before signing.
-- Certificate selection and private-key signing initialization remain inside official tqsllib calls.
-- ADIF conversion uses the official converter/GABBI API with duplicate tracking enabled and QTH behavior fixed to REPORT rather than UPDATE.
-- Signed GABBI is packaged as compressed `.tq8` output.
-- Core now exposes `TransactionalLotwSigner` / `LotwSigningSession`.
-- A new signing session is OPEN and does **not** automatically commit TrustedQSL's duplicate database.
-- Explicit `commit()` and `rollback()` are retained so CP-0003B can make the network transaction atomic.
-- Closing an OPEN session rolls back.
-- An unavailable signer, missing location, callsign mismatch, DXCC mismatch, missing certificate, or signing-init error fails closed.
-- Transient PKCS#12/password copies are zero-filled and raw tqsllib error strings are not surfaced through the FieldOps bridge.
-- The existing `LotwSyncManager.upload()` is deliberately unchanged in CP-0003A so signing and network upload remain separate.
-- Focused signer bridge tests pass **43/43**.
-- Inherited core regression remains **42,062 core, 56 pipeline, 19 LoTW assertions PASS**.
+`sign -> upload TQ8 -> verify every QSO in LoTW accepted report -> commit TrustedQSL duplicate state`
 
-Exact source/API and test evidence:
+CP-0003B proves:
 
-- `research/tqsl/CP-0003A_SOURCE_PIN.md`
-- `research/tqsl/CP-0003A_SIGNER_BRIDGE.md`
+- One explicit FieldOps station profile / station callsign per batch.
+- Explicit TrustedQSL station-location name, expected callsign and expected DXCC are carried into signing.
+- Duplicate local QSO ids and ambiguous acceptance match keys fail before signing.
+- Signing failure never uploads.
+- Transport exceptions and non-2xx upload responses roll back and remain QUEUED/retryable.
+- LoTW endpoint rejection rolls back and becomes REJECTED rather than silently retrying.
+- HTTP upload acceptance alone is only SUBMITTED.
+- Acceptance report failure or partial batch acceptance rolls back the signer transaction and never marks the batch ACCEPTED.
+- Only when **all** QSOs appear in the LoTW accepted-QSO report does FieldOps commit the TrustedQSL duplicate database and mark the batch ACCEPTED.
+- SSB, CW and digital QSOs use the same mode-neutral `LotwUploadQueue`.
+- Rejected entries remain visible but are excluded from automatic pending/retry selection.
+- Verified accepted entries leave the queue.
+- TrustedQSL Kotlin session state is hardened so successful native commit/rollback becomes terminal before cleanup.
+- The signer implementation itself remains isolated from HTTP transport.
 
-- CP-0003A finalization workflow run: `37322373366`
+Host/CI gates:
+
+- CP-0003B transaction suite: **53 assertions PASS**.
+- CP-0003A signer regression: **43 assertions PASS**.
+- Inherited core: **42,062 PASS**.
+- Pipeline: **56 PASS**.
+- Inherited LoTW: **19 PASS**.
+- Official TrustedQSL 2.8.6 archive hash/API compile remains verified by the signer regression.
+
+Evidence:
+
+- `research/tqsl/CP-0003B_TRANSACTION_SAFE_UPLOAD.md`
+- `research/LOTW_INTEGRATION.md`
+
+- CP-0003B finalization workflow run: `37329432853`
 
 ### Evidence boundary
 
-The runtime CI fixture implements the exact API subset deterministically so JNI lifecycle and transaction behavior can run on x86_64. It is **not** a substitute for real TrustedQSL cryptography.
+The transaction is host/CI verified with deterministic signer/transport/report fixtures. CP-0003B does **not** claim a real LoTW upload, real server acceptance, Android ARM64 TrustedQSL packaging, real certificate/private-key use, Room-backed persistence, or automatic upload.
 
-Still unverified:
-
-- complete official TrustedQSL + dependency build/link for Android arm64-v8a
-- runtime loading on the Galaxy S23 Ultra
-- Chris's real Callsign Certificate / PKCS#12 import
-- real private-key cryptographic signing
-- LoTW server acceptance
-- transaction-safe sign -> upload -> verify -> commit behavior
-- automatic upload
-
-Those claims remain later checkpoints. CP-0003B owns transaction-safe upload integration; CP-0003C owns real device/test-account validation.
+The shared queue is now mode-neutral, but automatic SSB/CW logger-save enqueue remains the separate CP-0005B item.
 
 ### Inherited verified ancestry
 
-`CP-0002E-NATIVE_MODE_REGRESSION` and all prior native-mode checkpoints remain verified ancestry.
+`CP-0003A-TRUSTEDQSL_SIGNER`, `CP-0002E-NATIVE_MODE_REGRESSION`, and all prior native-mode checkpoints remain verified ancestry.
 
 ## Engineering rules
 
@@ -313,7 +311,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0003A-TRUSTEDQSL_SIGNER`
+- Current Git source baseline: `CP-0003B-LOTW_TRANSACTION_SAFE`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -326,15 +324,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0003B — Transaction-safe LoTW upload.**
+**CP-0003C — Real LoTW validation.**
 
-1. Replace the legacy one-shot signer/upload path with the CP-0003A transactional signer session.
-2. Execute the sequence: sign -> upload TQ8 -> verify LoTW acceptance -> commit TrustedQSL duplicate state.
-3. If signing, network upload, server rejection, or acceptance verification fails, roll back the signer transaction and do not mark local duplicate/upload state as committed.
-4. Keep HTTP upload success distinct from LoTW QSO acceptance; only report ACCEPTED after the QSO appears in the acceptance report.
-5. Route manual SSB/CW and digital QSOs through the same local queue and transaction rules.
-6. Preserve explicit station-profile/location binding and all secret-handling rules.
-7. Automatic upload remains disabled until CP-0003C real device/test-account validation passes.
+1. Build/package the official TrustedQSL dependency stack for Android arm64-v8a.
+2. Load it on the Galaxy S23 Ultra and import a real test Callsign Certificate/PKCS#12 through the production secret-storage boundary.
+3. Use a controlled test QSO/account flow to produce a real signed TQ8.
+4. Exercise the CP-0003B transaction against LoTW: sign -> upload -> verify accepted-QSO report -> commit.
+5. Run confirmation sync and verify the local confirmation metadata/cursors.
+6. Confirm no certificate/password/private-key material appears in logs, crash output, support bundles or repository files.
+7. Keep automatic upload disabled unless every CP-0003C device/test-account gate passes.
 
 ## README maintenance contract
 

@@ -80,3 +80,17 @@ Host/CI gate: signer 43; inherited core 42,062; pipeline 56; LoTW 19 assertions,
 Finalization workflow run: `37322373366`.
 
 Evidence: `research/tqsl/CP-0003A_SOURCE_PIN.md` and `research/tqsl/CP-0003A_SIGNER_BRIDGE.md`.
+
+## CP-0003B — Transaction-safe LoTW upload
+
+Parent: `CP-0003A-TRUSTEDQSL_SIGNER`
+
+FieldOps now preserves the TrustedQSL duplicate-database transaction across the entire upload/verification flow. HTTP upload acceptance is SUBMITTED only; every QSO in the batch must appear in the LoTW accepted-QSO report before TrustedQSL state commits and local QSOs become ACCEPTED.
+
+Signer/network/non-2xx/report-verification failures roll back. Endpoint rejection rolls back and remains visible without automatic retry. SSB, CW and digital QSOs share the same mode-neutral queue/state machine; automatic manual-logger enqueue remains CP-0005B.
+
+Host/CI gate: transaction 53; signer 43; core 42,062; pipeline 56; LoTW 19 assertions, all PASS.
+
+Finalization workflow run: `37329432853`.
+
+Evidence: `research/tqsl/CP-0003B_TRANSACTION_SAFE_UPLOAD.md`.

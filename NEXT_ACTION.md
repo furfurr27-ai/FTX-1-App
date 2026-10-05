@@ -1,11 +1,9 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0003B — Transaction-safe LoTW upload**
+**CP-0003C — Real LoTW validation**
 
-Migrate the upload path to the CP-0003A transactional signer session:
+Build/package official TrustedQSL for Android arm64-v8a, load it on the Galaxy S23 Ultra, import a controlled real Callsign Certificate/PKCS#12, create a real signed TQ8, and run the CP-0003B transaction against a controlled LoTW test QSO:
 
-`sign -> upload TQ8 -> verify LoTW acceptance -> commit TrustedQSL duplicate state`
+`sign -> upload -> verify accepted-QSO report -> commit`
 
-Any signing/network/rejection/verification failure must roll back the signer transaction and must not mark the QSO accepted locally. HTTP upload success alone is not LoTW acceptance.
-
-Manual SSB/CW and digital QSOs use the same queue and transaction rules. Automatic upload remains disabled until CP-0003C real device/test-account validation.
+Then verify confirmation sync/cursors and secret hygiene. Automatic upload stays disabled unless every CP-0003C device/test-account gate passes.
