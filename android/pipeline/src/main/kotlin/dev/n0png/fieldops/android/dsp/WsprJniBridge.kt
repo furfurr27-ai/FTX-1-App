@@ -1,10 +1,11 @@
 package dev.n0png.fieldops.android.dsp
 
 /**
- * JNI binding for the vendored WSPR decoder.
+ * JNI binding for the vendored pinned WSPR codec.
  *
  * The native library is GPLv3-derived from the pinned rtlsdr-wsprd source.
- * This class performs no CAT/PTT work and exposes no WSPR waveform TX path.
+ * It performs WSPR decode plus channel-symbol encoding only. CAT/PTT and USB
+ * audio remain outside this boundary.
  */
 class WsprJniBridge(
     libraryLoader: () -> Unit = { System.loadLibrary(LIBRARY_NAME) },
@@ -21,8 +22,8 @@ class WsprJniBridge(
         return nativeDecode375(i, q).toList()
     }
 
-    /** Encoder-side channel symbols are exposed only for deterministic RX fixtures in CP-0002C. */
-    fun encodeSymbolsForSelfTest(message: String): ByteArray =
+    @Synchronized
+    override fun encodeSymbols(message: String): ByteArray =
         nativeEncodeSymbols(message)
 
     private external fun nativeDecode375(
