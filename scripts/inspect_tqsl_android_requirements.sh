@@ -52,3 +52,7 @@ grep -niE '<page|<field|fieldname=|CALL|DXCC|GRIDSQUARE|CQZ|ITUZ|STATE|CNTY|COUN
 
 echo "=== config.xml first 600 lines ==="
 sed -n '1,600p' "$ROOT/src/config.xml"
+
+
+echo "=== TQSL backup writer format ==="
+grep -RIn -C 8 -E 'RootCert|CACert|UserCert|PrivateKey|StationDataFile|Locations|backup.*xml|Backup'   "$ROOT/apps" "$ROOT/src" 2>/dev/null | head -900 || true
