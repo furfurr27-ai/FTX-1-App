@@ -40,3 +40,15 @@ Host/CI gate: core 42,062; pipeline 56; LoTW 19; WSPR RX 22; JS8 RX 19; JS8 TX 3
 Finalization workflow run: `37305788342`.
 
 Evidence: `research/wspr/CP-0002C_WSPR_RX_INTEGRATION.md`.
+
+## CP-0002D — WSPR native TX
+
+Parent: `CP-0002C-WSPR_NATIVE_RX`
+
+FieldOps now uses the pinned upstream WSPR channel-symbol encoder as the production message-codec boundary and synthesizes the full continuous-phase 12 kHz 4-FSK waveform. WSPR transmission is chunked through the common `Ftx1RadioSession` under `Owner.WSPR`; no WSPR modem code owns CAT/PTT or USB audio directly. Competing-owner, cancel, audio-failure and malformed-input paths are proven fail-closed.
+
+Host/CI gate: core 42,062; pipeline 56; LoTW 19; WSPR RX 21; WSPR TX 56; JS8 RX 19; JS8 TX 39 assertions, all PASS.
+
+Finalization workflow run: `37314097215`.
+
+Evidence: `research/wspr/CP-0002D_WSPR_TX_INTEGRATION.md`.

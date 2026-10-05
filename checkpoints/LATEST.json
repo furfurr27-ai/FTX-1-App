@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0002C-WSPR_NATIVE_RX",
-  "created_utc": "2026-10-05T11:54:02+00:00",
-  "manifest": "checkpoints/manifests/CP-0002C-WSPR_NATIVE_RX.json",
-  "snapshot": "checkpoints/snapshots/CP-0002C-WSPR_NATIVE_RX.tar.gz",
-  "snapshot_sha256": "799e0427850c46e7991229772be5a2100a490ecc4ca09d87f1059d4079daa7a8"
+  "checkpoint_id": "CP-0002D-WSPR_NATIVE_TX",
+  "created_utc": "2026-10-05T13:06:16+00:00",
+  "manifest": "checkpoints/manifests/CP-0002D-WSPR_NATIVE_TX.json",
+  "snapshot": "checkpoints/snapshots/CP-0002D-WSPR_NATIVE_TX.tar.gz",
+  "snapshot_sha256": "92abf4773981288e36ed3e64dee947d6a41dd222855d58fb5e94e5f953c70348"
 }
