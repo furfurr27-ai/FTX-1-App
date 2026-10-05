@@ -45,7 +45,7 @@ https://lotw.arrl.org/lotw-help/backuprestore/
 6. Have the following available without putting them in any project file:
    - LoTW web username
    - LoTW web password
-   - private-key password, if the Callsign Certificate key is password protected
+   - private-key password only if the Callsign Certificate key is password protected; an unprotected key may leave this field blank
 
 Do not use a fabricated contact. The live validation QSO must be a genuine logged QSO.
 
@@ -157,21 +157,28 @@ The TQSL backup selected by the operator remains the operator's external file an
 
 ## Capture sanitized evidence
 
-After signing-only and after the live transaction, tap:
+After the live transaction finishes, tap:
 
 **Copy sanitized validation result**
 
-Paste the copied text into the project chat. It contains only:
+Paste the copied text into the project chat. The latest validation APK emits one cumulative gate block containing only:
 
 - CP-0003C label
 - source commit SHA embedded in the APK
 - device manufacturer/model
 - Android SDK level
-- sanitized validation result
+- backup-import PASS/FAIL
+- signing-only PASS/FAIL
+- live-transaction PASS/FAIL
+- confirmation-sync PASS/FAIL
+- automatic-upload state
+- sanitized final result text
 
-It does not include web credentials, private-key passwords, certificate bytes or backup contents.
+It does not include the QSO identity, web credentials, private-key password, certificate bytes, or backup contents.
 
-That evidence must be committed into the final CP-0003C checkpoint before CP-0003C can become GREEN.
+The repository validator rejects the evidence unless the source SHA matches the approved APK baseline, the device is an SM-S918 Galaxy S23 Ultra, all four gates are PASS, automatic upload remains DISABLED, and the final result proves both live acceptance and confirmation-report query success.
+
+That sanitized evidence must be committed into the final CP-0003C checkpoint before CP-0003C can become GREEN.
 
 ## Final CP-0003C completion criteria
 
