@@ -43,6 +43,7 @@ def main():
     ap.add_argument("--completed", action="append", default=[])
     ap.add_argument("--blocker", action="append", default=[])
     ap.add_argument("--next", dest="next_actions", action="append", default=[])
+    ap.add_argument("--source-pin", dest="source_pins", action="append", default=[], help="Exact upstream source pin, e.g. owner/repo@commit")
     args=ap.parse_args()
 
     if not re.fullmatch(r"CP-\d{4}-[A-Z0-9][A-Z0-9_-]*", args.id):
@@ -77,6 +78,7 @@ def main():
         "completed":args.completed,
         "blockers":args.blocker,
         "next_actions":args.next_actions,
+        "source_pins":args.source_pins,
         "files":files,
         "snapshot_file":sp.relative_to(root).as_posix(),
         "snapshot_sha256":None,
