@@ -1,0 +1,87 @@
+name: CP-0003C Device Validation APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - cp-0003c-real-lotw-validation
+    paths:
+      - 'android/validation-app/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/logbook/**'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'native/tqsl/**'
+      - 'scripts/build_tqsl_android_arm64.sh'
+      - '.github/workflows/cp0003c-validation-apk.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install build prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y ninja-build perl zip unzip
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"             "platforms;android-35"             "build-tools;35.0.0"
+
+      - name: Build verified arm64-v8a TrustedQSL runtime
+        shell: bash
+        run: bash scripts/build_tqsl_android_arm64.sh
+
+      - name: Stage native runtime and official config into validation app
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p android/validation-app/app/src/main/jniLibs/arm64-v8a
+          mkdir -p android/validation-app/app/src/main/assets/trustedqsl
+          cp .build/cp0003c-android-tqsl/package/jniLibs/arm64-v8a/libfieldops_tqsl.so             android/validation-app/app/src/main/jniLibs/arm64-v8a/libfieldops_tqsl.so
+          cp .build/cp0003c-android-tqsl/package/trustedqsl/config.xml             android/validation-app/app/src/main/assets/trustedqsl/config.xml
+
+      - name: Install pinned Gradle
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 -o /tmp/gradle.zip             https://services.gradle.org/distributions/gradle-8.9-bin.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          echo "/tmp/gradle-8.9/bin" >> "$GITHUB_PATH"
+
+      - name: Build validation APK
+        shell: bash
+        run: |
+          set -euo pipefail
+          gradle --no-daemon -p android/validation-app :app:assembleDebug
+
+      - name: Verify APK and record hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK="android/validation-app/app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose "$APK"
+          sha256sum "$APK" | tee android/validation-app/CP0003C_VALIDATION_APK.sha256
+          unzip -l "$APK" | grep 'lib/arm64-v8a/libfieldops_tqsl.so'
+          unzip -l "$APK" | grep 'assets/trustedqsl/config.xml'
+          echo "CP-0003C validation APK: PASS"
+
+      - name: Upload validation APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: fieldops-cp0003c-validation-apk
+          path: |
+            android/validation-app/app/build/outputs/apk/debug/app-debug.apk
+            android/validation-app/CP0003C_VALIDATION_APK.sha256
+            .build/cp0003c-android-tqsl/package.sha256
+          if-no-files-found: error
