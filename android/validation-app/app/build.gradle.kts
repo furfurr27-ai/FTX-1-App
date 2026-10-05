@@ -13,6 +13,12 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "cp0003c"
+        val sourceSha = System.getenv("GITHUB_SHA") ?: "local"
+        buildConfigField("String", "SOURCE_SHA", "\"$sourceSha\"")
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
