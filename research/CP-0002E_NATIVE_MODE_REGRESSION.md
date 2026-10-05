@@ -16,9 +16,11 @@ Parent checkpoint: `CP-0002D-WSPR_NATIVE_TX`.
 
 ## Independent mode gates
 
-Branch workflow run: **37315659564**
+Final pre-merge branch workflow run: **37316265651**
 
-All jobs completed successfully.
+All eight independent jobs completed successfully. The composition job also dry-ran the CP-0002E durable handoff generator, verified the next-action transition to CP-0003A, and passed `git diff --check`.
+
+Earlier complete regression run `37315659564` produced the same mode-family assertion counts before the finalizer/dry-run wiring was added.
 
 ### FT8
 
