@@ -50,6 +50,15 @@ class LotwSyncManager(private val transport: LotwTransport) {
                 )
             }
 
+            if (upload.httpCode !in 200..299) {
+                rollbackOpen(session)
+                return LotwTransactionalUploadResult(
+                    outcome = LotwTransactionOutcome.UPLOAD_FAILED,
+                    qsos = queued,
+                    uploadResponse = upload,
+                )
+            }
+
             if (!upload.accepted) {
                 rollbackOpen(session)
                 return LotwTransactionalUploadResult(
