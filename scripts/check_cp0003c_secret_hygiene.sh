@@ -12,7 +12,7 @@ if git ls-files | grep -Eiq '\.(tbk|p12|pfx|pem|key|crt|cer)$'; then
 fi
 
 echo "[2/7] Reject embedded private-key material"
-if git grep -n -I -E -- '-----BEGIN ([A-Z0-9 ]+ )?PRIVATE KEY-----|-----BEGIN OPENSSH PRIVATE KEY-----' -- .; then
+if git grep -n -I -E -- '-----BEGIN ([A-Z0-9 ]+ )?PRIVATE KEY-----|-----BEGIN OPENSSH PRIVATE KEY-----' -- . ':(exclude)scripts/check_cp0003c_secret_hygiene.sh'; then
   echo "Private-key material found in tracked source" >&2
   exit 1
 fi
@@ -36,7 +36,7 @@ grep -Fq "Arrays.fill(secret, '\\u0000')"   android/validation-app/app/src/main/
 grep -Fq 'Arrays.fill(bytes, 0)'   android/validation-app/app/src/main/kotlin/dev/n0png/fieldops/validation/MainActivity.kt
 
 echo "[7/7] Reject obvious credential literals"
-if git grep -n -I -E --   '(lotw[_-]?(password|passwd)[[:space:]]*[:=][[:space:]]*["'\''"][^"'\'']{4,}|BEGIN RSA PRIVATE KEY|BEGIN EC PRIVATE KEY)'   -- ':!research/tqsl/CP-0003C_DEVICE_VALIDATION.md'; then
+if git grep -n -I -E --   '(lotw[_-]?(password|passwd)[[:space:]]*[:=][[:space:]]*["'\''"][^"'\'']{4,}|BEGIN RSA PRIVATE KEY|BEGIN EC PRIVATE KEY)'   -- ':!research/tqsl/CP-0003C_DEVICE_VALIDATION.md' ':!scripts/check_cp0003c_secret_hygiene.sh'; then
   echo "Potential credential literal found" >&2
   exit 1
 fi
