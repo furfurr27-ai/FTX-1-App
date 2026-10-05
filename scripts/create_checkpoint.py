@@ -46,7 +46,7 @@ def main():
     ap.add_argument("--source-pin", dest="source_pins", action="append", default=[], help="Exact upstream source pin, e.g. owner/repo@commit")
     args=ap.parse_args()
 
-    if not re.fullmatch(r"CP-\d{4}-[A-Z0-9][A-Z0-9_-]*", args.id):
+    if not re.fullmatch(r"CP-\d{4}[A-Z]?-[A-Z0-9][A-Z0-9_-]*", args.id):
         raise SystemExit("Checkpoint id must look like CP-0001-NAME or CP-0002A-NAME")
 
     root=pathlib.Path(args.root).resolve()
