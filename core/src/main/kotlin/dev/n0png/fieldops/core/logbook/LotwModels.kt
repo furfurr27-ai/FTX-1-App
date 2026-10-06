@@ -84,14 +84,16 @@ data class QsoRecord(
             }
         }
 
-        if (frequencyHz != null && freqMhz != null) {
+        val legacyMhz = freqMhz
+        val exactHz = frequencyHz
+        if (exactHz != null && legacyMhz != null) {
             val parsedHz = runCatching {
-                java.math.BigDecimal(freqMhz.trim())
+                java.math.BigDecimal(legacyMhz.trim())
                     .movePointRight(6)
                     .setScale(0, java.math.RoundingMode.HALF_UP)
                     .longValueExact()
             }.getOrNull()
-            require(parsedHz == null || kotlin.math.abs(parsedHz - frequencyHz) <= 1L) {
+            require(parsedHz == null || kotlin.math.abs(parsedHz - exactHz) <= 1L) {
                 "Legacy MHz frequency and exact Hz frequency disagree"
             }
         }
