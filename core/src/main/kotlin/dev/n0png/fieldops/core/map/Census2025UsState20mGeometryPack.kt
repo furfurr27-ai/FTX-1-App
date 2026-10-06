@@ -83,6 +83,7 @@ object Census2025UsState20mGeometryPack {
             buildVersion = BUILD_VERSION,
             declaredFeatureCount = FEATURE_COUNT,
             scaleLabel = "1:20,000,000 national States (KML)",
+            sourceUrl = UPSTREAM_URL,
         )
 
     const val BUILD_VERSION = "fieldops-cp0007c"
