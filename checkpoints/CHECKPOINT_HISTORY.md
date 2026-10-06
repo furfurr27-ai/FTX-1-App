@@ -200,3 +200,17 @@ Host/CI gate: award evidence persistence/import 92; Awards Center projection 114
 Finalization workflow run: 37469159046.
 
 Evidence: research/awards/CP-0006E_AWARD_EVIDENCE_PERSISTENCE.md.
+
+## CP-0006F — Awards Center application service and evidence-ingestion orchestration
+
+Parent durable checkpoint: CP-0006E-AWARD_EVIDENCE_PERSISTENCE.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has one platform-independent Awards Center application service that composes the authoritative local logbook, persisted award evidence, explicit ADIF enrichment, and the verified projection. Evidence ingestion requires already-resolved immutable QSO ids, converts the full batch before one atomic repository write, fails closed on unknown/mismatched QSOs or malformed/conflicting evidence, and never performs callsign-only matching. Parsed LoTW-style host fixtures feed award progress without network access, while sponsor standing remains explicit external evidence.
+
+Host/CI gate: Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37486907491.
+
+Evidence: research/awards/CP-0006F_AWARDS_APPLICATION_SERVICE.md.

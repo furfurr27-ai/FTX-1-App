@@ -39,33 +39,33 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0006E-AWARD_EVIDENCE_PERSISTENCE
+**Latest verified checkpoint:** CP-0006F-AWARDS_APPLICATION_SERVICE
 
-Parent durable checkpoint: CP-0006D-AWARDS_CENTER_PROJECTION.
+Parent durable checkpoint: CP-0006E-AWARD_EVIDENCE_PERSISTENCE.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0006E is a GREEN host/CI persistence/import checkpoint. It replaces fixture-only award evidence with a provider-independent persistent repository/snapshot boundary and imports only explicit award/confirmation metadata from ADIF.
+CP-0006F is a GREEN host/CI application-service checkpoint. It composes the authoritative local logbook, persistent award evidence, explicit ADIF enrichment, and Awards Center projection behind one platform-independent service without introducing fuzzy QSO matching or account/hardware dependencies.
 
-CP-0006E proves:
+CP-0006F proves:
 
-- Award target, confirmation and sponsor-standing evidence share one provider-independent repository boundary without modifying authoritative QSO records.
-- Batch writes are atomic, idempotent and conflict-safe.
-- Single-valued DXCC/state/continent/IOTA conflicts fail closed across the complete persisted candidate state.
-- POTA can retain multiple explicit references for one immutable QSO.
-- Persistence serialization is schema-versioned, deterministic and safe for tabs/Unicode.
-- A new repository instance reconstructs exactly the persisted canonical evidence state.
-- Backing-store failure does not advance in-memory state and the full batch can be retried.
-- Explicit ADIF DXCC, STATE, CONT, IOTA, POTA_REF, APP_POTA_REF and SIG=POTA/SIG_INFO metadata can create normalized award-target evidence.
-- Every imported target retains source id/version and optional HTTPS URL, record reference and retrieval time.
-- Callsigns, country names, grids, notes and MY_* station metadata are not used to infer remote award targets.
-- Only explicit LOTW_QSL_RCVD=Y and QSL_RCVD=Y flags create confirmation evidence.
-- LoTW/QSL sent or upload metadata is never treated as confirmation.
-- The existing AdifCodec parser feeds the enrichment adapter; CP-0006E does not create a competing parser.
-- Persisted imported evidence can be reconstructed and fed to the CP-0006D Awards Center projection without mutating QSOs.
+- Awards Center cards are generated directly from the current authoritative LogbookRepository plus one current AwardEvidenceRepository snapshot.
+- Callers no longer manually assemble QSO/evidence/sponsor-standing lists.
+- Parsed ADIF evidence ingestion requires a positive immutable local QSO id already resolved by another layer.
+- The award service never searches the logbook by callsign, date, grid, country, prefix, or free text.
+- An explicit ADIF CALL is only a fail-closed consistency check against the already-resolved QSO.
+- Unknown QSO ids, CALL mismatches, malformed explicit award fields, or repository evidence conflicts reject the complete ingestion batch.
+- All records are converted before one combined evidence-repository apply, preserving atomic batch semantics.
+- Repeated batches are idempotent and reversed input ordering produces the same canonical evidence state.
+- Parsed LoTW-style ADIF fixtures can feed explicit confirmation/target evidence into Awards Center progress without network/account access.
+- Mixed/CW/Phone/Digital, band, and UTC date-range queries pass through the application service.
+- Sponsor standing is recorded only through explicit sponsor evidence and is never inferred from local threshold progress.
+- The service does not mutate authoritative QSO records or exact MODE/SUBMODE identity.
+- Production service code has no credential, HTTP, FTX-1 hardware, Compose, or Room dependency.
 
 Host/CI gates:
 
+- CP-0006F Awards Center application service: **64/64 PASS**.
 - CP-0006E award evidence persistence/import: **92/92 PASS**.
 - CP-0006D Awards Center projection: **114/114 PASS**.
 - CP-0006C award target/composite evaluator: **77/77 PASS**.
@@ -78,18 +78,18 @@ Host/CI gates:
 
 Evidence:
 
+- research/awards/CP-0006F_AWARDS_APPLICATION_SERVICE.md
 - research/awards/CP-0006E_AWARD_EVIDENCE_PERSISTENCE.md
-- research/awards/CP-0006D_AWARDS_CENTER_PROJECTION.md
 - SOFTWARE_TRACK.md
-- CP-0006E finalization workflow run: 37469159046
+- CP-0006F finalization workflow run: 37486907491
 
 ### Evidence boundary
 
-CP-0006E is host/CI evidence using local/synthetic ADIF and storage fixtures. It does not claim a Room/SQLite production adapter, live sponsor-account synchronization, live LoTW login/download, claim submission, Android device persistence behavior, or FTX-1 hardware proof.
+CP-0006F is host/CI evidence using platform-independent repositories and synthetic/local parsed ADIF fixtures. It does not claim automatic/fuzzy QSO matching, live LoTW download/login, sponsor account synchronization, claim submission, Android Room/SQLite storage, Compose UI, device persistence behavior, or FTX-1 hardware proof.
 
 ### Inherited verified ancestry
 
-CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -113,7 +113,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0006F — Awards Center application service and evidence-ingestion orchestration
+**Active software track:** CP-0006G — Extended official award catalog and evaluator coverage
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -338,7 +338,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0006E-AWARD_EVIDENCE_PERSISTENCE`
+- Current Git source baseline: `CP-0006F-AWARDS_APPLICATION_SERVICE`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -351,15 +351,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0006F — Awards Center application service and evidence-ingestion orchestration.**
+**CP-0006G — Extended official award catalog and evaluator coverage.**
 
-1. Compose LogbookRepository, AwardEvidenceRepository, AwardAdifEnrichmentAdapter and AwardsCenterProjectionService behind one UI-independent application service.
-2. Generate Awards Center cards directly from the authoritative local logbook plus persisted evidence rather than requiring callers to manually assemble lists.
-3. Add parsed-ADIF evidence ingestion that requires an already-resolved immutable local QSO id; the award layer must not invent fuzzy callsign-only matching.
-4. Support deterministic batch ingestion with per-record provenance and atomic evidence writes.
-5. Exercise LoTW/import-style parsed ADIF fixtures without using real accounts, credentials or network calls.
-6. Keep sponsor standing and claimability explicit; no local progress or imported QSO presence may imply sponsor eligibility.
-7. Keep Compose/Room/device wiring outside this checkpoint unless it can be compiled and verified without hardware; the core service must remain platform independent.
+1. Expand the official award catalog beyond the initial seven entries using only official issuing-organization sources with URL, source version/date, and retrieval date.
+2. Prioritize the product-requirement targets ARRL VUCC/grid-oriented awards, ARRL Fred Fish Memorial Award where locally representable, CQ WAZ, CQ WPX, and useful regional/national awards for Europe and the U.S.
+3. For each candidate, explicitly classify whether local evaluation is a distinct-target rule, composite rule, external program scoring, or unsupported until additional normalized target evidence exists.
+4. Add any new normalized target kinds/evaluator shapes only when official rules require them; do not approximate grids, CQ zones, prefixes, counties, or sponsor-only credit.
+5. Preserve exact QSO mode/submode, worked/confirmed/local-threshold/sponsor-standing separation, official claim links, and claim instructions.
+6. Extend official-source ledger and host/CI tests; fail closed on ambiguous or sponsor-account-only requirements.
+7. Do not use real sponsor accounts, credentials, claim submission, phone/radio/RF testing, or manual hardware validation.
 8. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
 9. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 

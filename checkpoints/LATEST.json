@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0006E-AWARD_EVIDENCE_PERSISTENCE",
-  "created_utc": "2026-10-06T13:16:23+00:00",
-  "manifest": "checkpoints/manifests/CP-0006E-AWARD_EVIDENCE_PERSISTENCE.json",
-  "snapshot": "checkpoints/snapshots/CP-0006E-AWARD_EVIDENCE_PERSISTENCE.tar.gz",
-  "snapshot_sha256": "35594315ae9509f9af8c1a6ea298c3444bc2fd8775b88052381c7a41d59885c8"
+  "checkpoint_id": "CP-0006F-AWARDS_APPLICATION_SERVICE",
+  "created_utc": "2026-10-06T15:24:56+00:00",
+  "manifest": "checkpoints/manifests/CP-0006F-AWARDS_APPLICATION_SERVICE.json",
+  "snapshot": "checkpoints/snapshots/CP-0006F-AWARDS_APPLICATION_SERVICE.tar.gz",
+  "snapshot_sha256": "35cc96ae6d249566968812227451c0fd7e7c3d2ef244e572ccded8dd2a9ca379"
 }

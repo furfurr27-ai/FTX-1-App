@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0006F — Awards Center application service and evidence-ingestion orchestration**
+**CP-0006G — Extended official award catalog and evaluator coverage**
 
-Compose the authoritative logbook, persisted award evidence, explicit ADIF enrichment and Awards Center projection behind one platform-independent service. Ingest parsed records only after an immutable local QSO id is resolved; do not add fuzzy callsign matching, real sponsor-account access or claim submission.
+Expand the verified official catalog using issuing-organization sources, prioritizing VUCC/grid-oriented awards, Fred Fish where locally representable, CQ WAZ, CQ WPX, and useful Europe/U.S. regional or national awards. Add new target/evaluator shapes only when official rules demand them; never approximate sponsor-only credit or missing geography.

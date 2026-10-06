@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0006E-AWARD_EVIDENCE_PERSISTENCE`
+`CP-0006F-AWARDS_APPLICATION_SERVICE`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,20 +25,20 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-`CP-0006F-AWARDS_APPLICATION_SERVICE`
+`CP-0006G-EXTENDED_AWARD_CATALOG`
 
 Required scope:
 
-- platform-independent Awards Center application service
-- compose LogbookRepository + AwardEvidenceRepository + AwardAdifEnrichmentAdapter + AwardsCenterProjectionService
-- cards generated from authoritative local logbook plus persisted evidence
-- parsed ADIF ingestion only after immutable local QSO id resolution
-- deterministic batch ingestion with explicit record/source provenance
-- no fuzzy callsign-only award matching or geography inference
-- host fixtures for LoTW/import-style records without real accounts/network
-- sponsor standing/claimability remains explicit and separate from local progress
-- no real sponsor-account login/sync or claim submission
-- no phone/radio/RF/credential use
+- official issuing-organization research only for newly encoded awards
+- source URL + version/date + retrieval date retained
+- prioritize ARRL VUCC/grid awards, Fred Fish where locally representable, CQ WAZ, CQ WPX, and useful Europe/U.S. regional/national programs
+- explicitly classify local evaluator support vs external/sponsor-only requirements
+- add normalized target kinds/evaluator shapes only from verified rules
+- no guessed grid/zone/prefix/county/program credit
+- preserve exact QSO MODE/SUBMODE and local-vs-sponsor state separation
+- official info/claim links and concise claim instructions
+- host/CI-only verification
+- no real sponsor accounts, credentials, claim submission, phone/radio/RF/manual hardware work
 - skip later hardware/account-gated checkpoints under the owner execution override
 
 ## Resume rule
