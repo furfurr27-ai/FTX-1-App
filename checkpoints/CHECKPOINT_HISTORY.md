@@ -172,3 +172,17 @@ Host/CI gate: target/composite evaluator 77; official catalog 115; award evaluat
 Finalization workflow run: 37463697312.
 
 Evidence: research/awards/CP-0006C_AWARD_TARGET_ENRICHMENT.md.
+
+## CP-0006D — Awards Center progress projection
+
+Parent durable checkpoint: CP-0006C-AWARD_TARGET_ENRICHMENT.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has a UI-independent Awards Center projection over the verified official catalog/progress engine. Cards expose worked/confirmed/remaining state, deterministic display progress, Mixed/CW/Phone/Digital plus band/date views, official source/claim metadata, external-verification warnings and explicit sponsor standing. Triple Play mode-leg display completion stays distinct from full award threshold completion, IOTA count-plus-coverage remains transparent, and external SOTA scoring never receives a fabricated percentage. Local progress never infers sponsor claimability.
+
+Host/CI gate: Awards Center projection 114; target/composite evaluator 77; official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37466410722.
+
+Evidence: research/awards/CP-0006D_AWARDS_CENTER_PROJECTION.md.

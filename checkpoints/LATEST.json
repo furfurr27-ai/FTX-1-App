@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0006C-AWARD_TARGET_ENRICHMENT",
-  "created_utc": "2026-10-06T12:32:07+00:00",
-  "manifest": "checkpoints/manifests/CP-0006C-AWARD_TARGET_ENRICHMENT.json",
-  "snapshot": "checkpoints/snapshots/CP-0006C-AWARD_TARGET_ENRICHMENT.tar.gz",
-  "snapshot_sha256": "6d4305c1757c971985ba836d9bdb7536fffb40a85a649a578dc99a7c5b3dab4b"
+  "checkpoint_id": "CP-0006D-AWARDS_CENTER_PROJECTION",
+  "created_utc": "2026-10-06T12:54:53+00:00",
+  "manifest": "checkpoints/manifests/CP-0006D-AWARDS_CENTER_PROJECTION.json",
+  "snapshot": "checkpoints/snapshots/CP-0006D-AWARDS_CENTER_PROJECTION.tar.gz",
+  "snapshot_sha256": "e1d68907016fd9a41659f3bdef8ca4f257c8d420fbb46be804809fd15f468590"
 }

@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0006D — Awards Center progress projection**
+**CP-0006E — Award evidence persistence and explicit ADIF enrichment import**
 
-Build a UI-independent Awards Center read model from the verified catalog/progress engine. Expose worked/confirmed/remaining/progress, band/mode/date views, official links/source evidence, external-verification warnings, and sponsor standing without moving award rules into UI code or inferring sponsor claim/award state.
+Add durable provider-independent award evidence storage plus explicit ADIF enrichment for remote DXCC/STATE/CONT/IOTA/POTA fields and conservative confirmation metadata. Preserve source provenance/version, make writes idempotent/conflict-safe, and never infer missing award geography from callsigns or free text.
