@@ -1,25 +1,13 @@
 #!/usr/bin/env python3
 """Build the production 50-state FieldOps geometry pack from Census 2025 KML.
 
-This builder deliberately consumes the official Census national States
-1:20,000,000 KML artifact rather than scraping coordinates from callsigns,
-third-party maps, or test fixtures.
+Outputs:
+- compact canonical offline geometry asset (.pack)
+- machine-readable research metadata JSON
+- small generated Kotlin metadata constants (no coordinate literals)
 
-Outputs are deterministic:
-- generated Kotlin production pack
-- machine-readable metadata JSON
-- source pin + upstream SHA-256
-- per-feature canonical SHA-256
-- overall canonical geometry-pack SHA-256
-
-The builder fails closed if:
-- the upstream archive does not contain exactly one KML;
-- any WAS state is missing or duplicated;
-- unexpected state-code mapping occurs;
-- District of Columbia/territories enter the 50-state output;
-- a ring is malformed;
-- a ring contains an unsplit antimeridian jump (>180 degrees);
-- geometry is empty.
+The builder fails closed on missing/duplicate WAS states, malformed geometry,
+or an unsplit >180-degree antimeridian ring segment.
 """
 
 from __future__ import annotations
@@ -27,8 +15,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import math
-import os
 import pathlib
 import re
 import tempfile
@@ -94,10 +80,10 @@ def canonical_decimal(raw: str) -> str:
         raise ValueError(f"Non-finite coordinate: {raw!r}")
     if value == 0:
         return "0"
-    normalized = format(value.normalize(), "f")
-    if "." in normalized:
-        normalized = normalized.rstrip("0").rstrip(".")
-    return normalized
+    text = format(value.normalize(), "f")
+    if "." in text:
+        text = text.rstrip("0").rstrip(".")
+    return text
 
 
 def parse_coordinate_token(token: str) -> tuple[str, str]:
@@ -106,18 +92,19 @@ def parse_coordinate_token(token: str) -> tuple[str, str]:
         raise ValueError(f"Malformed KML coordinate token: {token!r}")
     lon = canonical_decimal(parts[0])
     lat = canonical_decimal(parts[1])
-    lon_f = float(lon)
-    lat_f = float(lat)
-    if not -180.0 <= lon_f <= 180.0:
+    if not -180.0 <= float(lon) <= 180.0:
         raise ValueError(f"Longitude outside [-180,180]: {lon}")
-    if not -90.0 <= lat_f <= 90.0:
+    if not -90.0 <= float(lat) <= 90.0:
         raise ValueError(f"Latitude outside [-90,90]: {lat}")
     return lon, lat
 
 
 def parse_ring(coordinates_text: str) -> Ring:
-    tokens = coordinates_text.split()
-    points = [parse_coordinate_token(token) for token in tokens if token.strip()]
+    points = [
+        parse_coordinate_token(token)
+        for token in coordinates_text.split()
+        if token.strip()
+    ]
     if len(points) < 4:
         raise ValueError("Ring contains fewer than four coordinates")
     if points[0] != points[-1]:
@@ -137,7 +124,7 @@ def parse_ring(coordinates_text: str) -> Ring:
         if delta > 180.0 + 1e-9:
             raise ValueError(
                 "Unsplit antimeridian segment detected: "
-                f"{a[0]},{a[1]} -> {b[0]},{b[1]} (Δlon={delta})"
+                f"{a[0]},{a[1]} -> {b[0]},{b[1]} (delta_lon={delta})"
             )
 
     return Ring(tuple(deduped))
@@ -158,9 +145,9 @@ def extended_data(placemark: ET.Element) -> dict[str, str]:
     values: dict[str, str] = {}
     for element in placemark.iter():
         name = element.attrib.get("name")
-        tag = local_name(element.tag)
         if not name:
             continue
+        tag = local_name(element.tag)
         if tag == "SimpleData" and element.text:
             values[name.upper()] = element.text.strip()
         elif tag == "Data":
@@ -174,20 +161,16 @@ def placemark_state_abbr(placemark: ET.Element) -> str | None:
     data = extended_data(placemark)
     stusps = data.get("STUSPS")
     if stusps:
-        normalized = stusps.strip().upper()
-        if normalized in WAS_STATES:
-            return normalized
-        return None
+        value = stusps.strip().upper()
+        return value if value in WAS_STATES else None
 
     statefp = data.get("STATEFP") or data.get("STATEFP20") or data.get("STATEFP25")
     if statefp:
         return STATE_FIPS_TO_ABBR.get(statefp.zfill(2))
 
-    # Census KML commonly carries a GEOID/STATE field even if STUSPS is absent.
     geoid = data.get("GEOID") or data.get("STATE")
     if geoid and re.fullmatch(r"\d{1,2}", geoid.strip()):
         return STATE_FIPS_TO_ABBR.get(geoid.strip().zfill(2))
-
     return None
 
 
@@ -196,44 +179,25 @@ def polygons_from_placemark(placemark: ET.Element) -> tuple[Polygon, ...]:
     for poly in placemark.iter():
         if local_name(poly.tag) != "Polygon":
             continue
-
-        outer_ring: Ring | None = None
+        outer: Ring | None = None
         holes: list[Ring] = []
-        for boundary in list(poly):
-            boundary_name = local_name(boundary.tag)
-            if boundary_name not in {"outerBoundaryIs", "innerBoundaryIs"}:
+        for boundary in poly.iter():
+            kind = local_name(boundary.tag)
+            if kind not in {"outerBoundaryIs", "innerBoundaryIs"}:
                 continue
             coords = child_text(boundary, "coordinates")
             if not coords:
                 raise ValueError("Polygon boundary lacks coordinates")
             ring = parse_ring(coords)
-            if boundary_name == "outerBoundaryIs":
-                if outer_ring is not None:
+            if kind == "outerBoundaryIs":
+                if outer is not None:
                     raise ValueError("Polygon has multiple outer rings")
-                outer_ring = ring
+                outer = ring
             else:
                 holes.append(ring)
-
-        if outer_ring is None:
-            # Some generators add wrapper nodes; fall back to descendant search.
-            boundaries = [
-                e for e in poly.iter()
-                if local_name(e.tag) in {"outerBoundaryIs", "innerBoundaryIs"}
-            ]
-            for boundary in boundaries:
-                coords = child_text(boundary, "coordinates")
-                if not coords:
-                    continue
-                ring = parse_ring(coords)
-                if local_name(boundary.tag) == "outerBoundaryIs" and outer_ring is None:
-                    outer_ring = ring
-                elif local_name(boundary.tag) == "innerBoundaryIs":
-                    holes.append(ring)
-
-        if outer_ring is None:
+        if outer is None:
             raise ValueError("Polygon has no outer boundary")
-        polygons.append(Polygon(outer_ring, tuple(holes)))
-
+        polygons.append(Polygon(outer, tuple(holes)))
     if not polygons:
         raise ValueError("Placemark contains no polygon geometry")
     return tuple(polygons)
@@ -241,35 +205,33 @@ def polygons_from_placemark(placemark: ET.Element) -> tuple[Polygon, ...]:
 
 def load_state_geometry(kml_bytes: bytes) -> tuple[dict[str, tuple[Polygon, ...]], dict]:
     root = ET.fromstring(kml_bytes)
-    state_polygons: dict[str, list[Polygon]] = {}
-    upstream_feature_count = 0
-    ignored_placemarks = 0
+    states: dict[str, list[Polygon]] = {}
+    upstream_count = 0
+    ignored_count = 0
 
     for placemark in root.iter():
         if local_name(placemark.tag) != "Placemark":
             continue
-        upstream_feature_count += 1
+        upstream_count += 1
         abbr = placemark_state_abbr(placemark)
         if abbr is None:
-            ignored_placemarks += 1
+            ignored_count += 1
             continue
-        polygons = polygons_from_placemark(placemark)
-        state_polygons.setdefault(abbr, []).extend(polygons)
+        states.setdefault(abbr, []).extend(polygons_from_placemark(placemark))
 
-    actual = set(state_polygons)
+    actual = set(states)
     missing = sorted(WAS_STATES - actual)
     unexpected = sorted(actual - WAS_STATES)
     if missing or unexpected:
-        raise ValueError(
-            f"WAS state set mismatch; missing={missing} unexpected={unexpected}"
-        )
+        raise ValueError(f"WAS state set mismatch missing={missing} unexpected={unexpected}")
 
-    frozen = {abbr: tuple(polys) for abbr, polys in sorted(state_polygons.items())}
-    stats = {
-        "upstreamPlacemarkCount": upstream_feature_count,
-        "ignoredNonWasPlacemarkCount": ignored_placemarks,
-    }
-    return frozen, stats
+    return (
+        {abbr: tuple(polys) for abbr, polys in sorted(states.items())},
+        {
+            "upstreamPlacemarkCount": upstream_count,
+            "ignoredNonWasPlacemarkCount": ignored_count,
+        },
+    )
 
 
 def ring_canonical(ring: Ring) -> str:
@@ -285,67 +247,62 @@ def polygon_canonical(poly: Polygon) -> str:
 def feature_canonical(abbr: str, polygons: tuple[Polygon, ...]) -> str:
     return "\n".join(
         [f"STATE\t{abbr}"]
-        + [f"POLYGON\t{index}\t{polygon_canonical(poly)}" for index, poly in enumerate(polygons)]
+        + [
+            f"POLYGON\t{index}\t{polygon_canonical(poly)}"
+            for index, poly in enumerate(polygons)
+        ]
     ) + "\n"
 
 
-def fmt_double(text: str) -> str:
-    if "." not in text and "e" not in text.lower():
-        return text + ".0"
-    return text
+def analyze_alaska(polygons: tuple[Polygon, ...]) -> dict:
+    all_rings = [
+        ring
+        for polygon in polygons
+        for ring in (polygon.outer, *polygon.holes)
+    ]
+    lons = [float(lon) for ring in all_rings for lon, _ in ring.points]
+    max_jump = max(
+        (
+            abs(float(b[0]) - float(a[0]))
+            for ring in all_rings
+            for a, b in zip(ring.points, ring.points[1:])
+        ),
+        default=0.0,
+    )
+    return {
+        "polygonCount": len(polygons),
+        "containsPositiveLongitudes": any(lon > 0 for lon in lons),
+        "containsNegativeLongitudes": any(lon < 0 for lon in lons),
+        "maxRingSegmentLongitudeJump": max_jump,
+        "antimeridianPolicy": (
+            "Preserve Census multipart geometry verbatim after coordinate "
+            "canonicalization; fail build if any ring segment jumps more than "
+            "180 degrees. No clipping or implicit dateline wrapping."
+        ),
+    }
 
 
-def kotlin_ring(ring: Ring, indent: str) -> list[str]:
-    lines = [indent + "GeoLinearRing(listOf("]
-    for lon, lat in ring.points:
-        lines.append(
-            indent + "    GeoCoordinate(" + fmt_double(lon) + ", " + fmt_double(lat) + "),"
-        )
-    lines.append(indent + "))")
-    return lines
+def kotlin_string(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"')
 
 
-def kotlin_polygon(poly: Polygon, indent: str) -> list[str]:
-    lines = [indent + "GeoPolygon("]
-    lines.append(indent + "    outer = ")
-    outer = kotlin_ring(poly.outer, indent + "        ")
-    # Merge "outer =" with first ring line for readable generated code.
-    lines[-1] += outer[0].lstrip()
-    lines.extend(outer[1:])
-    if poly.holes:
-        lines[-1] += ","
-        lines.append(indent + "    holes = listOf(")
-        for hole in poly.holes:
-            h = kotlin_ring(hole, indent + "        ")
-            lines.extend(h[:-1])
-            lines.append(h[-1] + ",")
-        lines.append(indent + "    ),")
-    lines.append(indent + ")")
-    return lines
-
-
-def generate_kotlin(
-    states: dict[str, tuple[Polygon, ...]],
-    source_sha256: str,
-    feature_hashes: dict[str, str],
-    pack_hash: str,
+def generate_metadata_kotlin(
+    source_sha: str,
     source_size: int,
+    pack_hash: str,
+    feature_hashes: dict[str, str],
+    polygon_counts: dict[str, int],
     stats: dict,
+    alaska: dict,
 ) -> str:
     lines = [
         "package dev.n0png.fieldops.core.map",
         "",
-        "/**",
-        " * GENERATED FILE — DO NOT HAND EDIT.",
-        " *",
-        " * Built by scripts/build_us_state_geometry_pack.py from the official",
-        " * U.S. Census Bureau 2025 national States 1:20,000,000 KML artifact.",
-        " * Only the 50 ARRL WAS state identities are emitted.",
-        " */",
-        "object Census2025UsState20mGeometryPack {",
+        "/** GENERATED by scripts/build_us_state_geometry_pack.py. */",
+        "object Census2025UsState20mPackMetadata {",
         f'    const val UPSTREAM_FILENAME = "{SOURCE_FILENAME}"',
         f'    const val UPSTREAM_URL = "{SOURCE_URL}"',
-        f'    const val UPSTREAM_SHA256 = "{source_sha256}"',
+        f'    const val UPSTREAM_SHA256 = "{source_sha}"',
         f"    const val UPSTREAM_SIZE_BYTES = {source_size}L",
         f'    const val PACK_ID = "{PACK_ID}"',
         f'    const val PACK_VERSION = "{PACK_VERSION}"',
@@ -353,94 +310,42 @@ def generate_kotlin(
         f'    const val SOURCE_VINTAGE = "{SOURCE_VINTAGE}"',
         f'    const val SOURCE_SCALE = "{SOURCE_SCALE}"',
         f'    const val RETRIEVED_ON = "{RETRIEVED_ON}"',
-        f'    const val RIGHTS = "{RIGHTS.replace(chr(34), chr(92)+chr(34))}"',
-        f'    const val STATISTICAL_BOUNDARY_DISCLAIMER = "{DISCLAIMER.replace(chr(34), chr(92)+chr(34))}"',
+        f'    const val BUILD_VERSION = "{BUILD_VERSION}"',
+        f'    const val RIGHTS = "{kotlin_string(RIGHTS)}"',
+        f'    const val STATISTICAL_BOUNDARY_DISCLAIMER = "{kotlin_string(DISCLAIMER)}"',
         f"    const val UPSTREAM_PLACEMARK_COUNT = {stats['upstreamPlacemarkCount']}",
         f"    const val IGNORED_NON_WAS_PLACEMARK_COUNT = {stats['ignoredNonWasPlacemarkCount']}",
         "    const val FEATURE_COUNT = 50",
+        f"    const val ALASKA_POLYGON_COUNT = {alaska['polygonCount']}",
+        f"    const val ALASKA_HAS_POSITIVE_LONGITUDES = {str(alaska['containsPositiveLongitudes']).lower()}",
+        f"    const val ALASKA_HAS_NEGATIVE_LONGITUDES = {str(alaska['containsNegativeLongitudes']).lower()}",
+        f"    const val ALASKA_MAX_LONGITUDE_JUMP = {alaska['maxRingSegmentLongitudeJump']}",
         "",
         "    val featureSha256: Map<String, String> = linkedMapOf(",
     ]
-    for abbr in sorted(states):
+    for abbr in sorted(feature_hashes):
         lines.append(f'        "{abbr}" to "{feature_hashes[abbr]}",')
     lines.extend([
         "    )",
         "",
-        "    val manifest: OfflineGeometryPackManifest =",
-        "        CensusStateGeometryPackContract.productionManifest(",
-        "            packVersion = PACK_VERSION,",
-        "            buildVersion = BUILD_VERSION,",
-        "            declaredFeatureCount = FEATURE_COUNT,",
-        '            scaleLabel = "1:20,000,000 national States (KML)",',
-        "            sourceUrl = UPSTREAM_URL,",
-        "        )",
-        "",
-        f'    const val BUILD_VERSION = "{BUILD_VERSION}"',
-        "",
-        "    val records: List<OfflineGeometryPackRecord> = listOf(",
+        "    val polygonCounts: Map<String, Int> = linkedMapOf(",
     ])
-
-    for abbr, polygons in sorted(states.items()):
-        lines.extend([
-            "        OfflineGeometryPackRecord(",
-            f'            targetValue = "{abbr}",',
-            f'            assetId = "census/2025/state/20m/{abbr}",',
-            "            geometry = MultiPolygonGeometry(",
-            "                polygons = listOf(",
-        ])
-        for poly in polygons:
-            poly_lines = kotlin_polygon(poly, "                    ")
-            lines.extend(poly_lines[:-1])
-            lines.append(poly_lines[-1] + ",")
-        lines.extend([
-            "                ),",
-            "            ),",
-            "        ),",
-        ])
-
+    for abbr in sorted(polygon_counts):
+        lines.append(f'        "{abbr}" to {polygon_counts[abbr]},')
     lines.extend([
         "    )",
-        "",
-        "    val provider: UsStateGeometryPackProvider by lazy {",
-        "        UsStateGeometryPackProvider(manifest, records)",
-        "    }",
         "}",
         "",
     ])
     return "\n".join(lines)
 
 
-def analyze_alaska(polygons: tuple[Polygon, ...]) -> dict:
-    lons = [
-        float(lon)
-        for polygon in polygons
-        for ring in (polygon.outer, *polygon.holes)
-        for lon, _ in ring.points
-    ]
-    east = any(lon > 0 for lon in lons)
-    west = any(lon < 0 for lon in lons)
-    max_segment_jump = 0.0
-    for polygon in polygons:
-        for ring in (polygon.outer, *polygon.holes):
-            for a, b in zip(ring.points, ring.points[1:]):
-                max_segment_jump = max(
-                    max_segment_jump,
-                    abs(float(b[0]) - float(a[0])),
-                )
-    return {
-        "polygonCount": len(polygons),
-        "containsPositiveLongitudes": east,
-        "containsNegativeLongitudes": west,
-        "maxRingSegmentLongitudeJump": max_segment_jump,
-        "antimeridianPolicy": (
-            "Preserve Census multipart geometry verbatim after coordinate canonicalization; "
-            "fail build if any ring segment jumps more than 180 degrees. No clipping or "
-            "implicit dateline wrapping."
-        ),
-    }
-
-
-def build(source_zip: pathlib.Path, output_kotlin: pathlib.Path, output_metadata: pathlib.Path) -> None:
+def build(
+    source_zip: pathlib.Path,
+    output_pack: pathlib.Path,
+    output_metadata: pathlib.Path,
+    output_metadata_kotlin: pathlib.Path,
+) -> None:
     source_bytes = source_zip.read_bytes()
     source_sha = sha256_bytes(source_bytes)
 
@@ -451,34 +356,32 @@ def build(source_zip: pathlib.Path, output_kotlin: pathlib.Path, output_metadata
         kml_bytes = archive.read(kml_names[0])
 
     states, stats = load_state_geometry(kml_bytes)
-    feature_canon = {
+    feature_text = {
         abbr: feature_canonical(abbr, polygons)
         for abbr, polygons in states.items()
     }
     feature_hashes = {
-        abbr: sha256_bytes(canonical.encode("utf-8"))
-        for abbr, canonical in feature_canon.items()
+        abbr: sha256_bytes(text.encode("utf-8"))
+        for abbr, text in feature_text.items()
     }
-    pack_canonical = "".join(feature_canon[abbr] for abbr in sorted(feature_canon))
-    pack_hash = sha256_bytes(pack_canonical.encode("utf-8"))
+    pack_text = "".join(feature_text[abbr] for abbr in sorted(feature_text))
+    pack_bytes = pack_text.encode("utf-8")
+    pack_hash = sha256_bytes(pack_bytes)
 
     alaska = analyze_alaska(states["AK"])
     if alaska["maxRingSegmentLongitudeJump"] > 180.0 + 1e-9:
         raise ValueError("Alaska contains an unsplit antimeridian segment")
 
-    generated = generate_kotlin(
-        states=states,
-        source_sha256=source_sha,
-        feature_hashes=feature_hashes,
-        pack_hash=pack_hash,
-        source_size=len(source_bytes),
-        stats=stats,
-    )
-    output_kotlin.parent.mkdir(parents=True, exist_ok=True)
-    output_kotlin.write_text(generated, encoding="utf-8")
+    output_pack.parent.mkdir(parents=True, exist_ok=True)
+    output_pack.write_bytes(pack_bytes)
 
+    polygon_counts = {
+        abbr: len(polygons)
+        for abbr, polygons in sorted(states.items())
+    }
     metadata = {
         "schemaVersion": 1,
+        "packFormat": "FIELDOPS_US_STATE_CANONICAL_V1",
         "packId": PACK_ID,
         "packVersion": PACK_VERSION,
         "buildVersion": BUILD_VERSION,
@@ -500,10 +403,7 @@ def build(source_zip: pathlib.Path, output_kotlin: pathlib.Path, output_metadata
         "excludedFromWas": ["DC", "PR", "AS", "GU", "MP", "VI"],
         "canonicalPackSha256": pack_hash,
         "featureSha256": dict(sorted(feature_hashes.items())),
-        "statePolygonCounts": {
-            abbr: len(polygons)
-            for abbr, polygons in sorted(states.items())
-        },
+        "statePolygonCounts": polygon_counts,
         "alaska": alaska,
         **stats,
     }
@@ -513,8 +413,23 @@ def build(source_zip: pathlib.Path, output_kotlin: pathlib.Path, output_metadata
         encoding="utf-8",
     )
 
+    output_metadata_kotlin.parent.mkdir(parents=True, exist_ok=True)
+    output_metadata_kotlin.write_text(
+        generate_metadata_kotlin(
+            source_sha=source_sha,
+            source_size=len(source_bytes),
+            pack_hash=pack_hash,
+            feature_hashes=feature_hashes,
+            polygon_counts=polygon_counts,
+            stats=stats,
+            alaska=alaska,
+        ),
+        encoding="utf-8",
+    )
+
     print(f"source_sha256={source_sha}")
     print(f"pack_sha256={pack_hash}")
+    print(f"pack_bytes={len(pack_bytes)}")
     print(f"features={len(states)}")
     print(f"upstream_placemarks={stats['upstreamPlacemarkCount']}")
     print(f"ignored_non_was={stats['ignoredNonWasPlacemarkCount']}")
@@ -538,11 +453,11 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--source-zip", type=pathlib.Path)
     parser.add_argument(
-        "--output-kotlin",
+        "--output-pack",
         type=pathlib.Path,
         default=pathlib.Path(
-            "core/src/main/kotlin/dev/n0png/fieldops/core/map/"
-            "Census2025UsState20mGeometryPack.kt"
+            "core/src/main/resources/dev/n0png/fieldops/maps/"
+            "us_states_2025_20m.pack"
         ),
     )
     parser.add_argument(
@@ -550,24 +465,32 @@ def main() -> None:
         type=pathlib.Path,
         default=pathlib.Path("research/maps/US_STATE_2025_20M_PACK.json"),
     )
-    parser.add_argument("--download-only", action="store_true")
+    parser.add_argument(
+        "--output-metadata-kotlin",
+        type=pathlib.Path,
+        default=pathlib.Path(
+            "core/src/main/kotlin/dev/n0png/fieldops/core/map/"
+            "Census2025UsState20mPackMetadata.kt"
+        ),
+    )
     args = parser.parse_args()
 
     if args.source_zip:
         source_zip = args.source_zip
         if not source_zip.exists():
             download_source(source_zip)
+        temp_dir = None
     else:
         temp_dir = tempfile.TemporaryDirectory()
         source_zip = pathlib.Path(temp_dir.name) / SOURCE_FILENAME
         download_source(source_zip)
 
-    if args.download_only:
-        print(f"downloaded={source_zip}")
-        print(f"sha256={sha256_bytes(source_zip.read_bytes())}")
-        return
-
-    build(source_zip, args.output_kotlin, args.output_metadata)
+    build(
+        source_zip,
+        args.output_pack,
+        args.output_metadata,
+        args.output_metadata_kotlin,
+    )
 
 
 if __name__ == "__main__":
