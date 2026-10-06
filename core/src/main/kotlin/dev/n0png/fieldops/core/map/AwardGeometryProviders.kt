@@ -352,6 +352,7 @@ object CensusStateGeometryPackContract {
         buildVersion: String,
         declaredFeatureCount: Int,
         scaleLabel: String = "1:20,000,000 national States",
+        sourceUrl: String = SOURCE_URL,
     ): OfflineGeometryPackManifest = OfflineGeometryPackManifest(
         packId = "us-census-cartographic-states",
         packVersion = packVersion,
@@ -360,7 +361,7 @@ object CensusStateGeometryPackContract {
             kind = AwardGeometrySourceKind.EXTERNAL_DATASET,
             sourceId = "US_CENSUS_CARTOGRAPHIC_BOUNDARY_FILES",
             sourceVersion = "2025 Cartographic Boundary Files — $scaleLabel",
-            sourceUrl = SOURCE_URL,
+            sourceUrl = sourceUrl,
             licenseLabel = LICENSE_LABEL,
             retrievedOn = "2026-10-06",
             buildVersion = buildVersion,
