@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0006C — Award target enrichment and composite rules**
+**CP-0006D — Awards Center progress projection**
 
-Add explicit, provenance-bearing normalized award targets keyed by immutable QSO id; then implement official date/band/confirmation constraints and composite evaluators for Triple Play and IOTA. Do not infer missing award geography from callsigns or free text, and do not attempt sponsor-account login or claim submission.
+Build a UI-independent Awards Center read model from the verified catalog/progress engine. Expose worked/confirmed/remaining/progress, band/mode/date views, official links/source evidence, external-verification warnings, and sponsor standing without moving award rules into UI code or inferring sponsor claim/award state.

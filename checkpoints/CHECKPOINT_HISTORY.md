@@ -158,3 +158,17 @@ Host/CI gate: official catalog 115; award evaluator 67; manual/digital LoTW queu
 Finalization workflow run: 37460474655.
 
 Evidence: research/awards/CP-0006B_OFFICIAL_AWARD_CATALOG.md and research/awards/OFFICIAL_AWARD_SOURCES.tsv.
+
+## CP-0006C — Award target enrichment and composite rules
+
+Parent durable checkpoint: CP-0006B-OFFICIAL_AWARD_CATALOG.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has provenance-bearing normalized award target evidence outside QsoRecord plus an official award progress engine. DXCC/WAS/WAC/POTA consume explicit enrichment, Triple Play is a 150-cell state-by-mode LoTW-confirmed matrix, and IOTA 100 requires both 100 confirmed groups and seven-continent coverage. Official date/band/confirmation rules apply before contribution. Conflicting single-valued geography fails closed, callsigns/free text are not used to guess targets, SOTA remains external point scoring, and local progress never becomes sponsor claimability/award state automatically.
+
+Host/CI gate: target/composite evaluator 77; official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37463697312.
+
+Evidence: research/awards/CP-0006C_AWARD_TARGET_ENRICHMENT.md.

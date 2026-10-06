@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0006B-OFFICIAL_AWARD_CATALOG`
+`CP-0006C-AWARD_TARGET_ENRICHMENT`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,18 +25,19 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-`CP-0006C-AWARD_TARGET_ENRICHMENT`
+`CP-0006D-AWARDS_CENTER_PROJECTION`
 
 Required scope:
 
-- provider-independent award-target evidence keyed by immutable QSO id
-- explicit provenance for normalized DXCC entity, U.S. state, continent, IOTA group and POTA reference targets
-- no callsign/free-text guessing without a versioned authoritative enrichment source
-- official date/band/confirmation-source filtering before award contribution
-- Triple Play state-by-mode matrix evaluation
-- IOTA 100 count-plus-seven-continent coverage evaluation
-- DXCC/WAS/WAC/POTA local progress from normalized evidence without rewriting QSO records
-- SOTA scoring remains external until a verified integration exists
+- UI-independent Awards Center read/projection model
+- worked / confirmed / local-threshold / remaining / deterministic progress fields
+- Mixed, CW, Phone, Digital plus band/date query views
+- official information/claim links, claim instructions and source/version evidence
+- explicit external-verification warnings where local evidence is incomplete
+- sponsor standing remains separate from local threshold/progress
+- external-program scoring such as SOTA must remain external rather than fabricated
+- award rules stay in catalog/evaluator code, not UI projection code
+- host/CI-only verification before Compose/Room/device integration
 - no real account login, claim submission, phone/radio/RF, or credential use
 - skip later hardware/account-gated checkpoints under the owner execution override
 
