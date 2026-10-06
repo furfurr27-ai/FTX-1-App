@@ -70,6 +70,7 @@
     "WY": "10ee6660008760766ed05097aebceed8886d862c9dc2e1060f822a6535e03798"
   },
   "ignoredNonWasPlacemarkCount": 2,
+  "packFormat": "FIELDOPS_US_STATE_CANONICAL_V1",
   "packId": "us-census-cartographic-states",
   "packVersion": "2025-20m-kml-v1",
   "rights": "U.S. Government work; U.S. copyright unavailable under 17 U.S.C. \u00a7105; Census Bureau source attribution requested",
