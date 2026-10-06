@@ -1,9 +1,13 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0003C — Real LoTW validation**
+**CP-0005A — Universal QSO model + fast logger**
 
-Build/package official TrustedQSL for Android arm64-v8a, load it on the Galaxy S23 Ultra, import a controlled real Callsign Certificate/PKCS#12, create a real signed TQ8, and run the CP-0003B transaction against a controlled LoTW test QSO:
+Implement and host-verify the software-only logging checkpoint:
 
-`sign -> upload -> verify accepted-QSO report -> commit`
+- universal QSO record with exact mode/submode, radio mode, band/frequency, UTC, callsign, RST, grid/location, station profile and operating session
+- fast manual SSB/CW logging from current session/radio context
+- digital completed-contact auto-log adapters into the same QSO model
+- ADIF export preserving exact mode/submode and frequency
+- no automatic LoTW enqueue yet; that remains CP-0005B
 
-Then verify confirmation sync/cursors and secret hygiene. Automatic upload stays disabled unless every CP-0003C device/test-account gate passes.
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain explicitly deferred and incomplete.
