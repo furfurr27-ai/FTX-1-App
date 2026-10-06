@@ -239,7 +239,17 @@ class FastQsoLogger(
     private val repository: LogbookRepository,
     private val idSource: QsoIdSource,
     private val clock: UtcMillisClock = UtcMillisClock.SYSTEM,
+    private val lotwQueue: LotwQueueSink? = null,
+    private val lotwPolicy: LotwLoggerPolicy = LotwLoggerPolicy.DISABLED,
+    private val lotwQueueFailureHandler: LotwQueueFailureHandler = LotwQueueFailureHandler.IGNORE,
 ) {
+    init {
+        require(
+            lotwPolicy.autoQueueMode == LotwAutoQueueMode.DISABLED || lotwQueue != null
+        ) {
+            "An enabled LoTW logger policy requires a local LoTW queue"
+        }
+    }
     fun logManual(
         input: ManualQsoInput,
         session: OperatingSession,
@@ -319,7 +329,32 @@ class FastQsoLogger(
             notes = draft.notes,
             txPowerWatts = draft.txPowerWatts,
         )
-        return repository.save(qso)
+        val saved = repository.save(qso)
+        autoQueueAfterAuthoritativeSave(saved)
+        return saved
+    }
+
+    private fun autoQueueAfterAuthoritativeSave(saved: QsoRecord) {
+        if (!lotwPolicy.shouldAutoQueue(saved)) return
+
+        val queue = lotwQueue ?: return
+        val profileId = saved.stationProfileId
+        if (profileId.isNullOrBlank()) {
+            lotwQueueFailureHandler.onFailure(
+                saved,
+                IllegalStateException("LoTW auto-queue requires a station profile id"),
+            )
+            return
+        }
+
+        // Local logging is authoritative. Queue insertion happens only after
+        // repository.save() succeeds and any queue error is reported separately
+        // rather than converting a saved QSO into a failed log operation.
+        runCatching {
+            queue.enqueue(saved, profileId)
+        }.onFailure { failure ->
+            lotwQueueFailureHandler.onFailure(saved, failure)
+        }
     }
 }
 
