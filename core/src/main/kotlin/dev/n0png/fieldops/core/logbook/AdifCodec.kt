@@ -13,11 +13,14 @@ object AdifCodec {
             field("TIME_ON", q.timeOn)
             field("BAND", q.band)
             field("MODE", q.mode)
-            q.freqMhz?.let { field("FREQ", it) }
-            q.grid?.let { field("GRIDSQUARE", it) }
+            q.submode?.let { field("SUBMODE", it) }
+            q.exactFrequencyMhz?.let { field("FREQ", it) }
+            q.exactRemoteGrid?.let { field("GRIDSQUARE", it) }
             q.rstSent?.let { field("RST_SENT", it) }
             q.rstRcvd?.let { field("RST_RCVD", it) }
-            q.myGridSquare?.let { field("MY_GRIDSQUARE", it) }
+            q.qsoDateOff?.let { field("QSO_DATE_OFF", it) }
+            q.timeOff?.let { field("TIME_OFF", it) }
+            q.exactStationGrid?.let { field("MY_GRIDSQUARE", it) }
             q.myDxcc?.let { field("MY_DXCC", it.toString()) }
             q.myCqZone?.let { field("MY_CQ_ZONE", it.toString()) }
             q.myItuZone?.let { field("MY_ITU_ZONE", it.toString()) }
