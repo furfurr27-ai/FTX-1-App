@@ -5,12 +5,11 @@ on:
     branches:
       - main
     paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/awards/**'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/awards/AwardDomain.kt'
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/AwardEvaluationTests.kt'
       - 'scripts/test_award_evaluation.sh'
       - 'scripts/finalize_cp0006a.py'
       - 'research/awards/CP-0006A_AWARD_EVALUATION_ENGINE.md'
-      - '.github/workflows/finalize-cp0006a.yml'
 
 permissions:
   contents: write
