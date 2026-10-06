@@ -21,7 +21,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0007a.py'
+      - 'research/maps/CP-0007A_AWARD_MAP_PROJECTION.md'
       - '.github/workflows/cp0007a-award-map-projection.yml'
+      - '.github/workflows/finalize-cp0007a.yml'
 
 permissions:
   contents: read
@@ -44,6 +47,22 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run focused CP-0007A map projection gate
         run: bash scripts/test_award_area_map_projection.sh
+
+      - name: Dry-run CP-0007A checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0007a.py
+          python3 scripts/finalize_cp0007a.py
+          grep -Fq 'CP-0007A-AWARD_MAP_PROJECTION' README.md
+          grep -Fq 'CP-0007B — Award geometry providers and offline geometry-pack contract' NEXT_ACTION.md
+          grep -Fq 'CP-0007B-AWARD_GEOMETRY_PROVIDERS' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0007A — Award-area map projection foundation' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0007A snapshot' .github/workflows/finalize-cp0007a.yml
+          git diff --check
 
   extended-regression:
     runs-on: ubuntu-latest
