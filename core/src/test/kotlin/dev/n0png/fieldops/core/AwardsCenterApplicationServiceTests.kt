@@ -490,7 +490,7 @@ object AwardsCenterApplicationServiceTests {
 
     private fun source(
         id: String,
-        reference: String,
+        reference: String = "record",
     ) = AwardAdifImportSource(
         sourceId = id,
         sourceVersion = "fixture-v1",
