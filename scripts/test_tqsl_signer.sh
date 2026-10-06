@@ -9,6 +9,30 @@ TQSL_VERSION="2.8.6"
 TQSL_SHA256="182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37"
 TQSL_URL="https://downloads.sourceforge.net/project/trustedqsl/tqsl-${TQSL_VERSION}.tar.gz"
 
+download_verified_tqsl() {
+  local output="$1"
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    rm -f "$output"
+    if curl -fL \
+      --retry 2 \
+      --retry-all-errors \
+      --retry-delay 2 \
+      --connect-timeout 20 \
+      --max-time 300 \
+      -o "$output" \
+      "$TQSL_URL"; then
+      if echo "$TQSL_SHA256  $output" | sha256sum -c -; then
+        return 0
+      fi
+    fi
+    echo "TrustedQSL download attempt $attempt failed; retrying with a clean partial file" >&2
+    sleep $((attempt * 2))
+  done
+  echo "Unable to download and verify TrustedQSL $TQSL_VERSION after 5 attempts" >&2
+  return 1
+}
+
 MAIN_JAR="$BUILD/fieldops-core-main.jar"
 SIGNER_DIR="$BUILD/signer"
 TEST_JAR="$BUILD/tqsl-signer-tests.jar"
@@ -19,8 +43,7 @@ mkdir -p "$SIGNER_DIR" "$NATIVE_DIR" "$DATA_DIR" "$RESOURCE_DIR"
 printf '%s\n' '<tqslconfig majorversion="1" minorversion="0"/>' > "$RESOURCE_DIR/config.xml"
 
 echo "[1/8] Fetch and verify official TrustedQSL release pin"
-curl -fL --retry 3 --retry-delay 2 -o "$BUILD/tqsl.tar.gz" "$TQSL_URL"
-echo "$TQSL_SHA256  $BUILD/tqsl.tar.gz" | sha256sum -c -
+download_verified_tqsl "$BUILD/tqsl.tar.gz"
 mkdir -p "$BUILD/upstream"
 tar -xzf "$BUILD/tqsl.tar.gz" -C "$BUILD/upstream"
 TQSL_SRC="$(find "$BUILD/upstream" -type f -name tqsllib.h -path '*/src/*' -printf '%h\n' | head -n1)"
