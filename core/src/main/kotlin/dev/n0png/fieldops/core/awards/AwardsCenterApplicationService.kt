@@ -2,6 +2,9 @@ package dev.n0png.fieldops.core.awards
 
 import dev.n0png.fieldops.core.logbook.LogbookRepository
 import dev.n0png.fieldops.core.logbook.QsoRecord
+import dev.n0png.fieldops.core.map.AwardAreaGeometryCatalog
+import dev.n0png.fieldops.core.map.AwardAreaMapLayer
+import dev.n0png.fieldops.core.map.AwardAreaMapProjectionService
 
 data class ResolvedAwardAdifRecord(
     val qsoId: Long,
@@ -24,6 +27,7 @@ class AwardsCenterApplicationService(
     private val evidenceRepository: AwardEvidenceRepository,
     private val enrichmentAdapter: AwardAdifEnrichmentAdapter = AwardAdifEnrichmentAdapter(),
     private val projectionService: AwardsCenterProjectionService = AwardsCenterProjectionService(),
+    private val mapProjectionService: AwardAreaMapProjectionService = AwardAreaMapProjectionService(),
 ) {
     /**
      * Builds the current Awards Center entirely from the authoritative local
@@ -41,6 +45,24 @@ class AwardsCenterApplicationService(
             query = query,
         )
     }
+
+    /**
+     * Builds award-area map records from the same authoritative logbook and
+     * persisted award evidence used by Awards Center.
+     *
+     * Geometry remains an optional metadata binding; no coordinates or
+     * boundaries are inferred by this service.
+     */
+    fun awardMapLayers(
+        query: AwardsCenterQuery = AwardsCenterQuery(),
+        geometryCatalog: AwardAreaGeometryCatalog = AwardAreaGeometryCatalog.EMPTY,
+    ): List<AwardAreaMapLayer> =
+        mapProjectionService.project(
+            qsos = logbook.all(),
+            evidence = evidenceRepository.snapshot(),
+            query = query,
+            geometryCatalog = geometryCatalog,
+        )
 
     /**
      * Import award evidence only after another layer has already resolved an

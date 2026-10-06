@@ -1,0 +1,239 @@
+name: Finalize CP-0007A checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/map/AwardAreaMapProjection.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/awards/AwardsCenterApplicationService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/AwardAreaMapProjectionTests.kt'
+      - 'scripts/test_award_area_map_projection.sh'
+      - 'scripts/finalize_cp0007a.py'
+      - 'research/maps/CP-0007A_AWARD_MAP_PROJECTION.md'
+      - '.github/workflows/finalize-cp0007a.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  map-projection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run focused CP-0007A map projection gate
+        run: bash scripts/test_award_area_map_projection.sh
+
+  extended-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_extended_award_catalog.sh
+
+  service-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_awards_center_application_service.sh
+
+  persistence-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_evidence_persistence.sh
+
+  projection-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_awards_center_projection.sh
+
+  target-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_target_enrichment.sh
+
+  catalog-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_official_award_catalog.sh
+
+  award-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_evaluation.sh
+
+  queue-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_manual_qso_lotw_queue.sh
+
+  logger-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_universal_qso_logger.sh
+
+  lotw-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_lotw_transaction.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_core_regression.sh
+
+
+  checkpoint:
+    needs: [map-projection, extended-regression, service-regression, persistence-regression, projection-regression, target-regression, catalog-regression, award-regression, queue-regression, logger-regression, lotw-regression, core-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0007a.py
+
+      - name: Create immutable CP-0007A snapshot
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0007A-AWARD_MAP_PROJECTION \
+            --parent CP-0006G-EXTENDED_AWARD_CATALOG \
+            --summary "Platform-independent award-area map projection for U.S. states and Maidenhead grids with deterministic progress aggregation and metadata-only geometry bindings" \
+            --phase "Award-area map projection host-verified; geometry providers/offline pack contract next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "WAS and FFMA finite target universes emit deterministic needed/worked-unconfirmed/confirmed map targets while VUCC never fabricates unknown needed grid identities" \
+            --completed "LOCAL_THRESHOLD_MET is an explicit overlay state separate from sponsor claimability/credit" \
+            --completed "Map target records retain deterministic QSO ids, confirmation ids, bands, mode groups, exact MODE/SUBMODE, target provenance, and confirmation sources" \
+            --completed "AwardsCenterQuery mode/band/date context flows through the map projection and official award band restrictions remain enforced by the evaluator" \
+            --completed "Geometry identity/source/version/license metadata is separated from geometry payload using external asset bindings; missing geometry remains unbound rather than synthesized" \
+            --completed "AwardsCenterApplicationService builds map layers from the same authoritative logbook and persistent evidence repositories used by Awards Center" \
+            --completed "Production map projection never derives state/grid geography from callsigns and unsupported geography types remain unprojected" \
+            --completed "Focused map PASS 96; extended catalog PASS 96; service PASS 64; persistence PASS 92; Awards Center projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'" \
+            --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint" \
+            --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete" \
+            --blocker "Real U.S. state geometry data, Maidenhead geometry payloads, DXCC/IOTA/POTA/SOTA/CQ/ITU geometry, Android map rendering, and offline tiles are not yet implemented" \
+            --blocker "Local threshold state remains distinct from sponsor claimability, awarded status, and credit" \
+            --next "CP-0007B: define versioned award geometry providers/offline geometry-pack contract and authoritative deterministic Maidenhead four-character cell geometry" \
+            --next "Define source/version/license-attributed U.S. state geometry-pack adapter with compact CI fixtures before any full offline dataset" \
+            --next "Keep geometry independent of award rules, do not derive geography from callsigns, and continue skipping phone/radio/credential/account/RF/manual-hardware checkpoints"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0007A-AWARD_MAP_PROJECTION.json
+          git add -f checkpoints/snapshots/CP-0007A-AWARD_MAP_PROJECTION.tar.gz
+          git commit -m "Checkpoint CP-0007A award map projection"
+          git push
