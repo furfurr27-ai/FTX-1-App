@@ -1,0 +1,204 @@
+name: Finalize CP-0006C checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/awards/AwardTargetEvidence.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/AwardTargetEnrichmentTests.kt'
+      - 'scripts/test_award_target_enrichment.sh'
+      - 'scripts/finalize_cp0006c.py'
+      - 'research/awards/CP-0006C_AWARD_TARGET_ENRICHMENT.md'
+      - '.github/workflows/finalize-cp0006c.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  enrichment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006C target/composite gate
+        run: bash scripts/test_award_target_enrichment.sh
+
+  catalog-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006B catalog regression
+        run: bash scripts/test_official_award_catalog.sh
+
+  award-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006A award regression
+        run: bash scripts/test_award_evaluation.sh
+
+  queue-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005B queue regression
+        run: bash scripts/test_manual_qso_lotw_queue.sh
+
+  logger-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005A logger regression
+        run: bash scripts/test_universal_qso_logger.sh
+
+  lotw-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0003B LoTW transaction regression
+        run: bash scripts/test_lotw_transaction.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run inherited core regression
+        run: bash scripts/test_core_regression.sh
+
+  checkpoint:
+    needs: [enrichment, catalog-regression, award-regression, queue-regression, logger-regression, lotw-regression, core-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0006c.py
+
+      - name: Create immutable CP-0006C snapshot
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0006C-AWARD_TARGET_ENRICHMENT \
+            --parent CP-0006B-OFFICIAL_AWARD_CATALOG \
+            --summary "Provenance-bearing award target enrichment plus official date/band/confirmation filters and Triple Play/IOTA composite evaluation" \
+            --phase "Award target enrichment/composite rules host-verified; Awards Center projection next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Award target evidence is external to QsoRecord, keyed by immutable QSO id, and requires source id/version provenance" \
+            --completed "Normalized direct targets cover DXCC entity, U.S. state, continent, IOTA group and POTA reference without callsign/free-text guessing" \
+            --completed "Conflicting single-valued target evidence fails closed while multiple POTA references per QSO are preserved" \
+            --completed "Official not-before date, excluded-band, band/mode view and confirmation-source rules apply before contribution" \
+            --completed "DXCC/WAS/WAC/POTA consume normalized target evidence without rewriting authoritative QSOs" \
+            --completed "Triple Play evaluates the full 150-cell state-by-mode matrix with LoTW-only confirmed cells" \
+            --completed "IOTA 100 requires 100 confirmed groups plus all seven required continents" \
+            --completed "SOTA point scoring remains external and local evaluation never emits sponsor claimability/awarded/credited state" \
+            --completed "Focused target/composite PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'" \
+            --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint" \
+            --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete" \
+            --blocker "Real enrichment dataset/import adapters are not yet implemented; CP-0006C proves the evidence/evaluation boundary with explicit fixtures" \
+            --blocker "WAS/Triple Play same-location sponsor rules are retained in catalog but not proven by CP-0006C local evaluation" \
+            --blocker "VUCC, CQ WAZ/WPX, additional awards, SOTA scoring integration and sponsor account sync remain later work" \
+            --next "CP-0006D: build a UI-independent Awards Center projection with worked/confirmed/remaining/progress and official-source/claim metadata" \
+            --next "Add explicit Mixed/CW/Phone/Digital plus band/date query views while keeping award rules in catalog/evaluator layers" \
+            --next "Keep sponsor standing/external scoring separate and continue skipping phone/radio/credential/account/RF/manual-hardware checkpoints"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0006C-AWARD_TARGET_ENRICHMENT.json
+          git add -f checkpoints/snapshots/CP-0006C-AWARD_TARGET_ENRICHMENT.tar.gz
+          git commit -m "Checkpoint CP-0006C award target enrichment"
+          git push
