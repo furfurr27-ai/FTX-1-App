@@ -126,3 +126,19 @@ Host/CI gate: queue 47; universal logger 78; LoTW transaction 53; core 42,062; p
 Finalization workflow run: 37451754863.
 
 Evidence: research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md.
+
+## CP-0006A — Award evaluation engine
+
+Parent durable checkpoint: CP-0005B-MANUAL_QSO_LOTW_QUEUE.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override: do not return to CP-0003C until the owner explicitly says `resume CP-0003C`; skip other checkpoints that require phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has a provider-independent award evaluator with separate WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE states. Confirmation evidence is explicit, exact QSO MODE/SUBMODE is preserved while a separate controlled award-mode grouping supports CW/PHONE/DIGITAL views, and evaluation can be all-band or band-scoped without mutating the QSO record. Local threshold completion cannot become official claimability without an explicit claimability evaluator.
+
+CP-0006A intentionally uses synthetic/generic definitions only; official sponsor rules and claim URLs remain CP-0006B.
+
+Host/CI gate: award 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37458092347.
+
+Evidence: research/awards/CP-0006A_AWARD_EVALUATION_ENGINE.md.

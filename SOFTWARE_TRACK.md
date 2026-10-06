@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0005B-MANUAL_QSO_LOTW_QUEUE`
+`CP-0006A-AWARD_EVALUATION_ENGINE`
 
 ## Deferred but incomplete hardware/account work
 
@@ -17,18 +17,24 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 These checkpoints are not skipped in the sense of being complete. They are deferred and must return later.
 
+## Owner execution override
+
+CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly says `resume CP-0003C`.
+
+Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue with the next checkpoint that can be completed entirely through GitHub/CI. Deferred checkpoints remain incomplete.
+
 ## Active software checkpoint
 
-`CP-0006A-AWARD_EVALUATION_ENGINE`
+`CP-0006B-OFFICIAL_AWARD_CATALOG`
 
 Required scope:
 
-- explicit WORKED / CONFIRMED / THRESHOLD_MET / OFFICIALLY_CLAIMABLE award states
-- controlled award-mode grouping without losing exact QSO mode/submode
-- band-scoped and all-band evaluation
-- explicit confirmation/evidence provenance
-- generic/synthetic definitions only in this checkpoint
-- no guessed official award requirements; official catalog work remains CP-0006B
+- verify rules/claim links from official issuing organizations only
+- record source URL plus version/retrieval date for catalog evidence
+- layer official definitions on CP-0006A without moving sponsor logic into UI
+- keep threshold met, officially claimable, and officially awarded/credited distinct
+- no real account login, claim submission, phone/radio/RF, or credential use
+- if a later checkpoint becomes hardware/account gated, skip it under the owner execution override
 
 ## Resume rule
 
@@ -36,6 +42,7 @@ On interruption or a new chat:
 
 1. read `README.md`, `NEXT_ACTION.md`, and this file;
 2. inspect the latest verified checkpoint and the active branch;
-3. do not return to deferred hardware work unless Chris explicitly asks or the required device/account evidence is available;
+3. do not return to CP-0003C unless the owner explicitly says `resume CP-0003C`;
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
+6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;

@@ -39,54 +39,49 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0005B-MANUAL_QSO_LOTW_QUEUE
+**Latest verified checkpoint:** CP-0006A-AWARD_EVALUATION_ENGINE
 
-Parent durable checkpoint: CP-0005A-UNIVERSAL_QSO_LOGGER.
+Parent durable checkpoint: CP-0005B-MANUAL_QSO_LOTW_QUEUE.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0005B is a GREEN host/CI local LoTW-queue checkpoint. It connects successful local SSB/CW and eligible completed-digital saves to the existing transaction-safe LoTW queue without giving the logger any signing or network ownership.
+CP-0006A is a GREEN host/CI award-domain checkpoint. It adds a provider-independent evaluator on top of the authoritative QSO model without encoding guessed sponsor rules or requiring live services/hardware.
 
-CP-0005B proves:
+CP-0006A proves:
 
-- LotwLoggerPolicy explicitly controls logger-save to local LoTW queue behavior.
-- Disabled policy leaves the authoritative saved QSO NOT_UPLOADED.
-- Enabled policy auto-queues manual SSB, manual CW and completed digital-auto QSOs.
-- Local QSO persistence happens before any queue action.
-- A local queue failure cannot erase or fail the authoritative QSO save.
-- Successful local enqueue updates the authoritative QSO sync state to QUEUED.
-- Queue failures are surfaced separately through LotwQueueFailureHandler.
-- LotwUploadQueue.enqueue() is idempotent by immutable local QSO id.
-- Re-enqueueing the same QSO does not duplicate the entry or reset attempt/state.
-- Reusing an existing immutable QSO id for a materially different contact or station profile fails closed.
-- Queue entries preserve station-profile id, operating-session id, station callsign, exact mode/submode and digital provider identity.
-- SSB, CW and digital QSOs use the same local LotwUploadQueue.
-- The logger path contains no LoTW HTTP/signing transaction call and cannot start a real upload.
-- Real automatic network upload remains disabled until deferred CP-0003C passes.
+- WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE are distinct award states.
+- Confirmation requires explicit source/evidence; worked contacts are not silently treated as confirmed.
+- Exact QSO MODE/SUBMODE remains preserved on each award contribution.
+- A separate controlled award-mode grouping layer supports CW, PHONE and DIGITAL views.
+- Unmapped modes stay unclassified rather than being guessed into award progress.
+- Band-scoped and all-band evaluation use filters and do not rewrite authoritative QSO records.
+- Distinct target counting supports WORKED-based or CONFIRMED-based thresholds.
+- Optional target universes expose remaining targets against the configured threshold basis.
+- Local threshold completion never automatically becomes official sponsor claimability.
+- OFFICIALLY_CLAIMABLE requires an explicit claimability evaluator and can only be considered after the local threshold is met.
+- CP-0006A contains synthetic/generic award definitions only; official rules and claim URLs remain CP-0006B work.
 
 Host/CI gates:
 
+- CP-0006A award evaluator: **67/67 PASS**.
 - CP-0005B manual/digital LoTW queue: **47/47 PASS**.
 - CP-0005A universal QSO/logger: **78/78 PASS**.
 - CP-0003B LoTW transaction: **53/53 PASS**.
 - Inherited core: **42,062 PASS**.
-- Pipeline: **56 PASS**.
-- Inherited LoTW: **19 PASS**.
 
 Evidence:
 
-- research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md
+- research/awards/CP-0006A_AWARD_EVALUATION_ENGINE.md
 - SOFTWARE_TRACK.md
-
-- CP-0005B finalization workflow run: 37451754863
+- CP-0006A finalization workflow run: 37458092347
 
 ### Evidence boundary
 
-CP-0005B is host/CI software evidence. It does not claim Room persistence, Compose queue UI, live automatic LoTW network upload, real LoTW certificate/account/device validation, or FTX-1 Android hardware proof.
+CP-0006A is host/CI software evidence. It does not claim official award-rule correctness, sponsor-account access, claim submission, Awards Center UI/persistence, live LoTW/device validation, or FTX-1 Android hardware proof.
 
 ### Inherited verified ancestry
 
-CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -104,7 +99,13 @@ Current deferred hardware/account checkpoints:
 - `CP-0004B — FTX-1 USB audio`: not complete; requires actual Android endpoint/sample-rate enumeration.
 - `CP-0004C — S23 + FTX-1 hardware proof`: not complete by definition.
 
-**Active software track:** CP-0006A — Award evaluation engine
+### Owner-directed deferred checkpoint rule
+
+CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly says `resume CP-0003C`.
+
+While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
+
+**Active software track:** CP-0006B — Official award rules/catalog
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -329,7 +330,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0005B-MANUAL_QSO_LOTW_QUEUE`
+- Current Git source baseline: `CP-0006A-AWARD_EVALUATION_ENGINE`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -342,15 +343,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0006A — Award evaluation engine.**
+**CP-0006B — Official award rules/catalog.**
 
-1. Add a provider-independent award-domain model with explicit WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE states.
-2. Preserve exact QSO mode/submode while adding a separate controlled award-mode grouping layer.
-3. Support band-scoped and all-band evaluation without rewriting the authoritative QSO record.
-4. Keep confirmation source/evidence explicit; a worked QSO is not automatically confirmed.
-5. Keep local threshold completion distinct from official sponsor claimability/credit.
-6. Build the engine against synthetic/generic award definitions only in CP-0006A.
-7. Do not encode guessed official award requirements; verified official rules and claim URLs belong to CP-0006B.
+1. Verify award definitions only from official issuing-organization sources and record source URLs/version or retrieval date.
+2. Encode a versioned award catalog on top of the CP-0006A provider-independent evaluator; do not hard-code sponsor rules into UI.
+3. Keep official claimability and credited/awarded status distinct from local threshold calculations.
+4. Add official information/claim links and concise claim instructions without attempting real account login or claim submission.
+5. Keep exact QSO MODE/SUBMODE plus controlled award-mode grouping and band-specific views.
+6. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says `resume CP-0003C`.
+7. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 
 ## README maintenance contract
 

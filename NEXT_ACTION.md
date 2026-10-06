@@ -1,9 +1,13 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0006A — Award evaluation engine**
+## Execution override
 
-Create the provider-independent award-domain/evaluator layer with distinct WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE states.
+CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly says `resume CP-0003C`.
 
-Preserve exact QSO MODE/SUBMODE and add a separate controlled award-mode grouping layer. Support band and all-band evaluation, keep confirmation evidence explicit, and do not treat local threshold completion as official sponsor claimability.
+Skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. A skipped checkpoint remains incomplete.
 
-Use synthetic/generic award definitions only. Official award rules and claim URLs must be verified separately in CP-0006B.
+## Next software checkpoint
+
+**CP-0006B — Official award rules/catalog**
+
+Verify official issuing-organization rules and links, then encode a versioned catalog on top of the CP-0006A provider-independent evaluator. Keep threshold completion, official claimability, and officially awarded/credited status distinct. Do not attempt real account login or claim submission.

@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0005B-MANUAL_QSO_LOTW_QUEUE",
-  "created_utc": "2026-10-06T10:45:00+00:00",
-  "manifest": "checkpoints/manifests/CP-0005B-MANUAL_QSO_LOTW_QUEUE.json",
-  "snapshot": "checkpoints/snapshots/CP-0005B-MANUAL_QSO_LOTW_QUEUE.tar.gz",
-  "snapshot_sha256": "f42c2bbb1235d3808eda982420b54622e011f5ad65de997b3976939908042659"
+  "checkpoint_id": "CP-0006A-AWARD_EVALUATION_ENGINE",
+  "created_utc": "2026-10-06T11:42:59+00:00",
+  "manifest": "checkpoints/manifests/CP-0006A-AWARD_EVALUATION_ENGINE.json",
+  "snapshot": "checkpoints/snapshots/CP-0006A-AWARD_EVALUATION_ENGINE.tar.gz",
+  "snapshot_sha256": "8f0b87d04e509688e024a06f077e0ea4648352bb3b4cee8f40ac54dabe77c7f8"
 }

@@ -1,31 +1,28 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0005B-MANUAL_QSO_LOTW_QUEUE**
-Project version: `v15-manual-qso-lotw-queue`
-Phase: **Universal logger plus local LoTW auto-queue host-verified; award evaluation engine next; hardware/account checkpoints remain deferred**
-Test status: **GREEN host/CI: queue=47 logger=78 LoTW_transaction=53 core=42062 pipeline=56 LoTW=19; real automatic LoTW upload remains disabled; finalizer run 37451754863**
+Latest verified checkpoint: **CP-0006A-AWARD_EVALUATION_ENGINE**
+Project version: `v16-award-evaluation-engine`
+Phase: **Award evaluation engine host-verified; official award rules/catalog next; hardware/account checkpoints remain deferred by owner**
+Test status: **GREEN host/CI: award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37458092347**
 
 ## What is complete in this checkpoint
-- Explicit LotwLoggerPolicy controls disabled versus automatic manual/digital local queue insertion
-- Authoritative repository save occurs before any local LoTW queue action
-- Successful local enqueue mirrors QUEUED state to the stored QSO; queue failure leaves saved QSO NOT_UPLOADED and reports separately
-- Manual SSB, manual CW and eligible completed digital QSOs enter one shared LotwUploadQueue when enabled
-- LotwUploadQueue enqueue is idempotent by immutable local QSO id and preserves retry/state on repeated enqueue
-- Conflicting reuse of immutable QSO id or station profile fails closed
-- Station profile, operating session, exact mode/submode and digital provider identity survive queue insertion
-- Logger-save path contains no LoTW HTTP/signing transaction ownership
-- Focused queue PASS 47; universal logger PASS 78; LoTW transaction PASS 53; core PASS 42062; pipeline PASS 56; LoTW PASS 19
+- Provider-independent award-domain model exposes WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE as distinct states
+- Confirmation source/evidence is explicit and worked QSOs are not silently promoted to confirmed
+- Controlled award-mode grouping is separate from and preserves exact QSO MODE/SUBMODE
+- Band-scoped and all-band evaluation uses filters without rewriting authoritative QSO records
+- Distinct-target thresholds support WORKED or CONFIRMED basis and optional remaining-target universes
+- Local threshold completion cannot imply official sponsor claimability without an explicit claimability evaluator
+- CP-0006A contains synthetic/generic definitions only and 67 focused award assertions pass
 
 ## Known blockers / red items
-- CP-0003C real LoTW certificate/account/device validation remains deferred and incomplete
+- OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'
+- Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint
 - CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete
-- Room persistence and Compose queue UI remain later app-shell work
-- Real automatic LoTW network upload remains disabled until CP-0003C passes
+- Official sponsor award rules/claim links are not encoded until CP-0006B verifies official sources
 
 ## Continue with these exact actions
-1. CP-0006A: implement provider-independent award evaluation states WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE
-2. Add controlled award-mode grouping without losing exact QSO mode/submode and support band/all-band evaluation
-3. Use synthetic/generic award definitions only; verify official rules and claim URLs separately in CP-0006B
+1. CP-0006B: verify official award rules/claim links from issuing organizations and encode a versioned catalog on top of CP-0006A
+2. Do not attempt real award-account login or claim submission; skip any later phone/radio/credential/account/RF/manual-hardware checkpoint under the owner override
 
 ## Verification before continuing
 Run:
