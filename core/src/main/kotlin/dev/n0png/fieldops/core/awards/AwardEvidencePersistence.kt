@@ -454,6 +454,7 @@ class AwardAdifEnrichmentAdapter {
         normalized["STATE"]?.let { addTarget(OfficialAwardTargetKind.US_STATE, it) }
         normalized["CONT"]?.let { addTarget(OfficialAwardTargetKind.CONTINENT, it) }
         normalized["IOTA"]?.let { addTarget(OfficialAwardTargetKind.IOTA_GROUP, it) }
+        normalized["GRIDSQUARE"]?.let { addTarget(OfficialAwardTargetKind.MAIDENHEAD_GRID4, it) }
 
         explicitPotaReferences(normalized).forEach {
             addTarget(OfficialAwardTargetKind.POTA_REFERENCE, it)
