@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0006D-AWARDS_CENTER_PROJECTION`
+`CP-0006E-AWARD_EVIDENCE_PERSISTENCE`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,18 +25,19 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-`CP-0006E-AWARD_EVIDENCE_PERSISTENCE`
+`CP-0006F-AWARDS_APPLICATION_SERVICE`
 
 Required scope:
 
-- provider-independent durable repository contracts for award target evidence, confirmation evidence and sponsor standing
-- immutable-QSO keyed idempotent/conflict-safe writes
-- explicit ADIF enrichment for present remote DXCC, STATE, CONT, IOTA and POTA reference fields
-- source/provenance/version retention for every imported award target
-- conservative explicit confirmation import only; QSO presence/upload success never means confirmed
-- no callsign-prefix/country/grid/free-text inference for missing award targets
-- no sponsor-account login/sync or claim submission
-- host/CI-only verification before Compose/Room/device integration
+- platform-independent Awards Center application service
+- compose LogbookRepository + AwardEvidenceRepository + AwardAdifEnrichmentAdapter + AwardsCenterProjectionService
+- cards generated from authoritative local logbook plus persisted evidence
+- parsed ADIF ingestion only after immutable local QSO id resolution
+- deterministic batch ingestion with explicit record/source provenance
+- no fuzzy callsign-only award matching or geography inference
+- host fixtures for LoTW/import-style records without real accounts/network
+- sponsor standing/claimability remains explicit and separate from local progress
+- no real sponsor-account login/sync or claim submission
 - no phone/radio/RF/credential use
 - skip later hardware/account-gated checkpoints under the owner execution override
 

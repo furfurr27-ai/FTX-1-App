@@ -186,3 +186,17 @@ Host/CI gate: Awards Center projection 114; target/composite evaluator 77; offic
 Finalization workflow run: 37466410722.
 
 Evidence: research/awards/CP-0006D_AWARDS_CENTER_PROJECTION.md.
+
+## CP-0006E — Award evidence persistence and explicit ADIF enrichment import
+
+Parent durable checkpoint: CP-0006D-AWARDS_CENTER_PROJECTION.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has a provider-independent persistent award-evidence boundary with atomic/idempotent/conflict-safe batches and deterministic schema-versioned snapshot serialization. Explicit ADIF DXCC/STATE/CONT/IOTA/POTA metadata can create provenance-bearing target evidence; only explicit received-confirmation flags become confirmation evidence. Callsign/country/grid/notes/MY_* fields are not used for remote award inference, upload/sent state is not confirmation, and backing-store failure cannot advance repository state.
+
+Host/CI gate: award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37469159046.
+
+Evidence: research/awards/CP-0006E_AWARD_EVIDENCE_PERSISTENCE.md.
