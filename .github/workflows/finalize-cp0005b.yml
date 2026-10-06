@@ -5,15 +5,16 @@ on:
     branches:
       - main
     paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/QsoDomain.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/LotwLoggerPolicy.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/LotwModels.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/ManualQsoLotwQueueTests.kt'
       - 'scripts/test_manual_qso_lotw_queue.sh'
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
       - 'scripts/finalize_cp0005b.py'
       - 'research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md'
-      - '.github/workflows/finalize-cp0005b.yml'
 
 permissions:
   contents: write

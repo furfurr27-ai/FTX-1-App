@@ -1,0 +1,14 @@
+award_id	issuer	source_role	official_url	retrieved_on	version_or_date	verified_fact
+ARRL_DXCC_MIXED	ARRL	RULES	https://www.arrl.org/dxcc-rules	2026-10-06	current page	Basic DXCC requires working and confirming at least 100 DXCC entities; Mixed permits any mode and qualifying contacts date from 1945-11-15.
+ARRL_DXCC_MIXED	ARRL	CLAIM_PROCESS	https://lotw.arrl.org/lotw-help/dxcc-award-credit/	2026-10-06	current page	LoTW provides a DXCC award-credit application path; local threshold is not sponsor credit.
+ARRL_WAS_BASIC	ARRL	RULES	https://www.arrl.org/WAS	2026-10-06	current page	Basic WAS requires confirmed contacts with all 50 U.S. states; 60m is excluded and DC may count for Maryland.
+ARRL_WAS_BASIC	ARRL	CLAIM_PROCESS	https://www.arrl.org/was-forms	2026-10-06	current page	ARRL publishes current WAS application forms; LoTW/hybrid methods are separately supported.
+IARU_WAC_BASIC	IARU / ARRL administration	RULES	https://www.arrl.org/wac	2026-10-06	current page	WAC requires working and confirming North America, South America, Oceania, Asia, Europe and Africa.
+IARU_WAC_BASIC	IARU / ARRL administration	CLAIM_PROCESS	https://www.arrl.org/wac	2026-10-06	current page	The official page publishes the WAC application/checking process and forms.
+ARRL_TRIPLE_PLAY_WAS	ARRL	RULES	https://www.arrl.org/triple-play	2026-10-06	current page	Triple Play WAS requires LoTW-confirmed QSOs with all 50 states on voice, CW and digital; contacts must be after 2009-01-01 and 60m is excluded.
+ARRL_TRIPLE_PLAY_WAS	ARRL	CLAIM_PROCESS	https://www.arrl.org/triple-play	2026-10-06	current page	The award is based on an electronic LoTW application; a local 150-cell count alone is not sponsor claimability.
+IOTA_100	IOTA Ltd / IOTA Programme	RULES	https://www.iota-world.org/info/directory/rules-en.pdf	2026-10-06	Programme Rules published 2026-05-05	IOTA 100 is the basic award: at least 100 confirmed IOTA groups with different references and at least one contact from each of seven continents.
+IOTA_100	IOTA Ltd / IOTA Programme	CLAIM_PROCESS	https://www.iota-world.org/	2026-10-06	current site	IOTA submissions are made through the official online programme/database under current rules.
+POTA_BRONZE_HUNTER	Parks on the Air	RULES	https://docs.pota.app/docs/award_certificates/unique_reference.html	2026-10-06	current page	Bronze Hunter requires hunting 10 unique POTA references; unique-reference awards are issued automatically after qualifying logs are processed.
+SOTA_SHACK_SLOTH_1000	Summits on the Air	RULES	https://www.sota.org.uk/Joining-In/Awards	2026-10-06	current page	Chasers/SWLs reach Shack Sloth at 1000 SOTA points; awards are not sent automatically and must be claimed.
+SOTA_SHACK_SLOTH_1000	Summits on the Air	PROGRAM_INFO	https://www.sota.org.uk/Joining-In/General-Rules	2026-10-06	General Rules v1.21 updated 2022-06-01	SOTA programme scoring/operation remains governed by the current General Rules and local association rules.
