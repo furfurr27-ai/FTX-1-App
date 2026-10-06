@@ -40,6 +40,20 @@ jobs:
       - name: Run focused CP-0005A logger gate
         run: bash scripts/test_universal_qso_logger.sh
 
+      - name: Dry-run CP-0005A checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0005a.py
+          python3 scripts/finalize_cp0005a.py
+          grep -Fq 'CP-0005A-UNIVERSAL_QSO_LOGGER' README.md
+          grep -Fq 'CP-0005B — Manual-QSO LoTW queue' NEXT_ACTION.md
+          grep -Fq 'CP-0005B-MANUAL_QSO_LOTW_QUEUE' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0005A — Universal QSO model + fast logger' checkpoints/CHECKPOINT_HISTORY.md
+          git diff --check
+
   lotw-regression:
     runs-on: ubuntu-latest
     steps:
