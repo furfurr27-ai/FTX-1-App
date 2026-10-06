@@ -1,0 +1,238 @@
+name: Finalize CP-0006E checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/awards/AwardEvidencePersistence.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/AwardEvidencePersistenceTests.kt'
+      - 'scripts/test_award_evidence_persistence.sh'
+      - 'scripts/finalize_cp0006e.py'
+      - 'research/awards/CP-0006E_AWARD_EVIDENCE_PERSISTENCE.md'
+      - '.github/workflows/finalize-cp0006e.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  persistence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006E persistence/import gate
+        run: bash scripts/test_award_evidence_persistence.sh
+
+  projection:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006D projection gate
+        run: bash scripts/test_awards_center_projection.sh
+
+  target-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006C target/composite regression
+        run: bash scripts/test_award_target_enrichment.sh
+
+  catalog-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006B catalog regression
+        run: bash scripts/test_official_award_catalog.sh
+
+  award-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0006A award regression
+        run: bash scripts/test_award_evaluation.sh
+
+  queue-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005B queue regression
+        run: bash scripts/test_manual_qso_lotw_queue.sh
+
+  logger-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005A logger regression
+        run: bash scripts/test_universal_qso_logger.sh
+
+  lotw-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0003B LoTW transaction regression
+        run: bash scripts/test_lotw_transaction.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run inherited core regression
+        run: bash scripts/test_core_regression.sh
+
+  checkpoint:
+    needs: [persistence, projection, target-regression, catalog-regression, award-regression, queue-regression, logger-regression, lotw-regression, core-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0006e.py
+
+      - name: Create immutable CP-0006E snapshot
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0006E-AWARD_EVIDENCE_PERSISTENCE \
+            --parent CP-0006D-AWARDS_CENTER_PROJECTION \
+            --summary "Provider-independent persistent award evidence with atomic snapshots and explicit conservative ADIF target/confirmation enrichment" \
+            --phase "Award evidence persistence/import host-verified; Awards Center application service next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Award target, confirmation and sponsor-standing evidence share one provider-independent repository boundary without modifying authoritative QSOs" \
+            --completed "Batch writes are atomic, idempotent and conflict-safe; single-valued target conflicts fail closed while multi-reference POTA is preserved" \
+            --completed "Schema-versioned deterministic snapshot serialization survives repository reconstruction and safely preserves tabs/Unicode/provenance" \
+            --completed "Backing-store failure does not advance in-memory state and the complete batch can be retried" \
+            --completed "Explicit ADIF DXCC/STATE/CONT/IOTA/POTA metadata creates normalized provenance-bearing targets without callsign/country/grid/notes/MY_* inference" \
+            --completed "Only explicit LOTW_QSL_RCVD=Y and QSL_RCVD=Y import confirmation evidence; sent/upload state is never confirmation" \
+            --completed "Existing AdifCodec records feed the enrichment adapter and persisted evidence feeds the Awards Center projection without QSO mutation" \
+            --completed "Focused persistence/import PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'" \
+            --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint" \
+            --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete" \
+            --blocker "The persistence boundary is platform independent; a production Room/SQLite adapter and Android persistence behavior are not yet proven" \
+            --blocker "Live sponsor account synchronization, live LoTW download, claim submission and fuzzy QSO matching remain outside CP-0006E" \
+            --next "CP-0006F: compose logbook, persisted award evidence, ADIF enrichment and Awards Center projection behind one platform-independent application service" \
+            --next "Require resolved immutable local QSO ids for evidence ingestion and add deterministic provenance-bearing batch orchestration without fuzzy callsign matching" \
+            --next "Keep real sponsor accounts/claim submission out and continue skipping phone/radio/credential/account/RF/manual-hardware checkpoints"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0006E-AWARD_EVIDENCE_PERSISTENCE.json
+          git add -f checkpoints/snapshots/CP-0006E-AWARD_EVIDENCE_PERSISTENCE.tar.gz
+          git commit -m "Checkpoint CP-0006E award evidence persistence"
+          git push
