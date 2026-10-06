@@ -18,7 +18,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0006f.py'
+      - 'research/awards/CP-0006F_AWARDS_APPLICATION_SERVICE.md'
       - '.github/workflows/cp0006f-awards-application-service.yml'
+      - '.github/workflows/finalize-cp0006f.yml'
 
 permissions:
   contents: read
@@ -41,6 +44,22 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run focused CP-0006F application service gate
         run: bash scripts/test_awards_center_application_service.sh
+
+      - name: Dry-run CP-0006F checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0006f.py
+          python3 scripts/finalize_cp0006f.py
+          grep -Fq 'CP-0006F-AWARDS_APPLICATION_SERVICE' README.md
+          grep -Fq 'CP-0006G — Extended official award catalog and evaluator coverage' NEXT_ACTION.md
+          grep -Fq 'CP-0006G-EXTENDED_AWARD_CATALOG' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0006F — Awards Center application service and evidence-ingestion orchestration' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0006F snapshot' .github/workflows/finalize-cp0006f.yml
+          git diff --check
 
   persistence-regression:
     runs-on: ubuntu-latest
