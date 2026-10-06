@@ -41,6 +41,21 @@ jobs:
       - name: Run focused CP-0005B queue gate
         run: bash scripts/test_manual_qso_lotw_queue.sh
 
+      - name: Dry-run CP-0005B checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0005b.py
+          python3 scripts/finalize_cp0005b.py
+          grep -Fq 'CP-0005B-MANUAL_QSO_LOTW_QUEUE' README.md
+          grep -Fq 'CP-0006A — Award evaluation engine' NEXT_ACTION.md
+          grep -Fq 'CP-0006A-AWARD_EVALUATION_ENGINE' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0005B — Manual/digital QSO LoTW queue' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'Verify CP-0005B checkpoint' .github/workflows/finalize-cp0005b.yml
+          git diff --check
+
   logger-regression:
     runs-on: ubuntu-latest
     steps:
