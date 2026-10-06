@@ -15,8 +15,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0006b.py'
       - 'research/awards/**'
       - '.github/workflows/cp0006b-official-award-catalog.yml'
+      - '.github/workflows/finalize-cp0006b.yml'
 
 permissions:
   contents: read
@@ -39,6 +41,22 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run focused CP-0006B catalog gate
         run: bash scripts/test_official_award_catalog.sh
+
+      - name: Dry-run CP-0006B checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0006b.py
+          python3 scripts/finalize_cp0006b.py
+          grep -Fq 'CP-0006B-OFFICIAL_AWARD_CATALOG' README.md
+          grep -Fq 'CP-0006C — Award target enrichment and composite rules' NEXT_ACTION.md
+          grep -Fq 'CP-0006C-AWARD_TARGET_ENRICHMENT' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0006B — Official award rules/catalog' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0006B snapshot' .github/workflows/finalize-cp0006b.yml
+          git diff --check
 
   award-regression:
     runs-on: ubuntu-latest
