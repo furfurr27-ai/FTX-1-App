@@ -48,7 +48,16 @@ object OfficialAwardCatalogTests {
             "docs.pota.app",
             "www.sota.org.uk",
         )
-        OfficialAwardCatalog.entries.forEach { entry ->
+        val cp0006bBaseIds = listOf(
+            "ARRL_DXCC_MIXED",
+            "ARRL_WAS_BASIC",
+            "IARU_WAC_BASIC",
+            "ARRL_TRIPLE_PLAY_WAS",
+            "IOTA_100",
+            "POTA_BRONZE_HUNTER",
+            "SOTA_SHACK_SLOTH_1000",
+        )
+        cp0006bBaseIds.map(OfficialAwardCatalog::require).forEach { entry ->
             checkThat(entry.sources.isNotEmpty(), "${entry.id} source list")
             checkThat(URI(entry.informationUrl).host in allowedHosts, "${entry.id} official info host")
             entry.claimUrl?.let {
