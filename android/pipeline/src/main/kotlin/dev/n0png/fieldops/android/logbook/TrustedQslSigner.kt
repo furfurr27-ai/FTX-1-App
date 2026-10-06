@@ -1,6 +1,7 @@
 package dev.n0png.fieldops.android.logbook
 
 import dev.n0png.fieldops.core.logbook.LotwSigningRequest
+import dev.n0png.fieldops.core.logbook.LotwStationProfile
 import dev.n0png.fieldops.core.logbook.LotwSigningSession
 import dev.n0png.fieldops.core.logbook.LotwSigningSessionState
 import dev.n0png.fieldops.core.logbook.TransactionalLotwSigner
@@ -11,9 +12,9 @@ import java.util.Arrays
 /**
  * Production FieldOps TrustedQSL signing facade.
  *
- * CP-0003A deliberately stops at signed payload creation. It does not perform
- * LoTW HTTP upload and it does not commit TrustedQSL duplicate state
- * automatically; CP-0003B will own that transaction boundary.
+ * Signing remains separate from LoTW HTTP transport. CP-0003B owns the
+ * sign/upload/verify/commit transaction; CP-0003C supplies explicit Android
+ * data/resource directories and validates the real native runtime.
  */
 class TrustedQslSigner internal constructor(
     private val native: TrustedQslJniBridge,
@@ -21,8 +22,33 @@ class TrustedQslSigner internal constructor(
 
     constructor(
         dataDirectory: String,
+        resourceDirectory: String = dataDirectory,
         libraryLoader: () -> Unit = { System.loadLibrary(TrustedQslJniBridge.LIBRARY_NAME) },
-    ) : this(TrustedQslJniBridge(dataDirectory, libraryLoader))
+    ) : this(TrustedQslJniBridge(dataDirectory, resourceDirectory, libraryLoader))
+
+    fun ensureStationLocation(
+        profile: LotwStationProfile,
+        stationLocationName: String,
+    ) {
+        native.ensureStationLocation(
+            name = stationLocationName,
+            callsign = profile.stationCallsign.trim().uppercase(),
+            dxcc = profile.dxcc,
+            gridSquare = profile.gridSquare.trim().uppercase(),
+            cqZone = profile.cqZone,
+            ituZone = profile.ituZone,
+        )
+    }
+
+    fun importBackup(backup: ByteArray) {
+        require(backup.isNotEmpty()) { "TQSL backup payload must not be empty" }
+        val copy = backup.copyOf()
+        try {
+            native.importBackup(copy)
+        } finally {
+            Arrays.fill(copy, 0)
+        }
+    }
 
     override fun importPkcs12(
         pkcs12: ByteArray,

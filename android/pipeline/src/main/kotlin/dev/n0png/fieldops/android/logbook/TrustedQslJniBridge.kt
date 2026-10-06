@@ -3,22 +3,59 @@ package dev.n0png.fieldops.android.logbook
 /**
  * Narrow JNI surface around official tqsllib/tqslconvert.
  *
+ * TrustedQSL has two process-global paths:
+ * - a writable base/data directory for certificates, keys, station data and the
+ *   duplicate database; and
+ * - a read-only resource directory containing the official config.xml.
+ *
+ * Android cannot safely rely on TrustedQSL's desktop CONFDIR/HOME discovery, so
+ * FieldOps supplies both app-private paths explicitly before tqsl_init().
+ *
  * The native library owns TrustedQSL handles and never exposes raw key material
  * to Kotlin. Error reporting is intentionally code-only so native/library error
  * strings cannot accidentally contain sensitive paths or certificate details.
  */
 internal class TrustedQslJniBridge(
     dataDirectory: String,
+    resourceDirectory: String = dataDirectory,
     libraryLoader: () -> Unit = { System.loadLibrary(LIBRARY_NAME) },
 ) {
     init {
         require(dataDirectory.isNotBlank()) { "TrustedQSL data directory must be explicit" }
+        require(resourceDirectory.isNotBlank()) { "TrustedQSL resource directory must be explicit" }
         try {
             libraryLoader()
         } catch (_: Throwable) {
             throw TrustedQslException("TrustedQSL native signer unavailable")
         }
-        status("initialize", nativeInitialize(dataDirectory))
+        status("initialize", nativeInitialize(dataDirectory, resourceDirectory))
+    }
+
+    fun ensureStationLocation(
+        name: String,
+        callsign: String,
+        dxcc: Int,
+        gridSquare: String,
+        cqZone: Int,
+        ituZone: Int,
+    ) {
+        require(name.isNotBlank())
+        require(callsign.isNotBlank())
+        require(dxcc > 0)
+        require(gridSquare.length >= 4)
+        require(cqZone in 1..40)
+        require(ituZone in 1..90)
+        status(
+            "station-location provisioning",
+            nativeEnsureStationLocation(
+                name,
+                callsign,
+                dxcc,
+                gridSquare,
+                cqZone,
+                ituZone,
+            ),
+        )
     }
 
     fun importPkcs12(
@@ -28,6 +65,11 @@ internal class TrustedQslJniBridge(
     ) {
         require(pkcs12.isNotEmpty()) { "PKCS#12 payload must not be empty" }
         status("PKCS#12 import", nativeImportPkcs12(pkcs12, p12PasswordUtf8, keyPasswordUtf8))
+    }
+
+    fun importBackup(backup: ByteArray) {
+        require(backup.isNotEmpty()) { "TQSL backup payload must not be empty" }
+        status("backup import", nativeImportBackup(backup))
     }
 
     fun beginSigning(
@@ -73,12 +115,24 @@ internal class TrustedQslJniBridge(
         }
     }
 
-    private external fun nativeInitialize(dataDirectory: String): Int
+    private external fun nativeInitialize(
+        dataDirectory: String,
+        resourceDirectory: String,
+    ): Int
+    private external fun nativeEnsureStationLocation(
+        name: String,
+        callsign: String,
+        dxcc: Int,
+        gridSquare: String,
+        cqZone: Int,
+        ituZone: Int,
+    ): Int
     private external fun nativeImportPkcs12(
         pkcs12: ByteArray,
         p12PasswordUtf8: ByteArray,
         keyPasswordUtf8: ByteArray,
     ): Int
+    private external fun nativeImportBackup(backup: ByteArray): Int
     private external fun nativeBeginSigning(
         adif: String,
         stationLocationName: String,

@@ -9,16 +9,41 @@ TQSL_VERSION="2.8.6"
 TQSL_SHA256="182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37"
 TQSL_URL="https://downloads.sourceforge.net/project/trustedqsl/tqsl-${TQSL_VERSION}.tar.gz"
 
+download_verified_tqsl() {
+  local output="$1"
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    rm -f "$output"
+    if curl -fL \
+      --retry 2 \
+      --retry-all-errors \
+      --retry-delay 2 \
+      --connect-timeout 20 \
+      --max-time 300 \
+      -o "$output" \
+      "$TQSL_URL"; then
+      if echo "$TQSL_SHA256  $output" | sha256sum -c -; then
+        return 0
+      fi
+    fi
+    echo "TrustedQSL download attempt $attempt failed; retrying with a clean partial file" >&2
+    sleep $((attempt * 2))
+  done
+  echo "Unable to download and verify TrustedQSL $TQSL_VERSION after 5 attempts" >&2
+  return 1
+}
+
 MAIN_JAR="$BUILD/fieldops-core-main.jar"
 SIGNER_DIR="$BUILD/signer"
 TEST_JAR="$BUILD/tqsl-signer-tests.jar"
 NATIVE_DIR="$BUILD/native"
 DATA_DIR="$BUILD/tqsl-data"
-mkdir -p "$SIGNER_DIR" "$NATIVE_DIR" "$DATA_DIR"
+RESOURCE_DIR="$BUILD/tqsl-resource"
+mkdir -p "$SIGNER_DIR" "$NATIVE_DIR" "$DATA_DIR" "$RESOURCE_DIR"
+printf '%s\n' '<tqslconfig majorversion="1" minorversion="0"/>' > "$RESOURCE_DIR/config.xml"
 
 echo "[1/8] Fetch and verify official TrustedQSL release pin"
-curl -fL --retry 3 --retry-delay 2 -o "$BUILD/tqsl.tar.gz" "$TQSL_URL"
-echo "$TQSL_SHA256  $BUILD/tqsl.tar.gz" | sha256sum -c -
+download_verified_tqsl "$BUILD/tqsl.tar.gz"
 mkdir -p "$BUILD/upstream"
 tar -xzf "$BUILD/tqsl.tar.gz" -C "$BUILD/upstream"
 TQSL_SRC="$(find "$BUILD/upstream" -type f -name tqsllib.h -path '*/src/*' -printf '%h\n' | head -n1)"
@@ -31,10 +56,10 @@ echo "[2/8] Compile production JNI bridge against exact official 2.8.6 headers"
 g++ -std=c++17 -Wall -Wextra -Werror -fPIC -c   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -I"$TQSL_SRC"   "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp"   -o "$BUILD/official-api-check.o"
 
 echo "[3/8] Build deterministic host TrustedQSL fixture + production JNI bridge"
-g++ -std=c++17 -Wall -Wextra -Werror -fPIC -shared   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -I"$ROOT/native/tqsl/test_fixture/include"   "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp"   "$ROOT/native/tqsl/test_fixture/fake_tqsl.cpp"   -lz   -o "$NATIVE_DIR/libfieldops_tqsl.so"
+g++ -std=c++17 -Wall -Wextra -Werror -fPIC -shared   -I"$JAVA_HOME/include"   -I"$JAVA_HOME/include/linux"   -I"$ROOT/native/tqsl/test_fixture/include"   "$ROOT/native/tqsl/fieldops_tqsl_jni.cpp"   "$ROOT/native/tqsl/test_fixture/fake_tqsl.cpp"   -lexpat -lz   -o "$NATIVE_DIR/libfieldops_tqsl.so"
 
 nm -D --defined-only "$NATIVE_DIR/libfieldops_tqsl.so" > "$BUILD/jni-symbols.txt"
-for sym in   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeRollback   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeClose; do
+for sym in   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeInitialize   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportPkcs12   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeImportBackup   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeBeginSigning   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeGetPayload   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeCommit   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeRollback   Java_dev_n0png_fieldops_android_logbook_TrustedQslJniBridge_nativeClose; do
   grep -Fq "$sym" "$BUILD/jni-symbols.txt" || { echo "missing TrustedQSL JNI symbol: $sym" >&2; exit 1; }
 done
 
@@ -49,7 +74,7 @@ echo "[6/8] Compile signer tests separately"
 kotlinc   "$ROOT/android/pipeline/src/test/kotlin/dev/n0png/fieldops/android/logbook/TrustedQslSignerTests.kt"   -cp "$MAIN_JAR:$SIGNER_DIR"   -include-runtime   -d "$TEST_JAR"
 
 echo "[7/8] Run focused TrustedQSL signer bridge tests"
-LD_LIBRARY_PATH="$NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" java -Djava.library.path="$NATIVE_DIR"   -cp "$TEST_JAR:$MAIN_JAR:$SIGNER_DIR"   dev.n0png.fieldops.android.logbook.TrustedQslSignerTests "$DATA_DIR"
+LD_LIBRARY_PATH="$NATIVE_DIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" java -Djava.library.path="$NATIVE_DIR"   -cp "$TEST_JAR:$MAIN_JAR:$SIGNER_DIR"   dev.n0png.fieldops.android.logbook.TrustedQslSignerTests "$DATA_DIR" "$RESOURCE_DIR"
 
 echo "[8/8] Enforce signer implementation separation from HTTP transport"
 ! grep -Eq 'LotwTransport|HttpURLConnection|uploadTq8' \

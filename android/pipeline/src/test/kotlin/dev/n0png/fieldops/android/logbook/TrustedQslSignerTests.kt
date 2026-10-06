@@ -1,9 +1,13 @@
 package dev.n0png.fieldops.android.logbook
 
 import dev.n0png.fieldops.core.logbook.LotwSigningRequest
+import dev.n0png.fieldops.core.logbook.LotwStationProfile
 import dev.n0png.fieldops.core.logbook.LotwSigningSessionState
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
 
 object TrustedQslSignerTests {
     private var assertions = 0
@@ -31,16 +35,49 @@ object TrustedQslSignerTests {
 
     @JvmStatic
     fun main(args: Array<String>) {
-        require(args.size == 1) { "usage: TrustedQslSignerTests <data-directory>" }
+        require(args.size == 2) {
+            "usage: TrustedQslSignerTests <data-directory> <resource-directory>"
+        }
         val dataDirectory = args[0]
+        val resourceDirectory = args[1]
 
-        testUnavailableLibraryFailsClosed(dataDirectory)
+        testUnavailableLibraryFailsClosed(dataDirectory, resourceDirectory)
+        testMissingResourceConfigFailsClosed(dataDirectory, resourceDirectory)
 
-        val signer = TrustedQslSigner(dataDirectory)
+        val signer = TrustedQslSigner(dataDirectory, resourceDirectory)
+        val homeProfile = LotwStationProfile(
+            id = "home",
+            name = "Home",
+            stationCallsign = "N0PNG",
+            gridSquare = "JN49",
+            dxcc = 230,
+            cqZone = 14,
+            ituZone = 28,
+            country = "Germany",
+        )
+        signer.ensureStationLocation(homeProfile, "Home")
+
+        expectFailure(
+            containsCode = "133",
+            forbidden = listOf("Home", "JO40"),
+        ) {
+            signer.ensureStationLocation(
+                homeProfile.copy(gridSquare = "JO40"),
+                "Home",
+            )
+        }
+
+        val wiesbadenProfile = homeProfile.copy(
+            id = "wiesbaden",
+            name = "Wiesbaden",
+        )
+        signer.ensureStationLocation(wiesbadenProfile, "Wiesbaden")
+        signer.ensureStationLocation(wiesbadenProfile, "Wiesbaden")
+
         val request = LotwSigningRequest(
             adif = testAdif(),
-            stationProfileId = "home",
-            stationLocationName = "Home",
+            stationProfileId = "wiesbaden",
+            stationLocationName = "Wiesbaden",
             expectedStationCallsign = "N0PNG",
             expectedDxcc = 230,
         )
@@ -66,6 +103,10 @@ object TrustedQslSignerTests {
                 "key-pass".toCharArray(),
             )
         }
+
+        val backup = testBackup()
+        signer.importBackup(backup)
+        checkThat(backup.isNotEmpty(), "caller backup buffer was unexpectedly modified")
 
         val container = byteArrayOf(7, 6, 5, 4, 3, 2, 1)
         val p12Password = "p12-pass".toCharArray()
@@ -145,22 +186,73 @@ object TrustedQslSignerTests {
         expectFailure { rolled.commit() }
         rolled.close()
 
+        val alternateResource = File(resourceDirectory).resolveSibling("alternate-tqsl-resource")
+        alternateResource.mkdirs()
+        File(alternateResource, "config.xml").writeText("<tqslconfig/>")
+        expectFailure(
+            containsCode = "101",
+            forbidden = listOf(dataDirectory, resourceDirectory),
+        ) {
+            TrustedQslSigner(dataDirectory, alternateResource.absolutePath)
+        }
+
         println("TrustedQSL signer bridge tests: PASS assertions=" + assertions)
     }
 
-    private fun testUnavailableLibraryFailsClosed(dataDirectory: String) {
+    private fun testUnavailableLibraryFailsClosed(
+        dataDirectory: String,
+        resourceDirectory: String,
+    ) {
         expectFailure(
             forbidden = listOf("loader-secret"),
         ) {
             TrustedQslSigner(
                 dataDirectory = dataDirectory,
+                resourceDirectory = resourceDirectory,
                 libraryLoader = { throw UnsatisfiedLinkError("loader-secret") },
             )
         }
     }
 
+    private fun testMissingResourceConfigFailsClosed(
+        dataDirectory: String,
+        resourceDirectory: String,
+    ) {
+        val missing = File(resourceDirectory).resolveSibling("missing-tqsl-resource")
+        missing.mkdirs()
+        File(missing, "config.xml").delete()
+        expectFailure(
+            containsCode = "102",
+            forbidden = listOf(dataDirectory, missing.absolutePath),
+        ) {
+            TrustedQslSigner(dataDirectory, missing.absolutePath)
+        }
+    }
+
     private fun gunzip(payload: ByteArray): String =
         GZIPInputStream(ByteArrayInputStream(payload)).bufferedReader().use { it.readText() }
+
+    private fun testBackup(): ByteArray {
+        val xml = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <TQSL_Configuration>
+              <Certificates>
+                <RootCert>ROOT-CERT</RootCert>
+                <CACert>CA-CERT</CACert>
+                <UserCert CallSign="N0PNG" dxcc="230" serial="1">
+                  <SignedCert>USER-CERT</SignedCert>
+                  <PrivateKey>PRIVATE-KEY-MATERIAL</PrivateKey>
+                </UserCert>
+              </Certificates>
+              <Locations>
+                <Location name="Home" CALL="N0PNG" DXCC="230" GRIDSQUARE="JN49" CQZ="14" ITUZ="28" />
+              </Locations>
+            </TQSL_Configuration>
+        """.trimIndent()
+        val out = ByteArrayOutputStream()
+        GZIPOutputStream(out).use { it.write(xml.toByteArray()) }
+        return out.toByteArray()
+    }
 
     private fun testAdif(): String = """
         <ADIF_VER:5>3.1.6
