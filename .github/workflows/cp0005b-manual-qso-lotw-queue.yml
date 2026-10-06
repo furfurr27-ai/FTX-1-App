@@ -1,0 +1,96 @@
+name: CP-0005B Manual QSO LoTW Queue
+
+on:
+  push:
+    branches:
+      - cp-0005b-manual-qso-lotw-queue
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'scripts/test_manual_qso_lotw_queue.sh'
+      - 'scripts/test_universal_qso_logger.sh'
+      - 'scripts/test_lotw_transaction.sh'
+      - 'scripts/test_core_regression.sh'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
+      - 'research/logbook/**'
+      - 'scripts/finalize_cp0005b.py'
+      - '.github/workflows/cp0005b-manual-qso-lotw-queue.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run focused CP-0005B queue gate
+        run: bash scripts/test_manual_qso_lotw_queue.sh
+
+  logger-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005A universal logger gate independently
+        run: bash scripts/test_universal_qso_logger.sh
+
+  lotw-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0003B transaction gate independently
+        run: bash scripts/test_lotw_transaction.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip             https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run inherited core regression independently
+        run: bash scripts/test_core_regression.sh
