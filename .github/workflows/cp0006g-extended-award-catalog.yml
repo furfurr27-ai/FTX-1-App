@@ -22,7 +22,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0006g.py'
+      - 'research/awards/CP-0006G_EXTENDED_AWARD_CATALOG.md'
       - '.github/workflows/cp0006g-extended-award-catalog.yml'
+      - '.github/workflows/finalize-cp0006g.yml'
 
 permissions:
   contents: read
@@ -45,6 +48,22 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run focused CP-0006G extended catalog gate
         run: bash scripts/test_extended_award_catalog.sh
+
+      - name: Dry-run CP-0006G checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0006g.py
+          python3 scripts/finalize_cp0006g.py
+          grep -Fq 'CP-0006G-EXTENDED_AWARD_CATALOG' README.md
+          grep -Fq 'CP-0007A — Award-area map projection foundation' NEXT_ACTION.md
+          grep -Fq 'CP-0007A-AWARD_MAP_PROJECTION' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0006G — Extended official award catalog and evaluator coverage' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0006G snapshot' .github/workflows/finalize-cp0006g.yml
+          git diff --check
 
   service-regression:
     runs-on: ubuntu-latest
