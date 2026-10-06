@@ -55,6 +55,7 @@ object AwardTargetNormalizer {
         OfficialAwardTargetKind.CONTINENT,
         OfficialAwardTargetKind.IOTA_GROUP,
         OfficialAwardTargetKind.POTA_REFERENCE,
+        OfficialAwardTargetKind.MAIDENHEAD_GRID4,
     )
 
     private val continentAliases = mapOf(
@@ -115,6 +116,13 @@ object AwardTargetNormalizer {
                 raw
             }
 
+            OfficialAwardTargetKind.MAIDENHEAD_GRID4 -> {
+                require(raw.matches(Regex("[A-R]{2}[0-9]{2}([A-X]{2}([0-9]{2})?)?"))) {
+                    "Maidenhead grid evidence must be a valid 4, 6, or 8 character locator"
+                }
+                raw.take(4)
+            }
+
             else -> error("Unsupported direct award target kind: $kind")
         }
     }
@@ -132,6 +140,7 @@ class AwardTargetEvidenceIndex(evidence: Iterable<AwardTargetEvidence>) {
             OfficialAwardTargetKind.US_STATE,
             OfficialAwardTargetKind.CONTINENT,
             OfficialAwardTargetKind.IOTA_GROUP,
+            OfficialAwardTargetKind.MAIDENHEAD_GRID4,
         )
         byQsoAndKind.forEach { (key, records) ->
             if (key.second in singleValuedKinds) {
@@ -489,6 +498,10 @@ class OfficialAwardProgressEngine(
         }
 
         val band = qso.band.trim().lowercase()
+        if (
+            requirement.requiredBands.isNotEmpty() &&
+            requirement.requiredBands.none { it.trim().lowercase() == band }
+        ) return false
         if (requirement.excludedBands.any { it.trim().lowercase() == band }) return false
         if (filter.normalizedBand != null && filter.normalizedBand != band) return false
 
