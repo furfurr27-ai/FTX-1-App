@@ -6,6 +6,30 @@ BUILD_ROOT="${BUILD_ROOT:-$ROOT/.build/cp0003c-android-tqsl}"
 TQSL_VERSION="2.8.6"
 TQSL_SHA256="182e5f2ac35a3db8b409b45d96505e6bd265ae4668ed064754209c4b8e7bdf37"
 TQSL_URL="https://downloads.sourceforge.net/project/trustedqsl/tqsl-${TQSL_VERSION}.tar.gz"
+
+download_verified_tqsl() {
+  local output="$1"
+  local attempt
+  for attempt in 1 2 3 4 5; do
+    rm -f "$output"
+    if curl -fL \
+      --retry 2 \
+      --retry-all-errors \
+      --retry-delay 2 \
+      --connect-timeout 20 \
+      --max-time 300 \
+      -o "$output" \
+      "$TQSL_URL"; then
+      if echo "$TQSL_SHA256  $output" | sha256sum -c -; then
+        return 0
+      fi
+    fi
+    echo "TrustedQSL download attempt $attempt failed; retrying with a clean partial file" >&2
+    sleep $((attempt * 2))
+  done
+  echo "Unable to download and verify TrustedQSL $TQSL_VERSION after 5 attempts" >&2
+  return 1
+}
 VCPKG_COMMIT="19780d9cdf84d0944cf9a318666703b89ab6629c"
 NDK_VERSION="${NDK_VERSION:-27.2.12479018}"
 ANDROID_API="${ANDROID_API:-26}"
@@ -39,8 +63,7 @@ if [[ ! -f "$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" ]]; then
 fi
 
 echo "[1/8] Fetch and verify official TrustedQSL $TQSL_VERSION"
-curl -fL --retry 3 --retry-delay 2 -o "$BUILD_ROOT/tqsl.tar.gz" "$TQSL_URL"
-echo "$TQSL_SHA256  $BUILD_ROOT/tqsl.tar.gz" | sha256sum -c -
+download_verified_tqsl "$BUILD_ROOT/tqsl.tar.gz"
 mkdir -p "$BUILD_ROOT/upstream"
 tar -xzf "$BUILD_ROOT/tqsl.tar.gz" -C "$BUILD_ROOT/upstream"
 TQSL_ROOT="$(find "$BUILD_ROOT/upstream" -mindepth 1 -maxdepth 1 -type d | head -n1)"
