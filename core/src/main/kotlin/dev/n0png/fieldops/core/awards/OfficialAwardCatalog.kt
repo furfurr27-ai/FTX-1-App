@@ -7,6 +7,7 @@ enum class OfficialAwardTargetKind {
     MODE_STATE_PAIR,
     IOTA_GROUP,
     POTA_REFERENCE,
+    MAIDENHEAD_GRID4,
     SOTA_POINT,
 }
 
@@ -77,6 +78,7 @@ data class OfficialAwardRequirement(
     val targetUniverse: Set<String>? = null,
     val requiredCoverage: Set<String> = emptySet(),
     val requiredModeGroups: Set<AwardModeGroup> = emptySet(),
+    val requiredBands: Set<String> = emptySet(),
     val excludedBands: Set<String> = emptySet(),
     val notBeforeUtcDate: String? = null,
     val confirmationPolicy: OfficialAwardConfirmationPolicy,
@@ -97,7 +99,13 @@ data class OfficialAwardRequirement(
         require(AwardModeGroup.UNCLASSIFIED !in requiredModeGroups) {
             "Official award mode requirements cannot use UNCLASSIFIED"
         }
+        require(requiredBands.none { it.isBlank() }) { "Required award bands must not be blank" }
         require(excludedBands.none { it.isBlank() }) { "Excluded award bands must not be blank" }
+        val normalizedRequiredBands = requiredBands.map { it.trim().lowercase() }.toSet()
+        val normalizedExcludedBands = excludedBands.map { it.trim().lowercase() }.toSet()
+        require(normalizedRequiredBands.intersect(normalizedExcludedBands).isEmpty()) {
+            "An official award band cannot be both required and excluded"
+        }
         require(requiredCoverage.none { it.isBlank() }) { "Required award coverage values must not be blank" }
         require(additionalConditions.none { it.isBlank() }) { "Additional award conditions must not be blank" }
         targetUniverse?.let { universe ->
@@ -191,7 +199,7 @@ data class OfficialAwardStandingRecord(
 }
 
 object OfficialAwardCatalog {
-    const val CATALOG_VERSION = "2026-10-06.1"
+    const val CATALOG_VERSION = "2026-10-06.2"
     const val RETRIEVED_ON = "2026-10-06"
 
     private val usStates = setOf(
@@ -212,6 +220,36 @@ object OfficialAwardCatalog {
     )
 
     private val sevenIotaContinents = sixWacContinents + "ANTARCTICA"
+
+    private fun gridRange(field: String, range: IntRange): Set<String> =
+        range.mapTo(linkedSetOf()) { number ->
+            field + number.toString().padStart(2, '0')
+        }
+
+    private val ffmaGrids: Set<String> =
+        gridRange("CM", 79..79) + gridRange("CM", 86..89) + gridRange("CM", 93..99) +
+        gridRange("CN", 70..78) + gridRange("CN", 80..88) + gridRange("CN", 90..98) +
+        gridRange("DL", 79..79) + gridRange("DL", 88..89) + gridRange("DL", 98..99) +
+        gridRange("DM", 2..9) + gridRange("DM", 12..19) + gridRange("DM", 22..29) +
+        gridRange("DM", 31..39) + gridRange("DM", 41..49) + gridRange("DM", 51..59) +
+        gridRange("DM", 61..99) +
+        gridRange("DN", 0..8) + gridRange("DN", 10..18) + gridRange("DN", 20..28) +
+        gridRange("DN", 30..38) + gridRange("DN", 40..48) + gridRange("DN", 50..58) +
+        gridRange("DN", 60..68) + gridRange("DN", 70..78) + gridRange("DN", 80..88) +
+        gridRange("DN", 90..98) +
+        gridRange("EL", 6..9) + gridRange("EL", 15..19) + gridRange("EL", 28..29) +
+        gridRange("EL", 39..39) + gridRange("EL", 49..49) + gridRange("EL", 58..59) +
+        gridRange("EL", 79..79) + gridRange("EL", 84..84) + gridRange("EL", 86..89) +
+        gridRange("EL", 94..99) +
+        gridRange("EM", 0..99) +
+        gridRange("EN", 0..8) + gridRange("EN", 10..18) + gridRange("EN", 20..29) +
+        gridRange("EN", 30..38) + gridRange("EN", 40..48) + gridRange("EN", 50..58) +
+        gridRange("EN", 60..67) + gridRange("EN", 70..76) + gridRange("EN", 80..86) +
+        gridRange("EN", 90..92) +
+        gridRange("FM", 2..9) + gridRange("FM", 13..19) + gridRange("FM", 25..29) +
+        gridRange("FN", 0..3) + gridRange("FN", 10..14) + gridRange("FN", 20..25) +
+        gridRange("FN", 30..35) + gridRange("FN", 41..46) + gridRange("FN", 51..51) +
+        gridRange("FN", 53..57) + gridRange("FN", 64..67)
 
     val entries: List<OfficialAwardCatalogEntry> = listOf(
         OfficialAwardCatalogEntry(
@@ -326,6 +364,147 @@ object OfficialAwardCatalog {
             sources = listOf(
                 source(OfficialAwardSourceRole.RULES, "https://www.arrl.org/triple-play"),
                 source(OfficialAwardSourceRole.CLAIM_PROCESS, "https://www.arrl.org/triple-play"),
+            ),
+        ),
+        OfficialAwardCatalogEntry(
+            id = "ARRL_VUCC_50MHZ",
+            displayName = "ARRL VHF/UHF Century Club (VUCC) — 50 MHz",
+            issuer = "ARRL",
+            description = "50 MHz VUCC for confirmed contacts with 100 distinct Maidenhead four-character grid locators.",
+            requirement = OfficialAwardRequirement(
+                targetKind = OfficialAwardTargetKind.MAIDENHEAD_GRID4,
+                ruleShape = OfficialAwardRuleShape.DISTINCT_TARGET_COUNT,
+                requiredDistinctTargets = 100,
+                thresholdBasis = AwardThresholdBasis.CONFIRMED,
+                requiredBands = setOf("6m"),
+                notBeforeUtcDate = "1983-01-01",
+                confirmationPolicy = OfficialAwardConfirmationPolicy.ACCEPTED_CONFIRMATION,
+                additionalConditions = listOf(
+                    "Separate VUCC bands are separate awards; this entry counts only 50 MHz / 6 meter contacts.",
+                    "No crossband contacts or contacts through active repeaters count for this VUCC award.",
+                    "Aeronautical-mobile contacts do not count.",
+                    "All claimed contacts must be made from applicant locations no more than 200 km apart.",
+                    "Local threshold completion does not prove ARRL acceptance of grid-boundary, station-location, or confirmation evidence.",
+                ),
+            ),
+            evaluationSupport = OfficialAwardEvaluationSupport.REQUIRES_NORMALIZED_QSO_TARGET,
+            claimMechanism = OfficialAwardClaimMechanism.APPLICATION_OR_LOTW,
+            informationUrl = "https://www.arrl.org/vucc",
+            claimUrl = "https://www.arrl.org/vucc",
+            claimInstructions = "Use confirmed VUCC grid credits and the official ARRL VUCC application/checking process, including LoTW-supported credits where applicable.",
+            sources = listOf(
+                source(
+                    OfficialAwardSourceRole.RULES,
+                    "https://www.arrl.org/files/file/Awards/VUCC-Rules-July-2019.pdf",
+                    "VUCC Rules — July 2019, current rules PDF linked by ARRL",
+                ),
+                source(OfficialAwardSourceRole.CLAIM_PROCESS, "https://www.arrl.org/vucc"),
+            ),
+        ),
+        OfficialAwardCatalogEntry(
+            id = "ARRL_VUCC_144MHZ",
+            displayName = "ARRL VHF/UHF Century Club (VUCC) — 144 MHz",
+            issuer = "ARRL",
+            description = "144 MHz VUCC for confirmed contacts with 100 distinct Maidenhead four-character grid locators.",
+            requirement = OfficialAwardRequirement(
+                targetKind = OfficialAwardTargetKind.MAIDENHEAD_GRID4,
+                ruleShape = OfficialAwardRuleShape.DISTINCT_TARGET_COUNT,
+                requiredDistinctTargets = 100,
+                thresholdBasis = AwardThresholdBasis.CONFIRMED,
+                requiredBands = setOf("2m"),
+                notBeforeUtcDate = "1983-01-01",
+                confirmationPolicy = OfficialAwardConfirmationPolicy.ACCEPTED_CONFIRMATION,
+                additionalConditions = listOf(
+                    "Separate VUCC bands are separate awards; this entry counts only 144 MHz / 2 meter contacts.",
+                    "No crossband contacts or contacts through active repeaters count for this VUCC award.",
+                    "Aeronautical-mobile contacts do not count.",
+                    "All claimed contacts must be made from applicant locations no more than 200 km apart.",
+                    "Local threshold completion does not prove ARRL acceptance of grid-boundary, station-location, or confirmation evidence.",
+                ),
+            ),
+            evaluationSupport = OfficialAwardEvaluationSupport.REQUIRES_NORMALIZED_QSO_TARGET,
+            claimMechanism = OfficialAwardClaimMechanism.APPLICATION_OR_LOTW,
+            informationUrl = "https://www.arrl.org/vucc",
+            claimUrl = "https://www.arrl.org/vucc",
+            claimInstructions = "Use confirmed VUCC grid credits and the official ARRL VUCC application/checking process, including LoTW-supported credits where applicable.",
+            sources = listOf(
+                source(
+                    OfficialAwardSourceRole.RULES,
+                    "https://www.arrl.org/files/file/Awards/VUCC-Rules-July-2019.pdf",
+                    "VUCC Rules — July 2019, current rules PDF linked by ARRL",
+                ),
+                source(OfficialAwardSourceRole.CLAIM_PROCESS, "https://www.arrl.org/vucc"),
+            ),
+        ),
+        OfficialAwardCatalogEntry(
+            id = "ARRL_VUCC_432MHZ",
+            displayName = "ARRL VHF/UHF Century Club (VUCC) — 432 MHz",
+            issuer = "ARRL",
+            description = "432 MHz VUCC for confirmed contacts with 50 distinct Maidenhead four-character grid locators.",
+            requirement = OfficialAwardRequirement(
+                targetKind = OfficialAwardTargetKind.MAIDENHEAD_GRID4,
+                ruleShape = OfficialAwardRuleShape.DISTINCT_TARGET_COUNT,
+                requiredDistinctTargets = 50,
+                thresholdBasis = AwardThresholdBasis.CONFIRMED,
+                requiredBands = setOf("70cm"),
+                notBeforeUtcDate = "1983-01-01",
+                confirmationPolicy = OfficialAwardConfirmationPolicy.ACCEPTED_CONFIRMATION,
+                additionalConditions = listOf(
+                    "Separate VUCC bands are separate awards; this entry counts only 432 MHz / 70 centimeter contacts.",
+                    "No crossband contacts or contacts through active repeaters count for this VUCC award.",
+                    "Aeronautical-mobile contacts do not count.",
+                    "All claimed contacts must be made from applicant locations no more than 200 km apart.",
+                    "Local threshold completion does not prove ARRL acceptance of grid-boundary, station-location, or confirmation evidence.",
+                ),
+            ),
+            evaluationSupport = OfficialAwardEvaluationSupport.REQUIRES_NORMALIZED_QSO_TARGET,
+            claimMechanism = OfficialAwardClaimMechanism.APPLICATION_OR_LOTW,
+            informationUrl = "https://www.arrl.org/vucc",
+            claimUrl = "https://www.arrl.org/vucc",
+            claimInstructions = "Use confirmed VUCC grid credits and the official ARRL VUCC application/checking process, including LoTW-supported credits where applicable.",
+            sources = listOf(
+                source(
+                    OfficialAwardSourceRole.RULES,
+                    "https://www.arrl.org/files/file/Awards/VUCC-Rules-July-2019.pdf",
+                    "VUCC Rules — July 2019, current rules PDF linked by ARRL",
+                ),
+                source(OfficialAwardSourceRole.CLAIM_PROCESS, "https://www.arrl.org/vucc"),
+            ),
+        ),
+        OfficialAwardCatalogEntry(
+            id = "ARRL_FFMA",
+            displayName = "ARRL Fred Fish Memorial Award (FFMA)",
+            issuer = "ARRL",
+            description = "All-or-nothing 6 meter award for confirming all 488 specified Maidenhead grid squares that cover the 48 contiguous United States.",
+            requirement = OfficialAwardRequirement(
+                targetKind = OfficialAwardTargetKind.MAIDENHEAD_GRID4,
+                ruleShape = OfficialAwardRuleShape.DISTINCT_TARGET_COUNT,
+                requiredDistinctTargets = 488,
+                thresholdBasis = AwardThresholdBasis.CONFIRMED,
+                targetUniverse = ffmaGrids,
+                requiredBands = setOf("6m"),
+                notBeforeUtcDate = "1983-01-01",
+                confirmationPolicy = OfficialAwardConfirmationPolicy.ACCEPTED_CONFIRMATION,
+                additionalConditions = listOf(
+                    "All 488 ARRL-listed FFMA grids must be confirmed; there are no progress tiers or mode endorsements.",
+                    "No contacts through active repeaters or satellites count, and aeronautical-mobile contacts do not count.",
+                    "All claimed contacts must be made from applicant locations no more than 200 km apart.",
+                    "Each claimed contact must include contemporaneous direct initiation by the operator on both sides.",
+                    "Local threshold completion does not prove ARRL acceptance of grid-boundary, station-location, or confirmation evidence.",
+                ),
+            ),
+            evaluationSupport = OfficialAwardEvaluationSupport.REQUIRES_NORMALIZED_QSO_TARGET,
+            claimMechanism = OfficialAwardClaimMechanism.PAPER_OR_CHECKED_APPLICATION,
+            informationUrl = "https://www.arrl.org/FFMA",
+            claimUrl = "https://www.arrl.org/FFMA",
+            claimInstructions = "After all 488 required grids are confirmed, use the official ARRL FFMA application and VHF Awards Manager certification process described on the FFMA page.",
+            sources = listOf(
+                source(
+                    OfficialAwardSourceRole.RULES,
+                    "https://www.arrl.org/FFMA",
+                    "Current ARRL FFMA page and rules",
+                ),
+                source(OfficialAwardSourceRole.CLAIM_PROCESS, "https://www.arrl.org/FFMA"),
             ),
         ),
         OfficialAwardCatalogEntry(
