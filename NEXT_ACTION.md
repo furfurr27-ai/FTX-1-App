@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0007B — Award geometry providers and offline geometry-pack contract**
+**CP-0007C — Production U.S. state offline geometry pack**
 
-Define a versioned geometry provider/payload boundary for CP-0007A identities, implement authoritative deterministic Maidenhead four-character cell geometry, and define a source/license-attributed U.S. state geometry-pack adapter using compact CI fixtures. Keep Android map rendering and callsign-derived geography out of the core provider.
+Pin the official Census 2025 national States 1:20,000,000 source artifact, convert exactly the 50 WAS state identities into the CP-0007B offline multi-polygon format, preserve multipart/antimeridian behavior, record deterministic hashes and Census attribution/rights metadata, and keep Android rendering out of the pack builder.

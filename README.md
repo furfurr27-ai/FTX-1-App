@@ -39,34 +39,33 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0007A-AWARD_MAP_PROJECTION
+**Latest verified checkpoint:** CP-0007B-AWARD_GEOMETRY_PROVIDERS
 
-Parent durable checkpoint: CP-0006G-EXTENDED_AWARD_CATALOG.
+Parent durable checkpoint: CP-0007A-AWARD_MAP_PROJECTION.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0007A is a GREEN host/CI map-domain checkpoint. It adds a platform-independent award-area projection for verified U.S. state and Maidenhead-grid award targets without embedding map SDK objects, coordinates, or fabricated geography.
+CP-0007B is a GREEN host/CI + authoritative-source research checkpoint. It adds platform-independent geometry payload/provider contracts, deterministic four-character Maidenhead grid bounds derived from the IARU Region 1 specification, and a source/version/license-gated offline U.S. state geometry-pack adapter contract.
 
-CP-0007A proves:
+CP-0007B proves:
 
-- Map targets have exactly one primary state: NEEDED, WORKED_UNCONFIRMED, or CONFIRMED.
-- LOCAL_THRESHOLD_MET is a separate overlay state and is explicitly not sponsor claimability or award credit.
-- ARRL WAS projects all 50 finite state identities, including explicit needed states.
-- ARRL FFMA projects the exact finite 488-grid target universe, including explicit needed grids.
-- VUCC projects only explicitly known worked/confirmed grids and never fabricates a world-grid needed list.
-- Open-universe awards carry a numeric remaining-to-threshold count when specific needed identities are unknowable.
-- Map records retain immutable contributing QSO ids, confirmed QSO ids, bands, controlled mode groups, exact MODE/SUBMODE labels, target provenance, and accepted confirmation sources.
-- Map aggregation is deterministic regardless of input iteration order.
-- Existing AwardsCenterQuery mode/band/date filters are preserved.
-- Geometry identity/source/version/license metadata is separated from geometry payload via an external asset binding.
-- Missing geometry remains unbound metadata; FieldOps does not synthesize coordinates or boundaries.
-- A geometry catalog returning the wrong target identity fails closed.
-- AwardsCenterApplicationService builds map layers from the same authoritative LogbookRepository and current AwardEvidenceRepository used by Awards Center.
-- Production map projection code never inspects callsigns to infer state/grid geography.
-- DXCC, Triple Play matrices, IOTA, POTA, SOTA, CQ/ITU zones, and other unsupported geography are not flattened or guessed into this checkpoint.
+- Geometry payload types validate world coordinates, bounds, polygon rings, and multi-polygons without Android or map-SDK types.
+- Geometry provenance is explicitly classified as DERIVED_STANDARD, EXTERNAL_DATASET, or SYNTHETIC_FIXTURE.
+- Every non-derived geometry payload requires license/public-domain metadata.
+- External geometry datasets require an authoritative HTTPS source URL.
+- Maidenhead four-character cells are deterministically derived from IARU Region 1 VHF Handbook 9.01 sections 6.2-6.3 using the documented 20x10 degree fields, 2x1 degree squares, west-to-east/south-to-north indexing, origin at 180W/90S, and WGS-84 basis.
+- Known and edge grid cells resolve to the expected 2 degree longitude by 1 degree latitude bounds.
+- U.S. state geometry packs are versioned, offline, target-kind constrained, feature-count checked, identity-unique, and asset-id unique.
+- The production state-pack contract pins the official U.S. Census Bureau 2025 Cartographic Boundary Files source and records the Census government-work/attribution rights metadata.
+- Synthetic CI state polygons are explicitly marked fixture-only and explicitly state that they contain no Census boundary geometry.
+- AwardGeometryRegistry rejects duplicate provider ids, multi-provider target conflicts, and mismatched returned target identities.
+- CP-0007A map bindings remain metadata-only while actual payloads resolve separately through the registry.
+- All 488 FFMA four-character grids resolve to deterministic IARU-derived geometry in host tests.
+- Geometry provider production code performs no network access and never derives geography from callsigns.
 
 Host/CI gates:
 
+- CP-0007B award geometry providers/offline pack contract: **102/102 PASS**.
 - CP-0007A award-area map projection: **96/96 PASS**.
 - CP-0006G extended official award catalog/grid evaluator: **96/96 PASS**.
 - CP-0006F Awards Center application service: **64/64 PASS**.
@@ -82,18 +81,19 @@ Host/CI gates:
 
 Evidence:
 
+- research/maps/CP-0007B_AWARD_GEOMETRY_PROVIDERS.md
+- research/maps/GEOMETRY_SOURCES.tsv
 - research/maps/CP-0007A_AWARD_MAP_PROJECTION.md
-- research/awards/CP-0006G_EXTENDED_AWARD_CATALOG.md
 - SOFTWARE_TRACK.md
-- CP-0007A finalization workflow run: 37495347219
+- CP-0007B finalization workflow run: 37498410494
 
 ### Evidence boundary
 
-CP-0007A proves the award-area read model and geometry-reference boundary only. It does not claim real polygons/coordinates, U.S. state geometry data, Maidenhead geometry payload generation, DXCC/IOTA/POTA/SOTA geometry, map SDK rendering, offline tiles, sponsor claimability, real account synchronization, or FTX-1 hardware proof.
+CP-0007B proves geometry-domain validation, deterministic Maidenhead cell geometry, offline geometry-pack/provider semantics, Census source/rights metadata, synthetic fixture separation, and provider-registry integration. It does not claim a production Census state boundary pack, shapefile/KML/GeoPackage parsing, full production geometry hashes, Android map rendering, offline tiles, or DXCC/IOTA/POTA/SOTA/CQ/ITU geometry.
 
 ### Inherited verified ancestry
 
-CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0007A-AWARD_MAP_PROJECTION, CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -117,7 +117,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0007B — Award geometry providers and offline geometry-pack contract
+**Active software track:** CP-0007C — Production U.S. state offline geometry pack
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -342,7 +342,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0007A-AWARD_MAP_PROJECTION`
+- Current Git source baseline: `CP-0007B-AWARD_GEOMETRY_PROVIDERS`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -355,18 +355,20 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0007B — Award geometry providers and offline geometry-pack contract.**
+**CP-0007C — Production U.S. state offline geometry pack.**
 
-1. Define a platform-independent, versioned geometry payload/provider contract that resolves CP-0007A stable geometry identities without embedding award logic.
-2. Verify the Maidenhead four-character grid specification from an authoritative or primary technical source and implement deterministic grid-cell bounds from the locator itself.
-3. Define a source/version/license-attributed U.S. state geometry-pack adapter and exercise it with compact CI fixtures before considering a full offline dataset.
-4. Require every externally sourced geometry payload to retain source id, version, URL where available, license metadata, and retrieval/build version.
-5. Keep geometry payloads replaceable independently of award rules and award progress.
-6. Fail closed on malformed geometry, identity mismatch, source/license omission, or unsupported target kinds.
-7. Keep geometry usable offline and keep Android/Compose/map-SDK rendering outside the core provider contract.
-8. Do not derive state/grid boundaries or coordinates from callsigns.
-9. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
-10. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
+1. Fetch and pin the official U.S. Census Bureau 2025 national States 1:20,000,000 source artifact.
+2. Record the exact upstream filename, source URL, retrieval date, source vintage, and cryptographic hash.
+3. Convert only the 50 WAS state identities into the CP-0007B platform-independent multi-polygon payload format.
+4. Preserve multipart state/island geometry and handle Alaska/antimeridian geometry explicitly; do not clip or silently rewrite topology.
+5. Generate deterministic per-feature hashes plus an overall pack hash and versioned manifest.
+6. Verify every one of the 50 WAS state identities resolves exactly once and no WAS identity is missing.
+7. Keep District of Columbia, Puerto Rico, and territories outside the 50-state WAS geometry universe even if present in the Census source.
+8. Retain Census attribution, statistical-boundary disclaimer, source vintage, scale, and rights metadata in the generated pack.
+9. Keep raw/upstream source metadata, production generated geometry, and synthetic CI fixtures clearly distinguishable.
+10. Keep Android/Compose/map-SDK rendering outside this checkpoint.
+11. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
+12. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 
 ## README maintenance contract
 

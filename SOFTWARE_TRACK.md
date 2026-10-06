@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0007A-AWARD_MAP_PROJECTION`
+`CP-0007B-AWARD_GEOMETRY_PROVIDERS`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,21 +25,22 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0007B-AWARD_GEOMETRY_PROVIDERS
+CP-0007C-US_STATE_GEOMETRY_PACK
 
 Required scope:
 
-- platform-independent versioned geometry provider/payload contract
-- resolve stable CP-0007A target identities without embedding award rules
-- authoritative/primary-source verification for Maidenhead four-character locator geometry
-- deterministic Maidenhead cell bounds
-- source/version/license-attributed U.S. state geometry-pack adapter contract
-- compact CI geometry fixtures before any full offline dataset
-- fail closed on malformed geometry, identity mismatch, missing source/license metadata, or unsupported target kinds
-- geometry payload replaceable independently of award progress
-- offline-capable core data path
+- official Census 2025 national States 1:20,000,000 source artifact pinned with filename/source/hash/vintage
+- deterministic conversion into CP-0007B platform-independent multi-polygon payloads
+- exactly the 50 WAS state identities in the award geometry pack
+- District of Columbia, Puerto Rico, and territories excluded from the WAS pack even if present upstream
+- preserve multipart/island topology
+- explicit Alaska/antimeridian handling with no silent clipping
+- deterministic per-feature hashes and overall pack hash
+- Census attribution, statistical-boundary disclaimer, source vintage/scale, and rights metadata retained
+- raw/upstream source metadata, generated production pack, and synthetic fixtures clearly separated
+- host/CI verification
 - no callsign-derived geography
-- no Android/Compose/map SDK dependency in core provider contract
+- no Android/Compose/map SDK dependency in the pack builder/provider
 - no real sponsor accounts, credentials, claim submission, phone/radio/RF/manual hardware work
 - skip later hardware/account-gated checkpoints under the owner execution override
 
