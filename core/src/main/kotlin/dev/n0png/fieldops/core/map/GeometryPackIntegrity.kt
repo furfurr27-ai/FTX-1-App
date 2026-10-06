@@ -38,7 +38,7 @@ object GeometryPackIntegrity {
     }
 
     fun featureSha256(record: OfflineGeometryPackRecord): String =
-        sha256(featureCanonical(record))
+        textSha256(featureCanonical(record))
 
     fun packCanonical(records: Iterable<OfflineGeometryPackRecord>): String =
         records
@@ -46,7 +46,10 @@ object GeometryPackIntegrity {
             .joinToString(separator = "") { featureCanonical(it) }
 
     fun packSha256(records: Iterable<OfflineGeometryPackRecord>): String =
-        sha256(packCanonical(records))
+        textSha256(packCanonical(records))
+
+    fun textSha256(text: String): String =
+        sha256(text)
 
     fun maxLongitudeJump(record: OfflineGeometryPackRecord): Double {
         val geometry = record.geometry as? MultiPolygonGeometry
