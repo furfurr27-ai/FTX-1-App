@@ -39,58 +39,55 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** `CP-0003B-LOTW_TRANSACTION_SAFE`
+**Latest verified checkpoint:** `CP-0005A-UNIVERSAL_QSO_LOGGER`
 
-Parent: `CP-0003A-TRUSTEDQSL_SIGNER`.
+Parent durable checkpoint: `CP-0003B-LOTW_TRANSACTION_SAFE`.
 
-CP-0003B is a **GREEN host/CI LoTW transaction checkpoint with RED real-account/device status**. The old one-shot signer/upload path is retired. LoTW upload now preserves the CP-0003A TrustedQSL transaction through server acceptance verification.
+`CP-0003C` and `CP-0004A/B/C` remain explicitly deferred hardware/account checkpoints and are **not** implied complete by this software checkpoint.
 
-The verified transaction is:
+CP-0005A is a **GREEN host/CI universal-logbook checkpoint**. The existing `QsoRecord` used by the verified LoTW transaction remains the authoritative local QSO model and has been extended rather than replaced.
 
-`sign -> upload TQ8 -> verify every QSO in LoTW accepted report -> commit TrustedQSL duplicate state`
+CP-0005A proves:
 
-CP-0003B proves:
-
-- One explicit FieldOps station profile / station callsign per batch.
-- Explicit TrustedQSL station-location name, expected callsign and expected DXCC are carried into signing.
-- Duplicate local QSO ids and ambiguous acceptance match keys fail before signing.
-- Signing failure never uploads.
-- Transport exceptions and non-2xx upload responses roll back and remain QUEUED/retryable.
-- LoTW endpoint rejection rolls back and becomes REJECTED rather than silently retrying.
-- HTTP upload acceptance alone is only SUBMITTED.
-- Acceptance report failure or partial batch acceptance rolls back the signer transaction and never marks the batch ACCEPTED.
-- Only when **all** QSOs appear in the LoTW accepted-QSO report does FieldOps commit the TrustedQSL duplicate database and mark the batch ACCEPTED.
-- SSB, CW and digital QSOs use the same mode-neutral `LotwUploadQueue`.
-- Rejected entries remain visible but are excluded from automatic pending/retry selection.
-- Verified accepted entries leave the queue.
-- TrustedQSL Kotlin session state is hardened so successful native commit/rollback becomes terminal before cleanup.
-- The signer implementation itself remains isolated from HTTP transport.
+- Exact ADIF MODE and SUBMODE are preserved independently.
+- Exact physical/radio mode is preserved separately from ADIF identity.
+- Exact frequency is retained in Hz with a compatible MHz export representation.
+- Band, UTC start/end, callsign, sent/received reports, remote/station grid and location snapshots are retained.
+- Station profile id and operating session id are first-class QSO fields.
+- `OperatingSession` captures session UTC, station identity/location, radio, antenna notes, default power and activity tags.
+- `FastQsoLogger` creates manual SSB and CW QSOs from current session/radio context with minimal contact-specific input.
+- Manual logging does not fabricate RST values.
+- SSB can retain a physical mode such as USB/LSB while ADIF remains MODE=SSB.
+- Digital completed-contact adapters feed the same QSO model and must supply exact mode/submode rather than relying on lossy normalization.
+- Incomplete digital contacts are rejected from auto-log.
+- ADIF export now preserves MODE, SUBMODE, exact FREQ, UTC end fields, grids and reports.
+- Legacy CP-0003B QSO constructors remain compatible.
+- New exact/legacy grid and frequency fields fail closed if contradictory.
+- `LogbookRepository` is the local-storage contract; the host checkpoint uses an in-memory implementation while Room remains later app-shell work.
+- CP-0005A leaves LoTW state at NOT_UPLOADED. Automatic manual-QSO LoTW enqueue remains CP-0005B.
 
 Host/CI gates:
 
-- CP-0003B transaction suite: **53 assertions PASS**.
-- CP-0003A signer regression: **43 assertions PASS**.
+- CP-0005A universal QSO/logger: **78/78 PASS**.
+- CP-0003B LoTW transaction regression: **53/53 PASS**.
 - Inherited core: **42,062 PASS**.
 - Pipeline: **56 PASS**.
 - Inherited LoTW: **19 PASS**.
-- Official TrustedQSL 2.8.6 archive hash/API compile remains verified by the signer regression.
 
 Evidence:
 
-- `research/tqsl/CP-0003B_TRANSACTION_SAFE_UPLOAD.md`
-- `research/LOTW_INTEGRATION.md`
+- `research/logbook/CP-0005A_UNIVERSAL_QSO_LOGGER.md`
+- `SOFTWARE_TRACK.md`
 
-- CP-0003B finalization workflow run: `37329432853`
+- CP-0005A finalization workflow run: `37444996013`
 
 ### Evidence boundary
 
-The transaction is host/CI verified with deterministic signer/transport/report fixtures. CP-0003B does **not** claim a real LoTW upload, real server acceptance, Android ARM64 TrustedQSL packaging, real certificate/private-key use, Room-backed persistence, or automatic upload.
-
-The shared queue is now mode-neutral, but automatic SSB/CW logger-save enqueue remains the separate CP-0005B item.
+CP-0005A is host/CI software evidence. It does not claim Room persistence, Compose UI, live FTX-1 state capture, hardware CAT/audio behavior, automatic LoTW enqueue, or real LoTW/device validation.
 
 ### Inherited verified ancestry
 
-`CP-0003A-TRUSTEDQSL_SIGNER`, `CP-0002E-NATIVE_MODE_REGRESSION`, and all prior native-mode checkpoints remain verified ancestry.
+`CP-0003B-LOTW_TRANSACTION_SAFE`, `CP-0003A-TRUSTEDQSL_SIGNER`, `CP-0002E-NATIVE_MODE_REGRESSION`, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -333,7 +330,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0003B-LOTW_TRANSACTION_SAFE`
+- Current Git source baseline: `CP-0005A-UNIVERSAL_QSO_LOGGER`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -346,19 +343,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0005A — Universal QSO model + fast logger.**
+**CP-0005B — Manual-QSO LoTW queue.**
 
-Software-only scope authorized by Chris:
-
-1. Make one universal local QSO record authoritative for manual and digital contacts.
-2. Preserve exact ADIF mode/submode plus exact radio mode without collapsing identities.
-3. Preserve band, exact frequency, UTC, callsign, sent/received reports, grid/location, station profile and operating session.
-4. Add an explicit `OperatingSession` model above QSOs.
-5. Add a fast manual logger path for SSB and CW that can be fed from current radio/session context with minimal operator entry.
-6. Add digital auto-log adapter contracts that convert completed digital contacts into the same universal QSO model.
-7. Keep the local log authoritative and keep LoTW state fields compatible with the verified CP-0003B transaction path.
-8. Do **not** automatically enqueue manual QSOs to LoTW in this checkpoint; that remains `CP-0005B`.
-9. Run focused model/logger/ADIF tests first, then inherited LoTW/core regressions, and checkpoint only when all are green.
+1. Add an explicit logger policy controlling whether newly saved local QSOs enter the LoTW queue automatically.
+2. When enabled, successful SSB/CW manual saves and eligible digital saves must enter the same verified `LotwUploadQueue` state machine.
+3. Saving the authoritative local QSO must not depend on network availability or LoTW success.
+4. Queue insertion must be idempotent by immutable local QSO id.
+5. A disabled policy must leave the QSO local-only / NOT_UPLOADED.
+6. Preserve station-profile/session binding so later signing selects the correct TrustedQSL station location.
+7. Do not enable real automatic network upload; CP-0003C remains required before that device/account behavior can be enabled.
 
 ## README maintenance contract
 

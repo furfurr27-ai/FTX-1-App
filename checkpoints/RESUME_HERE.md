@@ -1,30 +1,28 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0003B-LOTW_TRANSACTION_SAFE**
-Project version: `v13-lotw-transaction-safe`
-Phase: **LoTW transaction host-verified; real Android/device/account validation next**
-Test status: **GREEN host/CI: transaction=53 signer=43 core=42062 pipeline=56 LoTW=19; real LoTW/device validation not run; finalizer run 37329432853**
+Latest verified checkpoint: **CP-0005A-UNIVERSAL_QSO_LOGGER**
+Project version: `v14-universal-qso-logger`
+Phase: **Universal QSO/logger host-verified; manual-QSO LoTW queue policy next; hardware/account checkpoints remain deferred**
+Test status: **GREEN host/CI: logger=78 LoTW_transaction=53 core=42062 pipeline=56 LoTW=19; CP-0003C and CP-0004A/B/C remain hardware/account gated; finalizer run 37444996013**
 
 ## What is complete in this checkpoint
-- Legacy one-shot signer/upload path retired in favor of TransactionalLotwSigner sessions
-- Upload transaction is sign -> TQ8 upload -> accepted-QSO report verification -> TrustedQSL commit
-- HTTP upload acceptance alone remains SUBMITTED and never implies QSO acceptance
-- Signing, transport, non-2xx and acceptance-verification failures roll back without local ACCEPTED state
-- LoTW endpoint rejection rolls back and is retained as REJECTED without automatic retry
-- Full batch acceptance commits exactly once and retains available LoTW record metadata
-- Mode-neutral LotwUploadQueue carries SSB, CW and digital QSOs through the same state machine
-- Focused transaction PASS 53; signer PASS 43; inherited core PASS 42062, pipeline PASS 56 and LoTW PASS 19
+- QsoRecord extended as the authoritative universal local QSO model while preserving CP-0003B compatibility
+- Exact ADIF mode/submode and exact physical radio mode are preserved independently
+- Exact Hz frequency, band, UTC start/end, callsign, reports, station/remote location, station profile and session are preserved
+- OperatingSession model added above individual QSOs
+- Fast manual SSB/CW logger added using current session and radio context without fabricated RST defaults
+- Completed-contact digital auto-log adapter added with explicit provider-supplied mode/submode identity and incomplete-contact rejection
+- ADIF export preserves SUBMODE, exact FREQ, UTC end fields, grids and reports
+- Focused logger PASS 78; LoTW transaction PASS 53; inherited core PASS 42062, pipeline PASS 56 and LoTW PASS 19
 
 ## Known blockers / red items
-- Real LoTW network upload and accepted-QSO verification have not been executed with a real account
-- Official TrustedQSL dependency stack is not yet packaged for Android arm64-v8a
-- Real Callsign Certificate/private-key signing on the Galaxy S23 Ultra has not been validated
-- Automatic upload remains disabled pending CP-0003C
+- CP-0003C real LoTW validation remains hardware/account gated and incomplete
+- CP-0004A/B/C FTX-1 Android hardware checkpoints remain incomplete
+- Room persistence and Compose logger UI remain later app-shell/UI work
+- Automatic manual-QSO LoTW enqueue is intentionally not included until CP-0005B
 
 ## Continue with these exact actions
-1. CP-0003C: package official TrustedQSL for Android arm64-v8a and validate on the Galaxy S23 Ultra
-2. Use a controlled real Callsign Certificate/test QSO to execute sign-upload-accepted-report-commit and confirmation sync
-3. Verify secret hygiene and keep automatic upload disabled unless every CP-0003C gate passes
+1. CP-0005B: add optional idempotent logger-save -> LotwUploadQueue policy for SSB/CW and eligible digital QSOs without coupling local save to network success
 
 ## Verification before continuing
 Run:

@@ -94,3 +94,19 @@ Host/CI gate: transaction 53; signer 43; core 42,062; pipeline 56; LoTW 19 asser
 Finalization workflow run: `37329432853`.
 
 Evidence: `research/tqsl/CP-0003B_TRANSACTION_SAFE_UPLOAD.md`.
+
+## CP-0005A — Universal QSO model + fast logger
+
+Parent durable checkpoint: `CP-0003B-LOTW_TRANSACTION_SAFE`.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete.
+
+The existing LoTW-compatible `QsoRecord` is now the universal local QSO model. It preserves exact ADIF mode/submode, physical radio mode, exact frequency, band, UTC start/end, reports, station/remote location, station profile and operating session. `FastQsoLogger` adds manual SSB/CW logging and completed-contact digital auto-log adapters into the same authoritative repository contract.
+
+ADIF export preserves the new exact identity/frequency fields. Automatic logger-save -> LoTW enqueue is intentionally left for CP-0005B.
+
+Host/CI gate: logger 78; LoTW transaction 53; core 42,062; pipeline 56; LoTW 19 assertions, all PASS.
+
+Finalization workflow run: `37444996013`.
+
+Evidence: `research/logbook/CP-0005A_UNIVERSAL_QSO_LOGGER.md`.

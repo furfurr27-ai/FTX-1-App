@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0003B-LOTW_TRANSACTION_SAFE`
+`CP-0005A-UNIVERSAL_QSO_LOGGER`
 
 ## Deferred but incomplete hardware/account work
 
@@ -19,22 +19,16 @@ These checkpoints are not skipped in the sense of being complete. They are defer
 
 ## Active software checkpoint
 
-`CP-0005A-UNIVERSAL_QSO_LOGGER`
+`CP-0005B-MANUAL_QSO_LOTW_QUEUE`
 
 Required scope:
 
-- exact mode/submode and physical radio mode
-- exact frequency + band
-- UTC start/end data
-- callsign
-- RST/report sent and received
-- remote/station grid and location snapshot
-- station profile and operating session identity
-- manual SSB/CW fast-log path
-- digital completed-contact auto-log adapter path
-- one authoritative local QSO model shared with LoTW
-- ADIF preservation of mode/submode/frequency
-- no CP-0005B automatic LoTW enqueue in this checkpoint
+- optional logger-save -> LoTW queue policy
+- SSB/CW and eligible digital QSOs use the same queue
+- local log save remains independent of LoTW/network success
+- idempotent queue insertion by immutable QSO id
+- disabled policy leaves local QSO NOT_UPLOADED
+- no real automatic network upload until deferred CP-0003C passes
 
 ## Resume rule
 

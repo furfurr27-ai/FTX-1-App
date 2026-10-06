@@ -1,13 +1,7 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0005A — Universal QSO model + fast logger**
+**CP-0005B — Manual-QSO LoTW queue**
 
-Implement and host-verify the software-only logging checkpoint:
+Add a logger policy that, when enabled, automatically places successfully saved local SSB/CW and eligible digital QSOs into the existing `LotwUploadQueue` by immutable QSO id.
 
-- universal QSO record with exact mode/submode, radio mode, band/frequency, UTC, callsign, RST, grid/location, station profile and operating session
-- fast manual SSB/CW logging from current session/radio context
-- digital completed-contact auto-log adapters into the same QSO model
-- ADIF export preserving exact mode/submode and frequency
-- no automatic LoTW enqueue yet; that remains CP-0005B
-
-Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain explicitly deferred and incomplete.
+Local logging remains authoritative and must succeed independently of network/LoTW status. Disabled policy leaves the QSO NOT_UPLOADED. Do not enable real automatic network upload; CP-0003C remains hardware/account gated.

@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0003B-LOTW_TRANSACTION_SAFE",
-  "created_utc": "2026-10-05T15:02:18+00:00",
-  "manifest": "checkpoints/manifests/CP-0003B-LOTW_TRANSACTION_SAFE.json",
-  "snapshot": "checkpoints/snapshots/CP-0003B-LOTW_TRANSACTION_SAFE.tar.gz",
-  "snapshot_sha256": "d4e551eb209216fd81def3409033e24795fb32147111736d21dde4d6f4b016a0"
+  "checkpoint_id": "CP-0005A-UNIVERSAL_QSO_LOGGER",
+  "created_utc": "2026-10-06T09:44:47+00:00",
+  "manifest": "checkpoints/manifests/CP-0005A-UNIVERSAL_QSO_LOGGER.json",
+  "snapshot": "checkpoints/snapshots/CP-0005A-UNIVERSAL_QSO_LOGGER.tar.gz",
+  "snapshot_sha256": "af45fa7004bda6223334481b794e03b5e713592b929ec99564d30a788f7978f4"
 }
