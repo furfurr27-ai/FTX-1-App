@@ -353,7 +353,11 @@ object AwardEvidencePersistenceTests {
             source = importSource(),
         )
 
-        eq(0, batch.targets.size, "callsign/country/grid/my-fields/notes do not infer remote award targets")
+        eq(
+            setOf(OfficialAwardTargetKind.MAIDENHEAD_GRID4),
+            batch.targets.mapTo(linkedSetOf()) { it.kind },
+            "explicit GRIDSQUARE imports only grid evidence; callsign/country/MY-fields/notes infer nothing else",
+        )
         eq(0, batch.confirmations.size, "ordinary ADIF QSO record does not imply confirmation")
     }
 
