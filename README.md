@@ -105,7 +105,7 @@ Current deferred hardware/account checkpoints:
 - `CP-0004B — FTX-1 USB audio`: not complete; requires actual Android endpoint/sample-rate enumeration.
 - `CP-0004C — S23 + FTX-1 hardware proof`: not complete by definition.
 
-**Active software track:** `CP-0005A — Universal QSO model + fast logger`.
+**Active software track:** `CP-0005B — Manual-QSO LoTW queue`.
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
