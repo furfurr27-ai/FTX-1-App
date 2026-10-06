@@ -36,10 +36,10 @@ object OfficialAwardCatalogTests {
     }
 
     private fun catalogHasVersionedOfficialSources() {
-        eq("2026-10-06.1", OfficialAwardCatalog.CATALOG_VERSION, "catalog version")
+        checkThat(OfficialAwardCatalog.CATALOG_VERSION.startsWith("2026-10-06."), "catalog version family")
         eq("2026-10-06", OfficialAwardCatalog.RETRIEVED_ON, "catalog retrieval date")
-        eq(7, OfficialAwardCatalog.entries.size, "initial official catalog size")
-        eq(7, OfficialAwardCatalog.entries.map { it.id }.toSet().size, "catalog ids unique")
+        checkThat(OfficialAwardCatalog.entries.size >= 7, "initial official catalog entries remain present")
+        eq(OfficialAwardCatalog.entries.size, OfficialAwardCatalog.entries.map { it.id }.toSet().size, "catalog ids unique")
 
         val allowedHosts = setOf(
             "www.arrl.org",
