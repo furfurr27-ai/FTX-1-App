@@ -92,6 +92,26 @@ The shared queue is now mode-neutral, but automatic SSB/CW logger-save enqueue r
 
 `CP-0003A-TRUSTEDQSL_SIGNER`, `CP-0002E-NATIVE_MODE_REGRESSION`, and all prior native-mode checkpoints remain verified ancestry.
 
+## Execution tracks and hardware-gated deferrals
+
+FieldOps has two practical execution lanes:
+
+- **software-only checkpoints** that can be completed and verified in host/CI without Chris's phone, radio, certificate/account interaction, or other physical setup;
+- **hardware/account checkpoints** that require the Galaxy S23 Ultra, Yaesu FTX-1, real USB enumeration/RF behavior, or controlled LoTW account/certificate use.
+
+Hardware-gated work must never be falsely marked complete. If a hardware/account checkpoint blocks progress, preserve any work-in-progress on its named branch, record the blocker here, and continue only when Chris explicitly authorizes moving to the next genuinely software-only checkpoint.
+
+Current deferred hardware/account checkpoints:
+
+- `CP-0003C — Real LoTW validation`: not complete. Android TrustedQSL packaging/device/account validation remains hardware/account gated. WIP is preserved on branch `cp-0003c-real-lotw-validation`.
+- `CP-0004A — FTX-1 CAT USB port`: not complete; requires real Android/FTX-1 USB topology proof.
+- `CP-0004B — FTX-1 USB audio`: not complete; requires actual Android endpoint/sample-rate enumeration.
+- `CP-0004C — S23 + FTX-1 hardware proof`: not complete by definition.
+
+**Active software track:** `CP-0005A — Universal QSO model + fast logger`.
+
+Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
+
 ## Engineering rules
 
 ### Checkpoint first
@@ -326,15 +346,19 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0003C — Real LoTW validation.**
+**CP-0005A — Universal QSO model + fast logger.**
 
-1. Build/package the official TrustedQSL dependency stack for Android arm64-v8a.
-2. Load it on the Galaxy S23 Ultra and import a real test Callsign Certificate/PKCS#12 through the production secret-storage boundary.
-3. Use a controlled test QSO/account flow to produce a real signed TQ8.
-4. Exercise the CP-0003B transaction against LoTW: sign -> upload -> verify accepted-QSO report -> commit.
-5. Run confirmation sync and verify the local confirmation metadata/cursors.
-6. Confirm no certificate/password/private-key material appears in logs, crash output, support bundles or repository files.
-7. Keep automatic upload disabled unless every CP-0003C device/test-account gate passes.
+Software-only scope authorized by Chris:
+
+1. Make one universal local QSO record authoritative for manual and digital contacts.
+2. Preserve exact ADIF mode/submode plus exact radio mode without collapsing identities.
+3. Preserve band, exact frequency, UTC, callsign, sent/received reports, grid/location, station profile and operating session.
+4. Add an explicit `OperatingSession` model above QSOs.
+5. Add a fast manual logger path for SSB and CW that can be fed from current radio/session context with minimal operator entry.
+6. Add digital auto-log adapter contracts that convert completed digital contacts into the same universal QSO model.
+7. Keep the local log authoritative and keep LoTW state fields compatible with the verified CP-0003B transaction path.
+8. Do **not** automatically enqueue manual QSOs to LoTW in this checkpoint; that remains `CP-0005B`.
+9. Run focused model/logger/ADIF tests first, then inherited LoTW/core regressions, and checkpoint only when all are green.
 
 ## README maintenance contract
 
