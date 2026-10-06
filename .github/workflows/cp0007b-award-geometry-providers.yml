@@ -22,7 +22,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0007b.py'
+      - 'research/maps/CP-0007B_AWARD_GEOMETRY_PROVIDERS.md'
       - '.github/workflows/cp0007b-award-geometry-providers.yml'
+      - '.github/workflows/finalize-cp0007b.yml'
 
 permissions:
   contents: read
@@ -40,6 +43,22 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_award_geometry_providers.sh
+
+      - name: Dry-run CP-0007B checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0007b.py
+          python3 scripts/finalize_cp0007b.py
+          grep -Fq 'CP-0007B-AWARD_GEOMETRY_PROVIDERS' README.md
+          grep -Fq 'CP-0007C — Production U.S. state offline geometry pack' NEXT_ACTION.md
+          grep -Fq 'CP-0007C-US_STATE_GEOMETRY_PACK' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0007B — Award geometry providers and offline geometry-pack contract' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0007B snapshot' .github/workflows/finalize-cp0007b.yml
+          git diff --check
 
   map-regression:
     runs-on: ubuntu-latest
