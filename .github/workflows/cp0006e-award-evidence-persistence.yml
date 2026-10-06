@@ -21,7 +21,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0006e.py'
+      - 'research/awards/CP-0006E_AWARD_EVIDENCE_PERSISTENCE.md'
       - '.github/workflows/cp0006e-award-evidence-persistence.yml'
+      - '.github/workflows/finalize-cp0006e.yml'
 
 permissions:
   contents: read
@@ -44,6 +47,22 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run focused CP-0006E persistence/import gate
         run: bash scripts/test_award_evidence_persistence.sh
+
+      - name: Dry-run CP-0006E checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0006e.py
+          python3 scripts/finalize_cp0006e.py
+          grep -Fq 'CP-0006E-AWARD_EVIDENCE_PERSISTENCE' README.md
+          grep -Fq 'CP-0006F — Awards Center application service and evidence-ingestion orchestration' NEXT_ACTION.md
+          grep -Fq 'CP-0006F-AWARDS_APPLICATION_SERVICE' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0006E — Award evidence persistence and explicit ADIF enrichment import' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0006E snapshot' .github/workflows/finalize-cp0006e.yml
+          git diff --check
 
   projection-regression:
     runs-on: ubuntu-latest
