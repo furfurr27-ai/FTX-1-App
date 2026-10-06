@@ -110,3 +110,19 @@ Host/CI gate: logger 78; LoTW transaction 53; core 42,062; pipeline 56; LoTW 19 
 Finalization workflow run: `37444996013`.
 
 Evidence: `research/logbook/CP-0005A_UNIVERSAL_QSO_LOGGER.md`.
+
+## CP-0005B — Manual/digital QSO LoTW queue
+
+Parent durable checkpoint: CP-0005A-UNIVERSAL_QSO_LOGGER.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete.
+
+FastQsoLogger now has an explicit LoTW auto-queue policy. When enabled, successful local SSB/CW and eligible completed-digital saves enter the same local LotwUploadQueue; the authoritative local save always occurs first. Successful enqueue mirrors QUEUED back to the stored QSO, while queue failure leaves the already-saved QSO NOT_UPLOADED and reports the queue failure separately.
+
+LotwUploadQueue is idempotent by immutable local QSO id, preserves retry state on repeated enqueue, and rejects conflicting reuse of an id/profile. The logger path remains network-free; real automatic LoTW upload is still gated by CP-0003C.
+
+Host/CI gate: queue 47; universal logger 78; LoTW transaction 53; core 42,062; pipeline 56; LoTW 19 assertions, all PASS.
+
+Finalization workflow run: 37451754863.
+
+Evidence: research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md.

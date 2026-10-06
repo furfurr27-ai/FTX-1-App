@@ -39,55 +39,54 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** `CP-0005A-UNIVERSAL_QSO_LOGGER`
+**Latest verified checkpoint:** CP-0005B-MANUAL_QSO_LOTW_QUEUE
 
-Parent durable checkpoint: `CP-0003B-LOTW_TRANSACTION_SAFE`.
+Parent durable checkpoint: CP-0005A-UNIVERSAL_QSO_LOGGER.
 
-`CP-0003C` and `CP-0004A/B/C` remain explicitly deferred hardware/account checkpoints and are **not** implied complete by this software checkpoint.
+CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0005A is a **GREEN host/CI universal-logbook checkpoint**. The existing `QsoRecord` used by the verified LoTW transaction remains the authoritative local QSO model and has been extended rather than replaced.
+CP-0005B is a GREEN host/CI local LoTW-queue checkpoint. It connects successful local SSB/CW and eligible completed-digital saves to the existing transaction-safe LoTW queue without giving the logger any signing or network ownership.
 
-CP-0005A proves:
+CP-0005B proves:
 
-- Exact ADIF MODE and SUBMODE are preserved independently.
-- Exact physical/radio mode is preserved separately from ADIF identity.
-- Exact frequency is retained in Hz with a compatible MHz export representation.
-- Band, UTC start/end, callsign, sent/received reports, remote/station grid and location snapshots are retained.
-- Station profile id and operating session id are first-class QSO fields.
-- `OperatingSession` captures session UTC, station identity/location, radio, antenna notes, default power and activity tags.
-- `FastQsoLogger` creates manual SSB and CW QSOs from current session/radio context with minimal contact-specific input.
-- Manual logging does not fabricate RST values.
-- SSB can retain a physical mode such as USB/LSB while ADIF remains MODE=SSB.
-- Digital completed-contact adapters feed the same QSO model and must supply exact mode/submode rather than relying on lossy normalization.
-- Incomplete digital contacts are rejected from auto-log.
-- ADIF export now preserves MODE, SUBMODE, exact FREQ, UTC end fields, grids and reports.
-- Legacy CP-0003B QSO constructors remain compatible.
-- New exact/legacy grid and frequency fields fail closed if contradictory.
-- `LogbookRepository` is the local-storage contract; the host checkpoint uses an in-memory implementation while Room remains later app-shell work.
-- CP-0005A leaves LoTW state at NOT_UPLOADED. Automatic manual-QSO LoTW enqueue remains CP-0005B.
+- LotwLoggerPolicy explicitly controls logger-save to local LoTW queue behavior.
+- Disabled policy leaves the authoritative saved QSO NOT_UPLOADED.
+- Enabled policy auto-queues manual SSB, manual CW and completed digital-auto QSOs.
+- Local QSO persistence happens before any queue action.
+- A local queue failure cannot erase or fail the authoritative QSO save.
+- Successful local enqueue updates the authoritative QSO sync state to QUEUED.
+- Queue failures are surfaced separately through LotwQueueFailureHandler.
+- LotwUploadQueue.enqueue() is idempotent by immutable local QSO id.
+- Re-enqueueing the same QSO does not duplicate the entry or reset attempt/state.
+- Reusing an existing immutable QSO id for a materially different contact or station profile fails closed.
+- Queue entries preserve station-profile id, operating-session id, station callsign, exact mode/submode and digital provider identity.
+- SSB, CW and digital QSOs use the same local LotwUploadQueue.
+- The logger path contains no LoTW HTTP/signing transaction call and cannot start a real upload.
+- Real automatic network upload remains disabled until deferred CP-0003C passes.
 
 Host/CI gates:
 
+- CP-0005B manual/digital LoTW queue: **47/47 PASS**.
 - CP-0005A universal QSO/logger: **78/78 PASS**.
-- CP-0003B LoTW transaction regression: **53/53 PASS**.
+- CP-0003B LoTW transaction: **53/53 PASS**.
 - Inherited core: **42,062 PASS**.
 - Pipeline: **56 PASS**.
 - Inherited LoTW: **19 PASS**.
 
 Evidence:
 
-- `research/logbook/CP-0005A_UNIVERSAL_QSO_LOGGER.md`
-- `SOFTWARE_TRACK.md`
+- research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md
+- SOFTWARE_TRACK.md
 
-- CP-0005A finalization workflow run: `37444996013`
+- CP-0005B finalization workflow run: 37451754863
 
 ### Evidence boundary
 
-CP-0005A is host/CI software evidence. It does not claim Room persistence, Compose UI, live FTX-1 state capture, hardware CAT/audio behavior, automatic LoTW enqueue, or real LoTW/device validation.
+CP-0005B is host/CI software evidence. It does not claim Room persistence, Compose queue UI, live automatic LoTW network upload, real LoTW certificate/account/device validation, or FTX-1 Android hardware proof.
 
 ### Inherited verified ancestry
 
-`CP-0003B-LOTW_TRANSACTION_SAFE`, `CP-0003A-TRUSTEDQSL_SIGNER`, `CP-0002E-NATIVE_MODE_REGRESSION`, and prior native-mode checkpoints remain verified ancestry.
+CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -105,7 +104,7 @@ Current deferred hardware/account checkpoints:
 - `CP-0004B — FTX-1 USB audio`: not complete; requires actual Android endpoint/sample-rate enumeration.
 - `CP-0004C — S23 + FTX-1 hardware proof`: not complete by definition.
 
-**Active software track:** `CP-0005B — Manual-QSO LoTW queue`.
+**Active software track:** CP-0006A — Award evaluation engine
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -330,7 +329,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0005A-UNIVERSAL_QSO_LOGGER`
+- Current Git source baseline: `CP-0005B-MANUAL_QSO_LOTW_QUEUE`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -343,15 +342,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0005B — Manual-QSO LoTW queue.**
+**CP-0006A — Award evaluation engine.**
 
-1. Add an explicit logger policy controlling whether newly saved local QSOs enter the LoTW queue automatically.
-2. When enabled, successful SSB/CW manual saves and eligible digital saves must enter the same verified `LotwUploadQueue` state machine.
-3. Saving the authoritative local QSO must not depend on network availability or LoTW success.
-4. Queue insertion must be idempotent by immutable local QSO id.
-5. A disabled policy must leave the QSO local-only / NOT_UPLOADED.
-6. Preserve station-profile/session binding so later signing selects the correct TrustedQSL station location.
-7. Do not enable real automatic network upload; CP-0003C remains required before that device/account behavior can be enabled.
+1. Add a provider-independent award-domain model with explicit WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE states.
+2. Preserve exact QSO mode/submode while adding a separate controlled award-mode grouping layer.
+3. Support band-scoped and all-band evaluation without rewriting the authoritative QSO record.
+4. Keep confirmation source/evidence explicit; a worked QSO is not automatically confirmed.
+5. Keep local threshold completion distinct from official sponsor claimability/credit.
+6. Build the engine against synthetic/generic award definitions only in CP-0006A.
+7. Do not encode guessed official award requirements; verified official rules and claim URLs belong to CP-0006B.
 
 ## README maintenance contract
 

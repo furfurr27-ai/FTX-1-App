@@ -1,26 +1,29 @@
 {
-  "project_version": "v14-universal-qso-logger",
-  "latest_checkpoint": "CP-0005A-UNIVERSAL_QSO_LOGGER",
-  "phase": "Universal QSO/logger host-verified; manual-QSO LoTW queue policy next; hardware/account checkpoints remain deferred",
-  "test_status": "GREEN host/CI: logger=78 LoTW_transaction=53 core=42062 pipeline=56 LoTW=19; CP-0003C and CP-0004A/B/C remain hardware/account gated; finalizer run 37444996013",
+  "project_version": "v15-manual-qso-lotw-queue",
+  "latest_checkpoint": "CP-0005B-MANUAL_QSO_LOTW_QUEUE",
+  "phase": "Universal logger plus local LoTW auto-queue host-verified; award evaluation engine next; hardware/account checkpoints remain deferred",
+  "test_status": "GREEN host/CI: queue=47 logger=78 LoTW_transaction=53 core=42062 pipeline=56 LoTW=19; real automatic LoTW upload remains disabled; finalizer run 37451754863",
   "completed": [
-    "QsoRecord extended as the authoritative universal local QSO model while preserving CP-0003B compatibility",
-    "Exact ADIF mode/submode and exact physical radio mode are preserved independently",
-    "Exact Hz frequency, band, UTC start/end, callsign, reports, station/remote location, station profile and session are preserved",
-    "OperatingSession model added above individual QSOs",
-    "Fast manual SSB/CW logger added using current session and radio context without fabricated RST defaults",
-    "Completed-contact digital auto-log adapter added with explicit provider-supplied mode/submode identity and incomplete-contact rejection",
-    "ADIF export preserves SUBMODE, exact FREQ, UTC end fields, grids and reports",
-    "Focused logger PASS 78; LoTW transaction PASS 53; inherited core PASS 42062, pipeline PASS 56 and LoTW PASS 19"
+    "Explicit LotwLoggerPolicy controls disabled versus automatic manual/digital local queue insertion",
+    "Authoritative repository save occurs before any local LoTW queue action",
+    "Successful local enqueue mirrors QUEUED state to the stored QSO; queue failure leaves saved QSO NOT_UPLOADED and reports separately",
+    "Manual SSB, manual CW and eligible completed digital QSOs enter one shared LotwUploadQueue when enabled",
+    "LotwUploadQueue enqueue is idempotent by immutable local QSO id and preserves retry/state on repeated enqueue",
+    "Conflicting reuse of immutable QSO id or station profile fails closed",
+    "Station profile, operating session, exact mode/submode and digital provider identity survive queue insertion",
+    "Logger-save path contains no LoTW HTTP/signing transaction ownership",
+    "Focused queue PASS 47; universal logger PASS 78; LoTW transaction PASS 53; core PASS 42062; pipeline PASS 56; LoTW PASS 19"
   ],
   "blockers": [
-    "CP-0003C real LoTW validation remains hardware/account gated and incomplete",
-    "CP-0004A/B/C FTX-1 Android hardware checkpoints remain incomplete",
-    "Room persistence and Compose logger UI remain later app-shell/UI work",
-    "Automatic manual-QSO LoTW enqueue is intentionally not included until CP-0005B"
+    "CP-0003C real LoTW certificate/account/device validation remains deferred and incomplete",
+    "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete",
+    "Room persistence and Compose queue UI remain later app-shell work",
+    "Real automatic LoTW network upload remains disabled until CP-0003C passes"
   ],
   "next_actions": [
-    "CP-0005B: add optional idempotent logger-save -> LotwUploadQueue policy for SSB/CW and eligible digital QSOs without coupling local save to network success"
+    "CP-0006A: implement provider-independent award evaluation states WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE",
+    "Add controlled award-mode grouping without losing exact QSO mode/submode and support band/all-band evaluation",
+    "Use synthetic/generic award definitions only; verify official rules and claim URLs separately in CP-0006B"
   ],
-  "updated_utc": "2026-10-06T09:44:47+00:00"
+  "updated_utc": "2026-10-06T10:45:00+00:00"
 }

@@ -1,7 +1,9 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-**CP-0005B — Manual-QSO LoTW queue**
+**CP-0006A — Award evaluation engine**
 
-Add a logger policy that, when enabled, automatically places successfully saved local SSB/CW and eligible digital QSOs into the existing `LotwUploadQueue` by immutable QSO id.
+Create the provider-independent award-domain/evaluator layer with distinct WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE states.
 
-Local logging remains authoritative and must succeed independently of network/LoTW status. Disabled policy leaves the QSO NOT_UPLOADED. Do not enable real automatic network upload; CP-0003C remains hardware/account gated.
+Preserve exact QSO MODE/SUBMODE and add a separate controlled award-mode grouping layer. Support band and all-band evaluation, keep confirmation evidence explicit, and do not treat local threshold completion as official sponsor claimability.
+
+Use synthetic/generic award definitions only. Official award rules and claim URLs must be verified separately in CP-0006B.

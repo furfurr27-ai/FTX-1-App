@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0005A-UNIVERSAL_QSO_LOGGER`
+`CP-0005B-MANUAL_QSO_LOTW_QUEUE`
 
 ## Deferred but incomplete hardware/account work
 
@@ -19,16 +19,16 @@ These checkpoints are not skipped in the sense of being complete. They are defer
 
 ## Active software checkpoint
 
-`CP-0005B-MANUAL_QSO_LOTW_QUEUE`
+`CP-0006A-AWARD_EVALUATION_ENGINE`
 
 Required scope:
 
-- optional logger-save -> LoTW queue policy
-- SSB/CW and eligible digital QSOs use the same queue
-- local log save remains independent of LoTW/network success
-- idempotent queue insertion by immutable QSO id
-- disabled policy leaves local QSO NOT_UPLOADED
-- no real automatic network upload until deferred CP-0003C passes
+- explicit WORKED / CONFIRMED / THRESHOLD_MET / OFFICIALLY_CLAIMABLE award states
+- controlled award-mode grouping without losing exact QSO mode/submode
+- band-scoped and all-band evaluation
+- explicit confirmation/evidence provenance
+- generic/synthetic definitions only in this checkpoint
+- no guessed official award requirements; official catalog work remains CP-0006B
 
 ## Resume rule
 
