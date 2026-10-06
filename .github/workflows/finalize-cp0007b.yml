@@ -1,0 +1,247 @@
+name: Finalize CP-0007B checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/map/AwardGeometryProviders.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/AwardGeometryProviderTests.kt'
+      - 'research/maps/GEOMETRY_SOURCES.tsv'
+      - 'research/maps/CP-0007B_AWARD_GEOMETRY_PROVIDERS.md'
+      - 'scripts/test_award_geometry_providers.sh'
+      - 'scripts/finalize_cp0007b.py'
+      - '.github/workflows/finalize-cp0007b.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  geometry-providers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_geometry_providers.sh
+
+  map-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_area_map_projection.sh
+
+  extended-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_extended_award_catalog.sh
+
+  service-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_awards_center_application_service.sh
+
+  persistence-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_evidence_persistence.sh
+
+  projection-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_awards_center_projection.sh
+
+  target-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_target_enrichment.sh
+
+  catalog-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_official_award_catalog.sh
+
+  award-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_award_evaluation.sh
+
+  queue-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_manual_qso_lotw_queue.sh
+
+  logger-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_universal_qso_logger.sh
+
+  lotw-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_lotw_transaction.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_core_regression.sh
+
+
+  checkpoint:
+    needs: [geometry-providers, map-regression, extended-regression, service-regression, persistence-regression, projection-regression, target-regression, catalog-regression, award-regression, queue-regression, logger-regression, lotw-regression, core-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0007b.py
+
+      - name: Create immutable CP-0007B snapshot
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0007B-AWARD_GEOMETRY_PROVIDERS \
+            --parent CP-0007A-AWARD_MAP_PROJECTION \
+            --summary "Platform-independent award geometry provider/pack contract with deterministic IARU Maidenhead cells and Census-source/rights-attributed U.S. state pack metadata" \
+            --phase "Award geometry providers host-verified; production Census U.S. state geometry pack next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Platform-independent geometry primitives validate coordinates, bounds, rings, polygons, and multi-polygons without Android/map SDK dependencies" \
+            --completed "Geometry provenance distinguishes derived standards, external datasets, and synthetic fixtures; all non-derived payloads require explicit rights/license metadata" \
+            --completed "Maidenhead four-character bounds are deterministically derived from IARU Region 1 VHF Handbook 9.01 sections 6.2-6.3 using the documented global origin, dimensions, indexing and WGS-84 basis" \
+            --completed "U.S. state offline geometry pack contract validates target kind, declared feature count, state identities, unique assets, and offline resolution" \
+            --completed "Census production manifest contract pins the 2025 Cartographic Boundary Files source and U.S. Government work/Census attribution metadata while synthetic CI fixtures explicitly contain no Census geometry" \
+            --completed "AwardGeometryRegistry rejects provider conflicts/mismatches and bridges separately resolved payloads to CP-0007A metadata-only bindings" \
+            --completed "Host tests resolve all 488 FFMA grid identities through deterministic Maidenhead geometry and keep unsupported/unavailable state geometry unbound" \
+            --completed "Focused geometry PASS 102; map PASS 96; extended catalog PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'" \
+            --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint" \
+            --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete" \
+            --blocker "A production Census state boundary pack is not yet generated; CP-0007B proves only the provider/manifest contract and synthetic fixtures" \
+            --blocker "Android map rendering, offline tiles, and DXCC/IOTA/POTA/SOTA/CQ/ITU geometry remain later work" \
+            --next "CP-0007C: pin the official Census 2025 national States 1:20,000,000 source artifact and convert exactly the 50 WAS states into a deterministic offline geometry pack" \
+            --next "Preserve multipart/island topology and explicit Alaska/antimeridian behavior; retain Census attribution/disclaimer metadata and deterministic feature/pack hashes" \
+            --next "Keep Android rendering out of the pack checkpoint and continue skipping phone/radio/credential/account/RF/manual-hardware checkpoints"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0007B-AWARD_GEOMETRY_PROVIDERS.json
+          git add -f checkpoints/snapshots/CP-0007B-AWARD_GEOMETRY_PROVIDERS.tar.gz
+          git commit -m "Checkpoint CP-0007B award geometry providers"
+          git push
