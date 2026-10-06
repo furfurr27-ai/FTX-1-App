@@ -53,7 +53,7 @@ jobs:
           python3 -m py_compile scripts/finalize_cp0006a.py
           python3 scripts/finalize_cp0006a.py
           grep -Fq 'CP-0006A-AWARD_EVALUATION_ENGINE' README.md
-          grep -Fq 'do not return to CP-0003C until the owner explicitly says `resume CP-0003C`' README.md
+          grep -Fq 'Do not return to CP-0003C until the owner explicitly says `resume CP-0003C`' README.md
           grep -Fq 'CP-0006B — Official award rules/catalog' NEXT_ACTION.md
           grep -Fq 'CP-0006B-OFFICIAL_AWARD_CATALOG' SOFTWARE_TRACK.md
           grep -Fq 'CP-0006A — Award evaluation engine' checkpoints/CHECKPOINT_HISTORY.md
