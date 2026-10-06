@@ -1,0 +1,130 @@
+name: Finalize CP-0005B checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/logbook/**'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/**'
+      - 'scripts/test_manual_qso_lotw_queue.sh'
+      - 'scripts/test_universal_qso_logger.sh'
+      - 'scripts/test_lotw_transaction.sh'
+      - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0005b.py'
+      - 'research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md'
+      - '.github/workflows/finalize-cp0005b.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  queue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005B queue gate on merged main
+        run: bash scripts/test_manual_qso_lotw_queue.sh
+
+  logger-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0005A logger regression
+        run: bash scripts/test_universal_qso_logger.sh
+
+  lotw-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run CP-0003B transaction regression
+        run: bash scripts/test_lotw_transaction.sh
+
+  core-regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Re-run inherited core regression
+        run: bash scripts/test_core_regression.sh
+
+  checkpoint:
+    needs: [queue, logger-regression, lotw-regression, core-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0005b.py
+
+      - name: Create immutable CP-0005B snapshot
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py             --root .             --id CP-0005B-MANUAL_QSO_LOTW_QUEUE             --parent CP-0005A-UNIVERSAL_QSO_LOGGER             --summary "Explicit local logger-save LoTW queue policy for SSB/CW and eligible digital QSOs with idempotent immutable-QSO enqueue"             --phase "Universal logger plus local LoTW auto-queue host-verified; award evaluation engine next; hardware/account checkpoints remain deferred"             --test-status "GREEN host/CI: queue=47 logger=78 LoTW_transaction=53 core=42062 pipeline=56 LoTW=19; real automatic LoTW upload remains disabled; finalizer run $FINALIZE_RUN_ID"             --completed "Explicit LotwLoggerPolicy controls disabled versus automatic manual/digital local queue insertion"             --completed "Authoritative repository save occurs before any local LoTW queue action"             --completed "Successful local enqueue mirrors QUEUED state to the stored QSO; queue failure leaves saved QSO NOT_UPLOADED and reports separately"             --completed "Manual SSB, manual CW and eligible completed digital QSOs enter one shared LotwUploadQueue when enabled"             --completed "LotwUploadQueue enqueue is idempotent by immutable local QSO id and preserves retry/state on repeated enqueue"             --completed "Conflicting reuse of immutable QSO id or station profile fails closed"             --completed "Station profile, operating session, exact mode/submode and digital provider identity survive queue insertion"             --completed "Logger-save path contains no LoTW HTTP/signing transaction ownership"             --completed "Focused queue PASS 47; universal logger PASS 78; LoTW transaction PASS 53; core PASS 42062; pipeline PASS 56; LoTW PASS 19"             --blocker "CP-0003C real LoTW certificate/account/device validation remains deferred and incomplete"             --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete"             --blocker "Room persistence and Compose queue UI remain later app-shell work"             --blocker "Real automatic LoTW network upload remains disabled until CP-0003C passes"             --next "CP-0006A: implement provider-independent award evaluation states WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE"             --next "Add controlled award-mode grouping without losing exact QSO mode/submode and support band/all-band evaluation"             --next "Use synthetic/generic award definitions only; verify official rules and claim URLs separately in CP-0006B"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add .github/workflows/finalize-cp0005b.yml
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0005B-MANUAL_QSO_LOTW_QUEUE.json
+          git add -f checkpoints/snapshots/CP-0005B-MANUAL_QSO_LOTW_QUEUE.tar.gz
+          git commit -m "Checkpoint CP-0005B manual QSO LoTW queue"
+          git push
