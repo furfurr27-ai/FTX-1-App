@@ -38,10 +38,11 @@ ACTUAL_SOURCE_SHA="$(sha256sum "$SOURCE_ZIP" | awk '{print $1}')"
 }
 
 echo "[6/10] Rebuild production pack from pinned source"
-python3 "$ROOT/scripts/build_us_state_geometry_pack.py"   --source-zip "$SOURCE_ZIP"   --output-kotlin "$REBUILT_KT"   --output-metadata "$REBUILT_JSON"
+python3 "$ROOT/scripts/build_us_state_geometry_pack.py"   --source-zip "$SOURCE_ZIP"   --output-pack "$REBUILT_PACK"   --output-metadata "$REBUILT_JSON"   --output-metadata-kotlin "$REBUILT_META_KT"
 
 echo "[7/10] Verify generated production artifacts are byte-for-byte deterministic"
-cmp "$REBUILT_KT"   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mGeometryPack.kt"
+cmp "$REBUILT_PACK"   "$ROOT/core/src/main/resources/dev/n0png/fieldops/maps/us_states_2025_20m.pack"
+cmp "$REBUILT_META_KT"   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mPackMetadata.kt"
 cmp "$REBUILT_JSON" "$ROOT/research/maps/US_STATE_2025_20M_PACK.json"
 
 echo "[8/10] Verify source ledger and exact WAS scope"
@@ -50,10 +51,12 @@ python3 - "$ROOT/research/maps/US_STATE_2025_20M_PACK.json" <<'PY'
 import json
 import sys
 data = json.load(open(sys.argv[1], encoding="utf-8"))
+assert data["packFormat"] == "FIELDOPS_US_STATE_CANONICAL_V1"
 assert data["featureCount"] == 50
 assert len(data["stateIdentities"]) == 50
 assert data["upstreamPlacemarkCount"] == 52
 assert data["ignoredNonWasPlacemarkCount"] == 2
+assert data["upstream"]["filename"] == "cb_2025_us_state_20m.zip"
 assert data["upstream"]["sha256"] == "efddd884f1442ef233b1ba9c12dddbd66b6fdf94da6a373e1556aefe3dbc5751"
 assert data["canonicalPackSha256"] == "5feb8c18688936a526523cb536766130be06b14ebfa918b3d99e39bfbcb0a130"
 assert {"DC", "PR", "AS", "GU", "MP", "VI"}.isdisjoint(data["stateIdentities"])
@@ -76,9 +79,10 @@ TARGETS=(
   exit 1
 }
 
-echo "[10/10] Verify generated pack is production Census data, not a synthetic fixture"
-grep -Fq 'sourceUrl = UPSTREAM_URL'   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mGeometryPack.kt"
-! grep -Fq 'CP0007B_SYNTHETIC_STATE_GEOMETRY'   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mGeometryPack.kt" || {
+echo "[10/10] Verify production source provenance and synthetic-fixture separation"
+grep -Fq 'sourceUrl = Census2025UsState20mPackMetadata.UPSTREAM_URL'   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mGeometryPack.kt"
+grep -Fq 'const val PACK_SHA256 = "5feb8c18688936a526523cb536766130be06b14ebfa918b3d99e39bfbcb0a130"'   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mPackMetadata.kt"
+! grep -Fq 'CP0007B_SYNTHETIC_STATE_GEOMETRY'   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mPackMetadata.kt" || {
   echo "Production pack must not use synthetic fixture provenance" >&2
   exit 1
 }
