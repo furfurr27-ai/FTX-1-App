@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0007A — Award-area map projection foundation**
+**CP-0007B — Award geometry providers and offline geometry-pack contract**
 
-Build a platform-independent map-layer read model from the verified Awards Center and award evidence, beginning with U.S. states and Maidenhead four-character grids. Keep geometry identity/source separate from geometry content, preserve needed/worked/confirmed/local-threshold states, and never derive geography from callsigns.
+Define a versioned geometry provider/payload boundary for CP-0007A identities, implement authoritative deterministic Maidenhead four-character cell geometry, and define a source/license-attributed U.S. state geometry-pack adapter using compact CI fixtures. Keep Android map rendering and callsign-derived geography out of the core provider.

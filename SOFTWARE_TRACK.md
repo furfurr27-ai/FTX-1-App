@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0006G-EXTENDED_AWARD_CATALOG`
+`CP-0007A-AWARD_MAP_PROJECTION`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,19 +25,21 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-`CP-0007A-AWARD_MAP_PROJECTION`
+CP-0007B-AWARD_GEOMETRY_PROVIDERS
 
 Required scope:
 
-- platform-independent award-area map-layer projection
-- source from authoritative logbook + persisted award evidence + Awards Center progress
-- explicit NEEDED / WORKED_UNCONFIRMED / CONFIRMED / LOCAL_THRESHOLD_MET semantics
-- first supported geographic targets: U.S. states and Maidenhead four-character grids
-- geometry identity/source metadata separated from geometry payload
-- no callsign-derived boundaries/coordinates/zones/entities/islands/parks/summits
-- band/mode/date query context preserved
-- deterministic clustering/aggregation-ready records
-- host/CI-only verification before Android map rendering
+- platform-independent versioned geometry provider/payload contract
+- resolve stable CP-0007A target identities without embedding award rules
+- authoritative/primary-source verification for Maidenhead four-character locator geometry
+- deterministic Maidenhead cell bounds
+- source/version/license-attributed U.S. state geometry-pack adapter contract
+- compact CI geometry fixtures before any full offline dataset
+- fail closed on malformed geometry, identity mismatch, missing source/license metadata, or unsupported target kinds
+- geometry payload replaceable independently of award progress
+- offline-capable core data path
+- no callsign-derived geography
+- no Android/Compose/map SDK dependency in core provider contract
 - no real sponsor accounts, credentials, claim submission, phone/radio/RF/manual hardware work
 - skip later hardware/account-gated checkpoints under the owner execution override
 

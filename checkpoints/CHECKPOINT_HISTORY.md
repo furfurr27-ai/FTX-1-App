@@ -228,3 +228,17 @@ Host/CI gate: extended catalog/grid evaluator 96; Awards Center application serv
 Finalization workflow run: 37491149496.
 
 Evidence: research/awards/CP-0006G_EXTENDED_AWARD_CATALOG.md and research/awards/OFFICIAL_AWARD_SOURCES.tsv.
+
+## CP-0007A — Award-area map projection foundation
+
+Parent durable checkpoint: CP-0006G-EXTENDED_AWARD_CATALOG.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has a platform-independent award-area map projection for U.S. states and Maidenhead four-character grids. It distinguishes needed, worked-unconfirmed, confirmed, and local-threshold-met semantics; handles finite WAS/FFMA universes separately from open-ended VUCC grids; preserves deterministic QSO/provenance aggregation; and exposes metadata-only geometry bindings with no synthesized coordinates or boundaries. AwardsCenterApplicationService reads the same authoritative logbook/evidence repositories for both cards and map layers.
+
+Host/CI gate: award-area map projection 96; extended award catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37495347219.
+
+Evidence: research/maps/CP-0007A_AWARD_MAP_PROJECTION.md.
