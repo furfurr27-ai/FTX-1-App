@@ -39,30 +39,30 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0006A-AWARD_EVALUATION_ENGINE
+**Latest verified checkpoint:** CP-0006B-OFFICIAL_AWARD_CATALOG
 
-Parent durable checkpoint: CP-0005B-MANUAL_QSO_LOTW_QUEUE.
+Parent durable checkpoint: CP-0006A-AWARD_EVALUATION_ENGINE.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0006A is a GREEN host/CI award-domain checkpoint. It adds a provider-independent evaluator on top of the authoritative QSO model without encoding guessed sponsor rules or requiring live services/hardware.
+CP-0006B is a GREEN host/CI official-award-catalog checkpoint. It layers versioned, officially sourced award metadata and rule shapes on top of the CP-0006A evaluator without adding account login, claim submission, credentials, or hardware dependencies.
 
-CP-0006A proves:
+CP-0006B proves:
 
-- WORKED, CONFIRMED, THRESHOLD_MET and OFFICIALLY_CLAIMABLE are distinct award states.
-- Confirmation requires explicit source/evidence; worked contacts are not silently treated as confirmed.
-- Exact QSO MODE/SUBMODE remains preserved on each award contribution.
-- A separate controlled award-mode grouping layer supports CW, PHONE and DIGITAL views.
-- Unmapped modes stay unclassified rather than being guessed into award progress.
-- Band-scoped and all-band evaluation use filters and do not rewrite authoritative QSO records.
-- Distinct target counting supports WORKED-based or CONFIRMED-based thresholds.
-- Optional target universes expose remaining targets against the configured threshold basis.
-- Local threshold completion never automatically becomes official sponsor claimability.
-- OFFICIALLY_CLAIMABLE requires an explicit claimability evaluator and can only be considered after the local threshold is met.
-- CP-0006A contains synthetic/generic award definitions only; official rules and claim URLs remain CP-0006B work.
+- Official award sources are recorded with HTTPS URLs, retrieval dates, and version labels where available.
+- The initial verified catalog contains ARRL DXCC Mixed, ARRL WAS, IARU WAC, ARRL Triple Play WAS, IOTA 100, POTA Bronze Hunter, and SOTA Shack Sloth.
+- Simple distinct-target awards can produce CP-0006A local threshold definitions without attaching sponsor claimability.
+- Triple Play is preserved as a 50-state x 3-mode matrix rather than flattened into an unsafe generic count.
+- IOTA 100 preserves both the 100-group threshold and required seven-continent coverage.
+- POTA Bronze Hunter preserves automatic-program issuance instead of inventing a manual claim path.
+- SOTA Shack Sloth remains external point scoring rather than being misrepresented as a distinct-QSO count.
+- Official AWARDED/CREDITED standing is separate from local progress and requires explicit sponsor evidence.
+- The current QSO model's missing normalized remote award targets are explicit blockers; the catalog does not infer DXCC/state/continent/IOTA/POTA identity from callsigns or free text.
+- VUCC and CQ WAZ/WPX are not guessed into the verified rule catalog when their full rule/source shape is not yet encoded.
 
 Host/CI gates:
 
+- CP-0006B official award catalog: **115/115 PASS**.
 - CP-0006A award evaluator: **67/67 PASS**.
 - CP-0005B manual/digital LoTW queue: **47/47 PASS**.
 - CP-0005A universal QSO/logger: **78/78 PASS**.
@@ -71,17 +71,18 @@ Host/CI gates:
 
 Evidence:
 
-- research/awards/CP-0006A_AWARD_EVALUATION_ENGINE.md
+- research/awards/CP-0006B_OFFICIAL_AWARD_CATALOG.md
+- research/awards/OFFICIAL_AWARD_SOURCES.tsv
 - SOFTWARE_TRACK.md
-- CP-0006A finalization workflow run: 37458092347
+- CP-0006B finalization workflow run: 37460474655
 
 ### Evidence boundary
 
-CP-0006A is host/CI software evidence. It does not claim official award-rule correctness, sponsor-account access, claim submission, Awards Center UI/persistence, live LoTW/device validation, or FTX-1 Android hardware proof.
+CP-0006B verifies catalog structure and the encoded rule facts against official public sources. It does not claim current-QSO local evaluation for award target data that is not normalized, real sponsor-account status, claim submission, official award issuance, Awards Center UI/persistence, live LoTW/device validation, or FTX-1 Android hardware proof.
 
 ### Inherited verified ancestry
 
-CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -105,7 +106,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0006B — Official award rules/catalog
+**Active software track:** CP-0006C — Award target enrichment and composite rules
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -330,7 +331,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0006A-AWARD_EVALUATION_ENGINE`
+- Current Git source baseline: `CP-0006B-OFFICIAL_AWARD_CATALOG`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -343,15 +344,17 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0006B — Official award rules/catalog.**
+**CP-0006C — Award target enrichment and composite rules.**
 
-1. Verify award definitions only from official issuing-organization sources and record source URLs/version or retrieval date.
-2. Encode a versioned award catalog on top of the CP-0006A provider-independent evaluator; do not hard-code sponsor rules into UI.
-3. Keep official claimability and credited/awarded status distinct from local threshold calculations.
-4. Add official information/claim links and concise claim instructions without attempting real account login or claim submission.
-5. Keep exact QSO MODE/SUBMODE plus controlled award-mode grouping and band-specific views.
-6. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says `resume CP-0003C`.
-7. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
+1. Add a provider-independent award-target evidence layer keyed by immutable QSO id with explicit provenance for normalized remote DXCC entity, U.S. state, continent, IOTA group, and POTA reference data.
+2. Do not infer award targets from callsign prefixes or free-text notes without a versioned authoritative enrichment source.
+3. Apply official date/band/confirmation-source constraints before a QSO contributes to award progress.
+4. Add composite evaluation needed for Triple Play's state-by-mode matrix and IOTA 100's count-plus-continent coverage.
+5. Make DXCC/WAS/WAC/POTA local progress consume normalized target evidence without rewriting the authoritative QSO record.
+6. Keep SOTA point scoring external until a verified SOTA data/scoring integration exists.
+7. Preserve the distinction between local threshold, potentially claimable, submitted, awarded and credited sponsor states.
+8. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
+9. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 
 ## README maintenance contract
 

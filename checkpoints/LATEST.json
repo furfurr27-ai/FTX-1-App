@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0006A-AWARD_EVALUATION_ENGINE",
-  "created_utc": "2026-10-06T11:42:59+00:00",
-  "manifest": "checkpoints/manifests/CP-0006A-AWARD_EVALUATION_ENGINE.json",
-  "snapshot": "checkpoints/snapshots/CP-0006A-AWARD_EVALUATION_ENGINE.tar.gz",
-  "snapshot_sha256": "8f0b87d04e509688e024a06f077e0ea4648352bb3b4cee8f40ac54dabe77c7f8"
+  "checkpoint_id": "CP-0006B-OFFICIAL_AWARD_CATALOG",
+  "created_utc": "2026-10-06T12:03:57+00:00",
+  "manifest": "checkpoints/manifests/CP-0006B-OFFICIAL_AWARD_CATALOG.json",
+  "snapshot": "checkpoints/snapshots/CP-0006B-OFFICIAL_AWARD_CATALOG.tar.gz",
+  "snapshot_sha256": "c634c6fc832d5bbc196e3080947e03412a20f886e669fddb086ac4ccb7a8c5e4"
 }

@@ -142,3 +142,19 @@ Host/CI gate: award 67; manual/digital LoTW queue 47; universal logger 78; LoTW 
 Finalization workflow run: 37458092347.
 
 Evidence: research/awards/CP-0006A_AWARD_EVALUATION_ENGINE.md.
+
+## CP-0006B — Official award rules/catalog
+
+Parent durable checkpoint: CP-0006A-AWARD_EVALUATION_ENGINE.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has a versioned official award catalog with source provenance and conservative rule shapes for ARRL DXCC Mixed, ARRL WAS, IARU WAC, ARRL Triple Play WAS, IOTA 100, POTA Bronze Hunter and SOTA Shack Sloth. Simple distinct-target catalog entries can generate local CP-0006A threshold definitions, but never attach sponsor claimability. Composite/program-scored awards fail closed rather than being flattened to unsafe counts.
+
+Official sponsor standing is separately modeled and AWARDED/CREDITED requires explicit sponsor evidence. The current QSO model's missing normalized award-target fields remain explicit future work rather than being guessed from callsigns/free text.
+
+Host/CI gate: official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37460474655.
+
+Evidence: research/awards/CP-0006B_OFFICIAL_AWARD_CATALOG.md and research/awards/OFFICIAL_AWARD_SOURCES.tsv.
