@@ -68,12 +68,13 @@ class InMemoryAwardEvidenceRepository(
             var insertedTargets = 0
             var unchangedTargets = 0
             for (candidate in batch.targets) {
-                val key = targetIdentity(candidate)
+                val canonicalCandidate = canonicalTarget(candidate)
+                val key = targetIdentity(canonicalCandidate)
                 val existing = targetMap[key]
                 if (existing == null) {
-                    targetMap[key] = candidate
+                    targetMap[key] = canonicalCandidate
                     insertedTargets++
-                } else if (existing == candidate) {
+                } else if (existing == canonicalCandidate) {
                     unchangedTargets++
                 } else {
                     throw IllegalArgumentException(
@@ -179,6 +180,9 @@ class InMemoryAwardEvidenceRepository(
             val awardId: String,
             val recordedAtUtcMillis: Long?,
         )
+
+        private fun canonicalTarget(value: AwardTargetEvidence): AwardTargetEvidence =
+            if (value.value == value.normalizedValue) value else value.copy(value = value.normalizedValue)
 
         private fun targetIdentity(value: AwardTargetEvidence) = TargetIdentity(
             qsoId = value.qsoId,
