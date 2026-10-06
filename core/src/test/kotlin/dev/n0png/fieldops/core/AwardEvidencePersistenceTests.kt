@@ -461,7 +461,7 @@ object AwardEvidencePersistenceTests {
             append("<CONT:2>NA")
             append("<IOTA:6>NA-065")
             append("<SIG:4>POTA")
-            append("<SIG_INFO:7>K-1234")
+            append("<SIG_INFO:6>K-1234")
             append("<LOTW_QSL_RCVD:1>Y")
             append("<EOR>\n")
         }
