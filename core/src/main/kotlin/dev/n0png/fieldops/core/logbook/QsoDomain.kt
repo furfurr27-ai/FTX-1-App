@@ -192,6 +192,7 @@ object CompletedDigitalContactAdapter : DigitalAutoLogAdapter<DigitalCompletedCo
 
 interface LogbookRepository {
     fun save(qso: QsoRecord): QsoRecord
+    fun update(qso: QsoRecord): QsoRecord
     fun get(id: Long): QsoRecord?
     fun all(): List<QsoRecord>
 }
@@ -202,6 +203,13 @@ class InMemoryLogbookRepository : LogbookRepository {
     @Synchronized
     override fun save(qso: QsoRecord): QsoRecord {
         require(qso.id !in records) { "QSO id ${qso.id} already exists" }
+        records[qso.id] = qso
+        return qso
+    }
+
+    @Synchronized
+    override fun update(qso: QsoRecord): QsoRecord {
+        require(qso.id in records) { "QSO id ${qso.id} does not exist" }
         records[qso.id] = qso
         return qso
     }
@@ -239,7 +247,17 @@ class FastQsoLogger(
     private val repository: LogbookRepository,
     private val idSource: QsoIdSource,
     private val clock: UtcMillisClock = UtcMillisClock.SYSTEM,
+    private val lotwQueue: LotwQueueSink? = null,
+    private val lotwPolicy: LotwLoggerPolicy = LotwLoggerPolicy.DISABLED,
+    private val lotwQueueFailureHandler: LotwQueueFailureHandler = LotwQueueFailureHandler.IGNORE,
 ) {
+    init {
+        require(
+            lotwPolicy.autoQueueMode == LotwAutoQueueMode.DISABLED || lotwQueue != null
+        ) {
+            "An enabled LoTW logger policy requires a local LoTW queue"
+        }
+    }
     fun logManual(
         input: ManualQsoInput,
         session: OperatingSession,
@@ -319,7 +337,37 @@ class FastQsoLogger(
             notes = draft.notes,
             txPowerWatts = draft.txPowerWatts,
         )
-        return repository.save(qso)
+        val saved = repository.save(qso)
+        return autoQueueAfterAuthoritativeSave(saved)
+    }
+
+    private fun autoQueueAfterAuthoritativeSave(saved: QsoRecord): QsoRecord {
+        if (!lotwPolicy.shouldAutoQueue(saved)) return saved
+
+        val queue = lotwQueue ?: return saved
+        val profileId = saved.stationProfileId
+        if (profileId.isNullOrBlank()) {
+            lotwQueueFailureHandler.onFailure(
+                saved,
+                IllegalStateException("LoTW auto-queue requires a station profile id"),
+            )
+            return saved
+        }
+
+        // Local logging is authoritative. repository.save() has already
+        // succeeded before any LoTW queue action occurs. A queue/update failure
+        // is reported separately and never converts the contact save into a
+        // failed log operation.
+        return runCatching {
+            val entry = queue.enqueue(saved, profileId)
+            require(entry.qso.id == saved.id) {
+                "LoTW queue returned the wrong immutable QSO id"
+            }
+            repository.update(entry.qso)
+        }.getOrElse { failure ->
+            lotwQueueFailureHandler.onFailure(saved, failure)
+            saved
+        }
     }
 }
 

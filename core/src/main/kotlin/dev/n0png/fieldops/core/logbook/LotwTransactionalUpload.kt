@@ -56,40 +56,78 @@ data class LotwAcceptancePolicy(
     }
 }
 
+data class LotwQueueEntry(
+    val qso: QsoRecord,
+    val stationProfileId: String,
+    val attempt: Int = 0,
+)
+
+/**
+ * Minimal local queue boundary used by the logger.
+ *
+ * It deliberately has no network or signing methods. Logger-save may place a
+ * QSO into this local queue, but only the later sync worker owns LoTW network
+ * behavior.
+ */
+fun interface LotwQueueSink {
+    fun enqueue(qso: QsoRecord, stationProfileId: String): LotwQueueEntry
+}
+
 /**
  * Mode-neutral local LoTW queue.
  *
  * This queue deliberately knows nothing about "manual" versus "digital".
  * SSB/CW and decoded digital QSOs enter the same state machine. Persistence
  * will move behind this contract when the Room-backed app shell is added.
+ *
+ * Enqueue is idempotent by immutable local QSO id. Re-enqueueing the same
+ * contact returns the existing entry without resetting attempt/state. Reusing
+ * an existing id for a materially different QSO fails closed.
  */
-class LotwUploadQueue {
-    data class Entry(
-        val qso: QsoRecord,
-        val stationProfileId: String,
-        val attempt: Int = 0,
-    )
-
-    private val entries = linkedMapOf<Long, Entry>()
+class LotwUploadQueue : LotwQueueSink {
+    private val entries = linkedMapOf<Long, LotwQueueEntry>()
 
     @Synchronized
-    fun enqueue(qso: QsoRecord, stationProfileId: String): Entry {
-        require(stationProfileId.isNotBlank())
+    override fun enqueue(qso: QsoRecord, stationProfileId: String): LotwQueueEntry {
+        val profileId = stationProfileId.trim()
+        require(profileId.isNotEmpty())
         require(qso.lotwUpload != LotwUploadState.ACCEPTED) {
             "Accepted QSO must not be re-enqueued"
         }
-        val queued = qso.copy(lotwUpload = LotwUploadState.QUEUED)
-        val entry = Entry(queued, stationProfileId, entries[qso.id]?.attempt ?: 0)
+        qso.stationProfileId?.let {
+            require(it == profileId) {
+                "QSO station profile and queue station profile disagree"
+            }
+        }
+
+        entries[qso.id]?.let { existing ->
+            require(existing.stationProfileId == profileId) {
+                "QSO id " + qso.id + " is already queued for a different station profile"
+            }
+            require(sameImmutableQso(existing.qso, qso)) {
+                "QSO id " + qso.id + " is already queued for a different contact"
+            }
+            return existing
+        }
+
+        val entry = LotwQueueEntry(
+            qso = qso.copy(lotwUpload = LotwUploadState.QUEUED),
+            stationProfileId = profileId,
+            attempt = 0,
+        )
         entries[qso.id] = entry
         return entry
     }
 
     @Synchronized
-    fun pending(stationProfileId: String? = null): List<Entry> =
+    fun pending(stationProfileId: String? = null): List<LotwQueueEntry> =
         entries.values.filter {
             (stationProfileId == null || it.stationProfileId == stationProfileId) &&
                 it.qso.lotwUpload in setOf(LotwUploadState.QUEUED, LotwUploadState.SUBMITTED)
         }
+
+    @Synchronized
+    fun get(qsoId: Long): LotwQueueEntry? = entries[qsoId]
 
     @Synchronized
     fun applyResult(result: LotwTransactionalUploadResult) {
@@ -108,4 +146,19 @@ class LotwUploadQueue {
 
     @Synchronized
     fun size(): Int = entries.size
+
+    private fun sameImmutableQso(existing: QsoRecord, incoming: QsoRecord): Boolean =
+        existing.id == incoming.id &&
+            existing.call.trim().uppercase() == incoming.call.trim().uppercase() &&
+            existing.stationCallsign.trim().uppercase() == incoming.stationCallsign.trim().uppercase() &&
+            existing.qsoDate == incoming.qsoDate &&
+            existing.timeOn.take(6) == incoming.timeOn.take(6) &&
+            existing.band.trim().lowercase() == incoming.band.trim().lowercase() &&
+            existing.mode.trim().uppercase() == incoming.mode.trim().uppercase() &&
+            existing.submode?.trim()?.uppercase() == incoming.submode?.trim()?.uppercase() &&
+            existing.radioMode?.trim()?.uppercase() == incoming.radioMode?.trim()?.uppercase() &&
+            existing.frequencyHz == incoming.frequencyHz &&
+            existing.exactFrequencyMhz == incoming.exactFrequencyMhz &&
+            existing.stationProfileId == incoming.stationProfileId &&
+            existing.sessionId == incoming.sessionId
 }
