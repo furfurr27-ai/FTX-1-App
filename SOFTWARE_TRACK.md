@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0007B-AWARD_GEOMETRY_PROVIDERS`
+`CP-0007C-US_STATE_GEOMETRY_PACK`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,24 +25,25 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0007C-US_STATE_GEOMETRY_PACK
+CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION
 
 Required scope:
 
-- official Census 2025 national States 1:20,000,000 source artifact pinned with filename/source/hash/vintage
-- deterministic conversion into CP-0007B platform-independent multi-polygon payloads
-- exactly the 50 WAS state identities in the award geometry pack
-- District of Columbia, Puerto Rico, and territories excluded from the WAS pack even if present upstream
-- preserve multipart/island topology
-- explicit Alaska/antimeridian handling with no silent clipping
-- deterministic per-feature hashes and overall pack hash
-- Census attribution, statistical-boundary disclaimer, source vintage/scale, and rights metadata retained
-- raw/upstream source metadata, generated production pack, and synthetic fixtures clearly separated
-- host/CI verification
-- no callsign-derived geography
-- no Android/Compose/map SDK dependency in the pack builder/provider
-- no real sponsor accounts, credentials, claim submission, phone/radio/RF/manual hardware work
-- skip later hardware/account-gated checkpoints under the owner execution override
+- platform-independent normalized propagation observations and snapshots
+- explicit source provenance, observation/retrieval timestamps, freshness/staleness, confidence, geographic coverage, and quality metadata
+- normalized solar/geomagnetic context model
+- provider-neutral ionospheric map-product model for MUF/foF2-style data
+- normalized heard/spot path evidence for later PSK Reporter, WSPR, and FieldOps observations
+- observations remain distinct from QSOs
+- band/frequency-aware path usability assessment with explicit reason/explanation model
+- offline snapshot/cache interfaces for last-known propagation context
+- deterministic synthetic CI fixtures only in the foundation
+- no hard-coded provider inside UI/domain contracts
+- no real API keys/provider accounts in this checkpoint
+- no callsign-derived fabricated geography
+- no Android/Compose/map SDK dependency
+- no phone/radio/RF/manual hardware work
+- skip hardware/account-gated checkpoints under the owner execution override
 
 ## Resume rule
 

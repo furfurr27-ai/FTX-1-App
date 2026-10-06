@@ -256,3 +256,17 @@ Host/CI gate: geometry providers 102; award-area map projection 96; extended awa
 Finalization workflow run: 37498410494.
 
 Evidence: research/maps/CP-0007B_AWARD_GEOMETRY_PROVIDERS.md and research/maps/GEOMETRY_SOURCES.tsv.
+
+## CP-0007C — Production U.S. state offline geometry pack
+
+Parent durable checkpoint: CP-0007B-AWARD_GEOMETRY_PROVIDERS.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now includes a production offline geometry pack for exactly the 50 ARRL WAS states generated from the official U.S. Census Bureau 2025 national States 1:20,000,000 KML artifact. The upstream artifact is pinned by filename, URL, byte size, vintage, scale, and SHA-256; the generated 324,531-byte canonical pack and every state feature are independently hashed. Multipart/island geometry is preserved, Alaska antimeridian behavior is explicitly verified, and the pack is reproducible byte-for-byte from the pinned source. Production coordinates are stored as an offline asset with a small fail-closed loader instead of a compiler-heavy generated Kotlin initializer.
+
+Host/CI gate: production state pack 363; geometry providers 102; award-area map projection 96; extended award catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37502790657.
+
+Evidence: research/maps/CP-0007C_PRODUCTION_US_STATE_PACK.md, research/maps/US_STATE_2025_20M_PACK.json, research/maps/GEOMETRY_SOURCES.tsv, and the production offline geometry asset.

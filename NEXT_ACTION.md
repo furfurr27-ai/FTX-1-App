@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0007C — Production U.S. state offline geometry pack**
+**CP-0008A — Propagation intelligence domain and source-normalization foundation**
 
-Pin the official Census 2025 national States 1:20,000,000 source artifact, convert exactly the 50 WAS state identities into the CP-0007B offline multi-polygon format, preserve multipart/antimeridian behavior, record deterministic hashes and Census attribution/rights metadata, and keep Android rendering out of the pack builder.
+Define provider-neutral propagation observations/snapshots, provenance and freshness/confidence metadata, solar/geomagnetic and ionospheric product models, heard/spot path evidence, explainable band/path usability assessments, and offline snapshot/cache interfaces. Use deterministic synthetic CI fixtures only; keep real credentialed providers and Android map rendering out of this foundation.
