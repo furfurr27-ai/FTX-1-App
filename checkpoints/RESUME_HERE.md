@@ -1,31 +1,32 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0006F-AWARDS_APPLICATION_SERVICE**
-Project version: `v21-awards-application-service`
-Phase: **Awards Center application service host-verified; extended official award catalog next; hardware/account checkpoints remain deferred by owner**
-Test status: **GREEN host/CI: service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37486907491**
+Latest verified checkpoint: **CP-0006G-EXTENDED_AWARD_CATALOG**
+Project version: `v22-extended-award-catalog`
+Phase: **Extended award catalog/grid evaluation host-verified; award-area map projection next; hardware/account checkpoints remain deferred by owner**
+Test status: **GREEN host/CI: extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37491149496**
 
 ## What is complete in this checkpoint
-- Awards Center cards are generated from authoritative LogbookRepository state plus one current AwardEvidenceRepository snapshot
-- Resolved ADIF ingestion requires existing immutable local QSO ids and never searches by callsign/date/grid/country/prefix/free text
-- Explicit CALL is a fail-closed binding check only; unknown ids or mismatches reject the whole batch
-- All source records convert before one combined evidence apply, preserving atomic batch semantics for malformed or conflicting evidence
-- Batch ingestion is deterministic and idempotent; reversed input order produces the same canonical evidence state
-- Parsed LoTW-style ADIF host fixtures feed confirmed award progress without network/account access
-- Mixed/CW/Phone/Digital plus band/date queries flow through the service and sponsor standing remains explicit external evidence
-- Focused service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062
+- ARRL VUCC 50 MHz, 144 MHz and 432 MHz entries are sourced from official ARRL rules and encode confirmed-grid thresholds 100/100/50 with 1983 date floor
+- ARRL FFMA is sourced from the official issuer page and encodes the exact 488-grid 6m target universe with all-or-nothing confirmed threshold
+- Maidenhead four-character grid evidence validates explicit 4/6/8-character locators and is single-valued per immutable QSO
+- Explicit ADIF GRIDSQUARE creates provenance-bearing remote grid evidence while MY_GRIDSQUARE remains station-side metadata
+- Official requiredBands are enforced inside the progress evaluator and cannot be bypassed by an Awards Center view filter
+- VUCC/FFMA sponsor-only location/repeater/boundary/direct-initiation conditions remain visible and local threshold never becomes sponsor claimability
+- CQ WAZ/WPX and DARC DLD were researched but intentionally not encoded without a durably pinned issuer-authoritative rules source
+- Focused extended catalog PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'
 - Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint
 - CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete
-- Automatic/fuzzy QSO matching, live LoTW download/login, sponsor account sync and claim submission remain outside CP-0006F
-- Android Room/SQLite storage, Compose UI and device persistence behavior remain unproven
+- CQ WAZ/WPX issuer rules and DARC DLD/DOK source material were not durably pinned in this research run and remain unencoded
+- Sponsor acceptance of VUCC/FFMA applicant-location, repeater, grid-boundary and direct-initiation evidence remains external
+- Android map rendering, geometry licensing, real sponsor accounts and claim submission remain later work
 
 ## Continue with these exact actions
-1. CP-0006G: expand official award catalog/evaluator coverage using issuing-organization sources, prioritizing VUCC/grid awards, Fred Fish where representable, CQ WAZ/WPX, and useful regional/national programs
-2. Add new normalized target kinds or evaluator shapes only where verified official rules require them; fail closed on sponsor-only or ambiguous requirements
-3. Keep real sponsor accounts/claim submission out and continue skipping phone/radio/credential/account/RF/manual-hardware checkpoints
+1. CP-0007A: build a UI-independent award-area map projection from authoritative logbook/evidence/Awards Center state, starting with U.S. states and four-character Maidenhead grids
+2. Keep geometry identity/source separate from geometry payload and preserve needed/worked-unconfirmed/confirmed/local-threshold states
+3. Do not derive boundaries/coordinates from callsigns and continue skipping phone/radio/credential/account/RF/manual-hardware checkpoints
 
 ## Verification before continuing
 Run:

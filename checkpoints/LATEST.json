@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0006F-AWARDS_APPLICATION_SERVICE",
-  "created_utc": "2026-10-06T15:24:56+00:00",
-  "manifest": "checkpoints/manifests/CP-0006F-AWARDS_APPLICATION_SERVICE.json",
-  "snapshot": "checkpoints/snapshots/CP-0006F-AWARDS_APPLICATION_SERVICE.tar.gz",
-  "snapshot_sha256": "35cc96ae6d249566968812227451c0fd7e7c3d2ef244e572ccded8dd2a9ca379"
+  "checkpoint_id": "CP-0006G-EXTENDED_AWARD_CATALOG",
+  "created_utc": "2026-10-06T15:56:44+00:00",
+  "manifest": "checkpoints/manifests/CP-0006G-EXTENDED_AWARD_CATALOG.json",
+  "snapshot": "checkpoints/snapshots/CP-0006G-EXTENDED_AWARD_CATALOG.tar.gz",
+  "snapshot_sha256": "89b5db3fdbc92092eb22f575ff9f22b26e852efe1af92ba6103441a3cffd3bba"
 }

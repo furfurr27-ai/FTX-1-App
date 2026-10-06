@@ -214,3 +214,17 @@ Host/CI gate: Awards Center application service 64; award evidence persistence/i
 Finalization workflow run: 37486907491.
 
 Evidence: research/awards/CP-0006F_AWARDS_APPLICATION_SERVICE.md.
+
+## CP-0006G — Extended official award catalog and evaluator coverage
+
+Parent durable checkpoint: CP-0006F-AWARDS_APPLICATION_SERVICE.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has issuer-sourced ARRL VUCC 50 MHz/144 MHz/432 MHz and FFMA catalog entries, explicit Maidenhead four-character award evidence, ADIF GRIDSQUARE import, and evaluator-enforced required-band restrictions. The exact 488-grid FFMA universe is represented and locally testable. CQ WAZ/WPX and DARC DLD remain deliberately unencoded where a durable issuer-authoritative source could not be fully pinned through this research run.
+
+Host/CI gate: extended catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37491149496.
+
+Evidence: research/awards/CP-0006G_EXTENDED_AWARD_CATALOG.md and research/awards/OFFICIAL_AWARD_SOURCES.tsv.

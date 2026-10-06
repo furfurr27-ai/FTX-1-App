@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0006G — Extended official award catalog and evaluator coverage**
+**CP-0007A — Award-area map projection foundation**
 
-Expand the verified official catalog using issuing-organization sources, prioritizing VUCC/grid-oriented awards, Fred Fish where locally representable, CQ WAZ, CQ WPX, and useful Europe/U.S. regional or national awards. Add new target/evaluator shapes only when official rules demand them; never approximate sponsor-only credit or missing geography.
+Build a platform-independent map-layer read model from the verified Awards Center and award evidence, beginning with U.S. states and Maidenhead four-character grids. Keep geometry identity/source separate from geometry content, preserve needed/worked/confirmed/local-threshold states, and never derive geography from callsigns.

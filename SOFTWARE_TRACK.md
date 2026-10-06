@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0006F-AWARDS_APPLICATION_SERVICE`
+`CP-0006G-EXTENDED_AWARD_CATALOG`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,19 +25,19 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-`CP-0006G-EXTENDED_AWARD_CATALOG`
+`CP-0007A-AWARD_MAP_PROJECTION`
 
 Required scope:
 
-- official issuing-organization research only for newly encoded awards
-- source URL + version/date + retrieval date retained
-- prioritize ARRL VUCC/grid awards, Fred Fish where locally representable, CQ WAZ, CQ WPX, and useful Europe/U.S. regional/national programs
-- explicitly classify local evaluator support vs external/sponsor-only requirements
-- add normalized target kinds/evaluator shapes only from verified rules
-- no guessed grid/zone/prefix/county/program credit
-- preserve exact QSO MODE/SUBMODE and local-vs-sponsor state separation
-- official info/claim links and concise claim instructions
-- host/CI-only verification
+- platform-independent award-area map-layer projection
+- source from authoritative logbook + persisted award evidence + Awards Center progress
+- explicit NEEDED / WORKED_UNCONFIRMED / CONFIRMED / LOCAL_THRESHOLD_MET semantics
+- first supported geographic targets: U.S. states and Maidenhead four-character grids
+- geometry identity/source metadata separated from geometry payload
+- no callsign-derived boundaries/coordinates/zones/entities/islands/parks/summits
+- band/mode/date query context preserved
+- deterministic clustering/aggregation-ready records
+- host/CI-only verification before Android map rendering
 - no real sponsor accounts, credentials, claim submission, phone/radio/RF/manual hardware work
 - skip later hardware/account-gated checkpoints under the owner execution override
 

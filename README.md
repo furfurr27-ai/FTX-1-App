@@ -39,37 +39,40 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0006F-AWARDS_APPLICATION_SERVICE
+**Latest verified checkpoint:** CP-0006G-EXTENDED_AWARD_CATALOG
 
-Parent durable checkpoint: CP-0006E-AWARD_EVIDENCE_PERSISTENCE.
+Parent durable checkpoint: CP-0006F-AWARDS_APPLICATION_SERVICE.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0006F is a GREEN host/CI application-service checkpoint. It composes the authoritative local logbook, persistent award evidence, explicit ADIF enrichment, and Awards Center projection behind one platform-independent service without introducing fuzzy QSO matching or account/hardware dependencies.
+CP-0006G is a GREEN host/CI + issuer-source research checkpoint. It expands the official catalog with ARRL VUCC 50 MHz, 144 MHz, 432 MHz, and Fred Fish Memorial Award rules; adds explicit Maidenhead four-character grid evidence; and makes official required-band restrictions part of the evaluator rather than a UI convention.
 
-CP-0006F proves:
+CP-0006G proves:
 
-- Awards Center cards are generated directly from the current authoritative LogbookRepository plus one current AwardEvidenceRepository snapshot.
-- Callers no longer manually assemble QSO/evidence/sponsor-standing lists.
-- Parsed ADIF evidence ingestion requires a positive immutable local QSO id already resolved by another layer.
-- The award service never searches the logbook by callsign, date, grid, country, prefix, or free text.
-- An explicit ADIF CALL is only a fail-closed consistency check against the already-resolved QSO.
-- Unknown QSO ids, CALL mismatches, malformed explicit award fields, or repository evidence conflicts reject the complete ingestion batch.
-- All records are converted before one combined evidence-repository apply, preserving atomic batch semantics.
-- Repeated batches are idempotent and reversed input ordering produces the same canonical evidence state.
-- Parsed LoTW-style ADIF fixtures can feed explicit confirmation/target evidence into Awards Center progress without network/account access.
-- Mixed/CW/Phone/Digital, band, and UTC date-range queries pass through the application service.
-- Sponsor standing is recorded only through explicit sponsor evidence and is never inferred from local threshold progress.
-- The service does not mutate authoritative QSO records or exact MODE/SUBMODE identity.
-- Production service code has no credential, HTTP, FTX-1 hardware, Compose, or Room dependency.
+- New encoded award rules are sourced only from current ARRL issuing-organization pages/rules.
+- 50 MHz VUCC requires 100 confirmed grids on 6m.
+- 144 MHz VUCC requires 100 confirmed grids on 2m.
+- 432 MHz VUCC requires 50 confirmed grids on 70cm.
+- VUCC contacts before 1983-01-01 are excluded locally.
+- VUCC sponsor conditions such as repeater, aeronautical-mobile, grid-boundary, and 200 km applicant-location rules remain visible rather than silently claimed solved.
+- FFMA requires all 488 ARRL-listed four-character grids, on 6m, from 1983-01-01 forward.
+- The catalog's FFMA target universe contains exactly 488 grids matching the issuer's published field totals.
+- Four-, six-, and eight-character explicit Maidenhead locators normalize to a validated four-character award grid.
+- Conflicting remote grid evidence for one immutable QSO fails closed.
+- Explicit ADIF GRIDSQUARE may create remote grid evidence with provenance; MY_GRIDSQUARE does not.
+- Required award bands are enforced inside the official progress engine and cannot be bypassed by a user view filter.
+- Local VUCC/FFMA threshold completion never becomes sponsor claimability, awarded, or credited state.
+- CQ WAZ/WPX are intentionally not encoded because a current issuer-authoritative rules source could not be durably pinned through the research path; ARRL LoTW integration material is not substituted for CQ rules.
+- DARC DLD/DOK is also deferred rather than encoded from a partially retrievable source.
 
 Host/CI gates:
 
+- CP-0006G extended official award catalog/grid evaluator: **96/96 PASS**.
 - CP-0006F Awards Center application service: **64/64 PASS**.
 - CP-0006E award evidence persistence/import: **92/92 PASS**.
 - CP-0006D Awards Center projection: **114/114 PASS**.
 - CP-0006C award target/composite evaluator: **77/77 PASS**.
-- CP-0006B official award catalog: **115/115 PASS**.
+- CP-0006B base official award catalog regression: **115/115 PASS**.
 - CP-0006A award evaluator: **67/67 PASS**.
 - CP-0005B manual/digital LoTW queue: **47/47 PASS**.
 - CP-0005A universal QSO/logger: **78/78 PASS**.
@@ -78,18 +81,19 @@ Host/CI gates:
 
 Evidence:
 
+- research/awards/CP-0006G_EXTENDED_AWARD_CATALOG.md
+- research/awards/OFFICIAL_AWARD_SOURCES.tsv
 - research/awards/CP-0006F_AWARDS_APPLICATION_SERVICE.md
-- research/awards/CP-0006E_AWARD_EVIDENCE_PERSISTENCE.md
 - SOFTWARE_TRACK.md
-- CP-0006F finalization workflow run: 37486907491
+- CP-0006G finalization workflow run: 37491149496
 
 ### Evidence boundary
 
-CP-0006F is host/CI evidence using platform-independent repositories and synthetic/local parsed ADIF fixtures. It does not claim automatic/fuzzy QSO matching, live LoTW download/login, sponsor account synchronization, claim submission, Android Room/SQLite storage, Compose UI, device persistence behavior, or FTX-1 hardware proof.
+CP-0006G proves official rule data, target normalization, required-band evaluation, and host/CI progress behavior. It does not prove sponsor acceptance of station-location/grid-boundary evidence, live award-account state, claim submission, CQ WAZ/WPX rules, DARC DLD rules, Android map rendering, map geometry licensing, or FTX-1 hardware behavior.
 
 ### Inherited verified ancestry
 
-CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -113,7 +117,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0006G — Extended official award catalog and evaluator coverage
+**Active software track:** CP-0007A — Award-area map projection foundation
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -338,7 +342,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0006F-AWARDS_APPLICATION_SERVICE`
+- Current Git source baseline: `CP-0006G-EXTENDED_AWARD_CATALOG`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -351,15 +355,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0006G — Extended official award catalog and evaluator coverage.**
+**CP-0007A — Award-area map projection foundation.**
 
-1. Expand the official award catalog beyond the initial seven entries using only official issuing-organization sources with URL, source version/date, and retrieval date.
-2. Prioritize the product-requirement targets ARRL VUCC/grid-oriented awards, ARRL Fred Fish Memorial Award where locally representable, CQ WAZ, CQ WPX, and useful regional/national awards for Europe and the U.S.
-3. For each candidate, explicitly classify whether local evaluation is a distinct-target rule, composite rule, external program scoring, or unsupported until additional normalized target evidence exists.
-4. Add any new normalized target kinds/evaluator shapes only when official rules require them; do not approximate grids, CQ zones, prefixes, counties, or sponsor-only credit.
-5. Preserve exact QSO mode/submode, worked/confirmed/local-threshold/sponsor-standing separation, official claim links, and claim instructions.
-6. Extend official-source ledger and host/CI tests; fail closed on ambiguous or sponsor-account-only requirements.
-7. Do not use real sponsor accounts, credentials, claim submission, phone/radio/RF testing, or manual hardware validation.
+1. Build a UI-independent map-layer read model from the authoritative logbook, persisted award evidence, and verified Awards Center progress.
+2. Represent geographic award targets with explicit states such as NEEDED, WORKED_UNCONFIRMED, CONFIRMED, and LOCAL_THRESHOLD_MET without treating local threshold as sponsor credit.
+3. Start with target types already explicitly supported: U.S. states and Maidenhead four-character grids.
+4. Preserve source/provenance for any geometry or point data; do not derive boundaries, coordinates, CQ zones, DXCC geometry, islands, parks, or summits from callsigns.
+5. Keep geometry identity separate from geometry content so a later licensed/versioned offline geometry pack can be swapped without changing award rules.
+6. Support band/mode/date query context from the Awards Center projection.
+7. Add deterministic clustering/aggregation-ready map records without requiring Android Compose/Maps rendering.
 8. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
 9. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 
