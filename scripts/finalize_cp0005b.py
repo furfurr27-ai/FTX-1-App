@@ -177,21 +177,3 @@ Finalization workflow run: {run_id}.
 Evidence: research/logbook/CP-0005B_MANUAL_QSO_LOTW_QUEUE.md.
 """
     history_path.write_text(history)
-
-verify_workflow = """name: Verify CP-0005B checkpoint
-
-on:
-  workflow_dispatch:
-
-permissions:
-  contents: read
-
-jobs:
-  verify:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Verify immutable CP-0005B snapshot
-        run: python3 scripts/verify_checkpoint.py --root . --id CP-0005B-MANUAL_QSO_LOTW_QUEUE
-"""
-(root / ".github" / "workflows" / "finalize-cp0005b.yml").write_text(verify_workflow)
