@@ -8,7 +8,8 @@ trap 'rm -rf "$BUILD"' EXIT
 MAIN_JAR="$BUILD/fieldops-core-main.jar"
 TEST_JAR="$BUILD/cp0007c-state-pack-tests.jar"
 SOURCE_ZIP="$BUILD/cb_2025_us_state_20m.zip"
-REBUILT_KT="$BUILD/Census2025UsState20mGeometryPack.kt"
+REBUILT_PACK="$BUILD/us_states_2025_20m.pack"
+REBUILT_META_KT="$BUILD/Census2025UsState20mPackMetadata.kt"
 REBUILT_JSON="$BUILD/US_STATE_2025_20M_PACK.json"
 
 echo "[1/10] Compile FieldOps core main"
@@ -66,6 +67,7 @@ PY
 echo "[9/10] Enforce production geography remains callsign/network/UI/hardware independent"
 TARGETS=(
   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mGeometryPack.kt"
+  "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mPackMetadata.kt"
   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/GeometryPackIntegrity.kt"
   "$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/map/AwardGeometryProviders.kt"
 )
