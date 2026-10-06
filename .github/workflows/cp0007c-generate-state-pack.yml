@@ -46,7 +46,8 @@ jobs:
           set -euo pipefail
           git config user.name "fieldops-geometry-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mGeometryPack.kt
+          git add core/src/main/resources/dev/n0png/fieldops/maps/us_states_2025_20m.pack
+          git add core/src/main/kotlin/dev/n0png/fieldops/core/map/Census2025UsState20mPackMetadata.kt
           git add research/maps/US_STATE_2025_20M_PACK.json
           if git diff --cached --quiet; then
             echo "Production pack already deterministic and current."
