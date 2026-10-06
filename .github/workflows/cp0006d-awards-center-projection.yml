@@ -19,7 +19,10 @@ on:
       - 'scripts/test_universal_qso_logger.sh'
       - 'scripts/test_lotw_transaction.sh'
       - 'scripts/test_core_regression.sh'
+      - 'scripts/finalize_cp0006d.py'
+      - 'research/awards/CP-0006D_AWARDS_CENTER_PROJECTION.md'
       - '.github/workflows/cp0006d-awards-center-projection.yml'
+      - '.github/workflows/finalize-cp0006d.yml'
 
 permissions:
   contents: read
@@ -42,6 +45,22 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Run focused CP-0006D projection gate
         run: bash scripts/test_awards_center_projection.sh
+
+      - name: Dry-run CP-0006D checkpoint handoff generator
+        shell: bash
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0006d.py
+          python3 scripts/finalize_cp0006d.py
+          grep -Fq 'CP-0006D-AWARDS_CENTER_PROJECTION' README.md
+          grep -Fq 'CP-0006E — Award evidence persistence and explicit ADIF enrichment import' NEXT_ACTION.md
+          grep -Fq 'CP-0006E-AWARD_EVIDENCE_PERSISTENCE' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0006D — Awards Center progress projection' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0006D snapshot' .github/workflows/finalize-cp0006d.yml
+          git diff --check
 
   target-regression:
     runs-on: ubuntu-latest
