@@ -1,0 +1,58 @@
+{
+  "type": "FeatureCollection",
+  "time_tag": "2026-09-09T15:15:00Z",
+  "cadence": 10,
+  "metadata": {
+    "variables": {
+      "tec": {"units": "TECU", "min": 0.0, "max": 300.0},
+      "hmF2": {"units": "km", "min": 200.0, "max": 600.0},
+      "NmF2": {"units": "el/m^3", "min": 0.0, "max": 1000000000000000.0}
+    }
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-177.5, -88.75]},
+      "properties": {
+        "tec": 5.991683217188725,
+        "anomaly": 0.6210870643697008,
+        "hmF2": 335.78443287826775,
+        "NmF2": 220761200216.95996,
+        "quality_flag": 0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [32.5, -73.75]},
+      "properties": {
+        "tec": 11.294521460140102,
+        "anomaly": 3.2458879687809983,
+        "hmF2": 309.8450586408732,
+        "NmF2": 346446989985.2129,
+        "quality_flag": 1
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [-117.5, 31.25]},
+      "properties": {
+        "tec": 21.53414670593684,
+        "anomaly": 0.8821834846152257,
+        "hmF2": 262.58696096564114,
+        "NmF2": 711430321952.6077,
+        "quality_flag": 5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {"type": "Point", "coordinates": [2.5, 53.75]},
+      "properties": {
+        "tec": 17.120824407721763,
+        "anomaly": -1.0285073206099824,
+        "hmF2": 272.08539082090516,
+        "NmF2": 560339481394.0635,
+        "quality_flag": 5
+      }
+    }
+  ]
+}
