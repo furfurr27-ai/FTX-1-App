@@ -9,6 +9,7 @@ MAIN_JAR="$BUILD/fieldops-core-main.jar"
 TEST_JAR="$BUILD/cp0008g-refresh-tests.jar"
 MODELS="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshModels.kt"
 COORDINATOR="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshCoordinator.kt"
+WORKSPACE="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshWorkspaceService.kt"
 TEST="$ROOT/core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshCoordinatorTests.kt"
 EVIDENCE="$ROOT/research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md"
 
@@ -36,9 +37,11 @@ grep -Fq 'carryForwardUnrefreshed' "$COORDINATOR"
 grep -Fq 'latestBefore' "$COORDINATOR"
 grep -Fq 'aggregationFailure' "$COORDINATOR"
 grep -Fq 'snapshotStore.save(snapshot)' "$COORDINATOR"
+grep -Fq 'PropagationWorkspaceProjectionService' "$WORKSPACE"
+grep -Fq 'refreshAndProject' "$WORKSPACE"
 
 echo "[6/7] Enforce platform/network/account separation"
-! grep -Eq 'android\.|androidx\.|WorkManager|OkHttp|Retrofit|HttpURLConnection|openConnection|java\.net|UsbManager|Ftx1|RadioSession|PTT|password|credential|apiKey' "$MODELS" "$COORDINATOR" || {
+! grep -Eq 'android\.|androidx\.|WorkManager|OkHttp|Retrofit|HttpURLConnection|openConnection|java\.net|UsbManager|Ftx1|RadioSession|PTT|password|credential|apiKey' "$MODELS" "$COORDINATOR" "$WORKSPACE" || {
   echo "CP-0008G must remain platform/network/account/radio independent" >&2
   exit 1
 }
