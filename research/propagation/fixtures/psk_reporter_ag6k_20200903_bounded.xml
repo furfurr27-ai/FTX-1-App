@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<receptionReports currentSeconds="1599164934">
+  <lastSequenceNumber value="14631964162"/>
+  <maxFlowStartSeconds value="1599164931"/>
+  <receptionReport receiverCallsign="W5CJ" receiverLocator="EM55db92" senderCallsign="AG6K" senderLocator="DM14cc24" frequency="14075311" flowStartSeconds="1599163380" mode="FT8" isSender="1" receiverDXCC="United States" receiverDXCCCode="K" sNR="-19" />
+  <receptionReport receiverCallsign="N7HPX" receiverLocator="DN13VJ" senderCallsign="AG6K" senderLocator="DM14cc24" frequency="14075301" flowStartSeconds="1599163378" mode="FT8" isSender="1" receiverDXCC="United States" receiverDXCCCode="K" sNR="-11" />
+  <receptionReport receiverCallsign="W5DPH" receiverLocator="EM04un54" senderCallsign="AG6K" senderLocator="DM14cc24" frequency="14075304" flowStartSeconds="1599163377" mode="FT8" isSender="1" receiverDXCC="United States" receiverDXCCCode="K" sNR="-16" />
+  <receptionReport receiverCallsign="KJ6DZB" receiverLocator="CM87UV" senderCallsign="AG6K" senderLocator="DM14cc24" frequency="7075091" flowStartSeconds="1599162899" mode="FT8" isSender="1" receiverDXCC="United States" receiverDXCCCode="K" sNR="-19" />
+</receptionReports>

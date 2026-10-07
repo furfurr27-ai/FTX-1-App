@@ -1,0 +1,27 @@
+{
+  "schema_version": "psk-reporter-query-xml-docs-2026-10-07",
+  "captured_on_utc_date": "2026-10-07",
+  "official_developer_url": "https://www.pskreporter.info/pskdev.html",
+  "official_query_url": "https://retrieve.pskreporter.info/query",
+  "fixture": {
+    "path": "research/propagation/fixtures/psk_reporter_ag6k_20200903_bounded.xml",
+    "bytes": 1196,
+    "sha256": "fb41c07330c8d446dbd52eb4b35358950145b8a75fab76f225e69859b5752da7",
+    "reception_report_count": 4,
+    "source_current_seconds": "1599164934",
+    "source_last_sequence_number": "14631964162",
+    "source_max_flow_start_seconds": "1599164931",
+    "extraction": "Exact response metadata and first four exact receptionReport rows copied from the pinned public go-pskreporter recorded query fixture. The bounded fixture is deterministic parser evidence, not a live 2026 reception snapshot."
+  },
+  "recorded_response_mirror": {
+    "repository": "jasonhancock/go-pskreporter",
+    "commit": "b424d3bc83c52e424be7e6e32572ef652cecca4c",
+    "path": "testdata/output.xml",
+    "role": "Secondary response-shape and exact fixture-row provenance only. PSK Reporter's own developer documentation remains authoritative for API/query/field semantics."
+  },
+  "notes": [
+    "Required CI never polls the live PSK Reporter service.",
+    "The fixture includes explicit sender and receiver Maidenhead locators, integer-Hz frequency, Unix flowStartSeconds, mode and sNR.",
+    "FieldOps rejects individual reception reports that lack the minimum explicit geographic/path fields rather than deriving location from callsigns."
+  ]
+}
