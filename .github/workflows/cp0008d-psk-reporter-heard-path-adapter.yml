@@ -33,6 +33,21 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Deterministic CP-0008D gate
         run: bash scripts/test_psk_reporter_heard_path_adapter.sh
+      - name: Dry-run CP-0008D checkpoint handoff generator
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008d.py
+          python3 scripts/finalize_cp0008d.py
+          grep -Fq 'CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER' README.md
+          grep -Fq 'CP-0008E — propagation evidence aggregation and offline cache service' NEXT_ACTION.md
+          grep -Fq 'CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0008D — PSK Reporter public heard-path adapter' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0008D snapshot' .github/workflows/finalize-cp0008d.yml
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008c.yml
+          git diff --check
 
   inherited-regression:
     name: inherited — ${{ matrix.label }}
