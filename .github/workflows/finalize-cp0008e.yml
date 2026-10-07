@@ -1,19 +1,9 @@
 name: Finalize CP-0008E checkpoint
 
+# CP-0008E is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationAggregation.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationAggregationOfflineCacheTests.kt'
-      - 'research/propagation/CP-0008E_PROPAGATION_AGGREGATION_OFFLINE_CACHE.md'
-      - 'scripts/test_propagation_aggregation_offline_cache.sh'
-      - 'scripts/finalize_cp0008e.py'
-      - '.github/workflows/finalize-cp0008d.yml'
-      - '.github/workflows/finalize-cp0008e.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
