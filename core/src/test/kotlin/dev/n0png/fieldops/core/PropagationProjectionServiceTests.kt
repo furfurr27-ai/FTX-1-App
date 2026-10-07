@@ -140,9 +140,14 @@ object PropagationProjectionServiceTests {
         eq(0, pskOnly.solarGeomagnetic.size, "source filter removes solar providers")
         eq(0, pskOnly.modeledPaths.size, "source filter removes model provider")
 
-        val staleOnly = service.latest(
+        val staleFixture = snapshot.copy(
+            heardPaths = snapshot.heardPaths.map {
+                if (it.evidenceId == "heard-40m-js8") it.copy(observedAtUtcMillis = 0L) else it
+            }
+        )
+        val staleOnly = service(staleFixture).latest(
             PropagationProjectionQuery(
-                nowUtcMillis = 1_000_000,
+                nowUtcMillis = 4_000_001,
                 filter = PropagationProjectionFilter(
                     freshness = setOf(PropagationFreshness.STALE),
                 ),
