@@ -50,7 +50,7 @@ object PropagationProjectionServiceTests {
         eq(2, picture.solarGeomagnetic.size, "solar context projected separately")
         eq(1, picture.modeledPaths.size, "model projected separately")
         eq(6, picture.projectedEvidenceCount, "projection count includes four categories")
-        eq(4, picture.status.sourceCount, "source count preserved")
+        eq(5, picture.status.sourceCount, "source count preserved")
         checkThat(!picture.status.offlineCacheAvailable, "in-memory source not presented as offline cache")
 
         val heard = picture.heardPaths.first { it.metadata.evidenceId == "heard-20m-ft8" }
