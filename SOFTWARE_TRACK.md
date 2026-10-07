@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0007C-US_STATE_GEOMETRY_PACK`
+`CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,23 +25,23 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION
+CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER
 
 Required scope:
 
-- platform-independent normalized propagation observations and snapshots
-- explicit source provenance, observation/retrieval timestamps, freshness/staleness, confidence, geographic coverage, and quality metadata
-- normalized solar/geomagnetic context model
-- provider-neutral ionospheric map-product model for MUF/foF2-style data
-- normalized heard/spot path evidence for later PSK Reporter, WSPR, and FieldOps observations
-- observations remain distinct from QSOs
-- band/frequency-aware path usability assessment with explicit reason/explanation model
-- offline snapshot/cache interfaces for last-known propagation context
-- deterministic synthetic CI fixtures only in the foundation
-- no hard-coded provider inside UI/domain contracts
-- no real API keys/provider accounts in this checkpoint
-- no callsign-derived fabricated geography
+- exact official no-credential NOAA/SWPC endpoint pins for planetary Kp and F10.7 solar flux
+- captured representative response fixtures with retrieval date and SHA-256
+- documented response schema, units, timestamp/cadence semantics, and any sentinel/missing-value behavior
+- transport-independent NOAA parser/adapter into CP-0008A SolarGeomagneticObservation
+- explicit observed vs estimated vs forecast source/provenance distinction
+- provider timestamps retained; no replacement with device/current time
+- fail-closed malformed/missing required fields
+- deterministic parser tests against pinned fixtures
+- optional live schema-freshness check must not assert changing current values
+- no universal path score derived directly from Kp/F10.7
+- no GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration in this checkpoint
 - no Android/Compose/map SDK dependency
+- no real accounts/credentials
 - no phone/radio/RF/manual hardware work
 - skip hardware/account-gated checkpoints under the owner execution override
 

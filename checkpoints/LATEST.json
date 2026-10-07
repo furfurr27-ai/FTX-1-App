@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0007C-US_STATE_GEOMETRY_PACK",
-  "created_utc": "2026-10-06T17:24:03+00:00",
-  "manifest": "checkpoints/manifests/CP-0007C-US_STATE_GEOMETRY_PACK.json",
-  "snapshot": "checkpoints/snapshots/CP-0007C-US_STATE_GEOMETRY_PACK.tar.gz",
-  "snapshot_sha256": "f480d263cf0ca43867a9e034e48583e6d0acd06eb0c07addee6377cf3dbec065"
+  "checkpoint_id": "CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION",
+  "created_utc": "2026-10-07T06:36:26+00:00",
+  "manifest": "checkpoints/manifests/CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.json",
+  "snapshot": "checkpoints/snapshots/CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.tar.gz",
+  "snapshot_sha256": "3398489078503c03d1e52adcfabaa553aa973fdc96d1da2b52c931ad0a674f75"
 }

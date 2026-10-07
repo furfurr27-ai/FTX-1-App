@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008A — Propagation intelligence domain and source-normalization foundation**
+**CP-0008B — NOAA SWPC public propagation source adapter**
 
-Define provider-neutral propagation observations/snapshots, provenance and freshness/confidence metadata, solar/geomagnetic and ionospheric product models, heard/spot path evidence, explainable band/path usability assessments, and offline snapshot/cache interfaces. Use deterministic synthetic CI fixtures only; keep real credentialed providers and Android map rendering out of this foundation.
+Pin the exact official no-credential NOAA/SWPC planetary-Kp and F10.7 endpoints, capture/version/hash representative response fixtures, and implement a transport-independent parser/normalizer into the CP-0008A solar/geomagnetic domain. Preserve observed/estimated/forecast distinctions and provider timestamps; keep current-value-dependent assertions, credentials, other providers, and Android rendering out of this checkpoint.
