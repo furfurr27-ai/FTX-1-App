@@ -254,8 +254,8 @@ object PropagationProjectionServiceTests {
         val future = base.copy(
             snapshotId = "future",
             capturedAtUtcMillis = 1_100_000,
-            heardPaths = base.heardPaths.mapIndexed { index, path ->
-                if (index == 0) {
+            heardPaths = base.heardPaths.map { path ->
+                if (path.evidenceId == "heard-20m-ft8") {
                     path.copy(
                         observedAtUtcMillis = 1_050_000,
                         source = path.source.copy(retrievedAtUtcMillis = 1_080_000),
