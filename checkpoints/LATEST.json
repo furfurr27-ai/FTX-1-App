@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION",
-  "created_utc": "2026-10-07T06:36:26+00:00",
-  "manifest": "checkpoints/manifests/CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.json",
-  "snapshot": "checkpoints/snapshots/CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.tar.gz",
-  "snapshot_sha256": "3398489078503c03d1e52adcfabaa553aa973fdc96d1da2b52c931ad0a674f75"
+  "checkpoint_id": "CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER",
+  "created_utc": "2026-10-07T09:45:12+00:00",
+  "manifest": "checkpoints/manifests/CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.json",
+  "snapshot": "checkpoints/snapshots/CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.tar.gz",
+  "snapshot_sha256": "5bc2806f264d6ed813847fb68f30e7d7bac8f31a9ceff9331bea5537f9f67350"
 }

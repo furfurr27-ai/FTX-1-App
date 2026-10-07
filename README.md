@@ -39,48 +39,38 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION
+**Latest verified checkpoint:** CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER
 
-Parent durable checkpoint: CP-0007C-US_STATE_GEOMETRY_PACK.
+Parent durable checkpoint: CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008A is a GREEN host/CI + authoritative-source-research checkpoint. It establishes the provider-neutral propagation domain, freshness/provenance/confidence model, observed-vs-modeled separation, explainable path assessment, and offline snapshot/cache boundary using deterministic synthetic evidence only.
+CP-0008B is a GREEN host/CI + pinned-public-source checkpoint. It adds a transport-independent NOAA/SWPC adapter for planetary Kp and observed F10.7 context while preserving the CP-0008A provider-neutral propagation model.
 
-CP-0008A proves:
+CP-0008B proves:
 
-- Propagation sources retain source id, provider name, source class, source/product version, retrieval UTC, optional HTTPS source URL, and optional HTTPS terms URL.
-- Source classes distinguish MEASUREMENT, DERIVED_PRODUCT, MODEL, FORECAST, and SYNTHETIC_FIXTURE.
-- Synthetic fixtures cannot masquerade as live providers by carrying a live source URL.
-- Every normalized evidence record carries explicit confidence basis/explanation and one or more quality flags.
-- Geographic evidence requires explicit coordinates or a valid 4/6/8-character Maidenhead locator; callsign-only geography is not supported.
-- Freshness is explicit and configurable as FRESH, AGING, STALE, or FUTURE_DATED rather than being inferred silently from display age.
-- Solar/geomagnetic context normalizes F10.7, planetary Kp/Ap, sunspot number, and X-ray flux without pretending those values are observed RF paths.
-- NOAA's official Kp=5 / G1 threshold is represented only as an explainable geomagnetic-storm caution; it does not override direct path evidence.
-- Provider-neutral ionospheric map products represent foF2, MUF, and hmF2-style samples with provenance, quality, confidence, coverage, observation/generation times, and explicit MUF reference distance.
-- Heard/spot path observations retain explicit transmitter/receiver locations, band, exact frequency, mode, optional SNR, report count, provenance, quality, and confidence while remaining separate from QSO/LoTW state.
-- Modeled path estimates remain distinct from heard observations and retain explicit path endpoints, MUF/LUF limits, model input summary, provenance, quality, and confidence.
-- Explainable path assessment returns GOOD, MARGINAL, POOR, or UNKNOWN together with structured reasons and exact evidence ids.
-- Fresh direct heard-path evidence can produce GOOD; aging direct evidence is MARGINAL; model-only within explicit limits is MARGINAL; above-MUF/below-LUF is POOR; insufficient current path evidence is UNKNOWN.
-- Solar/geomagnetic and ionospheric map context can enrich explanations but cannot silently become observed path proof.
-- Stale and future-dated evidence is retained for inspection but ignored for current path usability decisions.
-- Propagation snapshots preserve normalized evidence and source ids while enforcing unique evidence ids and snapshot/retrieval ordering.
-- PropagationSnapshotStore defines save/latest/id/as-of/history operations for offline-capable persistence adapters; deterministic in-memory behavior is host-proven.
-- Observed/heard stations are not silently promoted to QSOs.
-- Production propagation code contains no Android/Compose/map-SDK types, network clients, provider account credentials, FTX-1 hardware control, or PTT behavior.
+- Exact public no-credential NOAA/SWPC endpoints are pinned for planetary Kp history, the Kp observed/estimated/predicted feed, and the F10.7 summary.
+- The 2026 NWS Service Change Notice 26-21 JSON format boundary is recorded as `swpc-json-post-scn26-21-v1`.
+- Three deterministic representative fixtures are committed with byte counts and SHA-256 hashes.
+- Historical Kp `time_tag`, `Kp`, `a_running`, and `station_count` fields are parsed fail-closed.
+- `a_running` is retained as NOAA provider metadata and is not silently promoted to planetary Ap.
+- The Kp feed's provider states `observed`, `estimated`, and `predicted` remain distinct through normalization.
+- Predicted Kp records use FORECAST provenance rather than masquerading as observations.
+- Estimated/predicted quality metadata is explicit and provider timestamps are retained separately from retrieval UTC.
+- F10.7 is normalized in solar flux units from the NOAA 10.7 cm / 2800 MHz summary without becoming path evidence.
+- Old quoted-number schema rows, unknown statuses, missing fields, extra fields, malformed timestamps, duplicate keys, and invalid numeric domains fail closed.
+- A live no-credential schema guard verifies only structural invariants and never asserts changing current space-weather values.
+- Production NOAA parsing code contains no network transport, Android/Compose/map-SDK types, QSO/LoTW state, FTX-1 hardware control, PTT behavior, or direct path-usability scoring.
 
 Authoritative research checked:
 
-- NOAA/SWPC K-index documentation.
-- NOAA Space Weather Scales.
-- NOAA/SWPC public products directory.
-- GIRO/LGDC ionospheric/MUF products and Rules of the Road.
-- GIRO/GAMBIT access information.
-
-GIRO licensing/access constraints are recorded explicitly; CP-0008A bundles or fetches no GIRO dataset and implements no credentialed provider adapter.
+- NOAA/SWPC public product directory and live public JSON products.
+- NWS Service Change Notice 26-21 for the March 2026 JSON object/numeric-value migration.
+- NOAA F10.7 technical documentation for 10.7 cm / 2800 MHz solar flux units and semantics.
 
 Host/CI gates:
 
+- CP-0008B NOAA SWPC adapter: **53/53 PASS**.
 - CP-0008A propagation intelligence foundation: **154/154 PASS**.
 - CP-0007C production U.S. state geometry pack: **363/363 PASS**.
 - CP-0007B award geometry providers/offline pack contract: **102/102 PASS**.
@@ -99,19 +89,20 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008A_PROPAGATION_FOUNDATION.md
+- research/propagation/CP-0008B_NOAA_SWPC_ADAPTER.md
+- research/propagation/NOAA_SWPC_FIXTURES.json
 - research/propagation/PROPAGATION_SOURCES.tsv
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationDomain.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcPropagationAdapter.kt
 - SOFTWARE_TRACK.md
-- CP-0008A finalization workflow run: 37582214327
+- CP-0008B finalization workflow run: 37602514427
 
 ### Evidence boundary
 
-CP-0008A proves the provider-neutral propagation domain and synthetic host/CI behavior. It does not claim live NOAA/GIRO/PSK Reporter/WSPRnet integration, HFcast/VOACAP predictions, a scientifically calibrated universal path score, Android map rendering, on-device network caching, or current real-world propagation conditions.
+CP-0008B proves deterministic normalization of the pinned post-SCN NOAA schemas and a successful schema-only live check at verification time. It does not claim NOAA uptime, current propagation conditions, a scientifically calibrated universal path score, GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration, Android network caching, or map rendering.
 
 ### Inherited verified ancestry
 
-CP-0007C-US_STATE_GEOMETRY_PACK, CP-0007B-AWARD_GEOMETRY_PROVIDERS, CP-0007A-AWARD_MAP_PROJECTION, CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION, CP-0007C-US_STATE_GEOMETRY_PACK, CP-0007B-AWARD_GEOMETRY_PROVIDERS, CP-0007A-AWARD_MAP_PROJECTION, CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -135,7 +126,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008B — NOAA SWPC public propagation source adapter
+**Active software track:** CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -360,7 +351,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION`
+- Current Git source baseline: `CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -373,20 +364,17 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008B — NOAA SWPC public propagation source adapter.**
+**CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter.**
 
-1. Pin the exact official no-credential NOAA/SWPC endpoints and capture representative response schemas for planetary Kp and F10.7 solar flux.
-2. Record source URL, retrieval date, schema/version observations, units, cadence/validity semantics, and fixture SHA-256 values.
-3. Implement a provider adapter that parses captured NOAA payloads into the CP-0008A provider-neutral solar/geomagnetic domain.
-4. Keep observed, estimated, and forecast NOAA records distinct; do not silently collapse forecast values into observations.
-5. Normalize missing/sentinel fields fail-closed and retain provider timestamps/provenance rather than substituting device time.
-6. Use pinned deterministic captured fixtures for parser CI; a schema-freshness check may fetch official public endpoints but must not make tests dependent on current space-weather values.
-7. Do not derive a path-quality score directly from Kp or F10.7; these remain contextual inputs to the explainable assessment layer.
-8. Keep network transport outside the provider-neutral core parser boundary so offline cached snapshots remain supported.
-9. Keep GIRO, PSK Reporter, WSPRnet, HFcast/VOACAP, and other providers outside this checkpoint.
-10. Keep Android/Compose/map-SDK rendering outside this checkpoint.
-11. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
-12. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
+1. Pin the exact official no-credential NOAA/SWPC GloTEC GeoJSON endpoint/schema and capture a bounded representative fixture with SHA-256.
+2. Extend the provider-neutral ionospheric metric model only as required to represent vertical TEC in TECU; do not reinterpret TEC as foF2 or MUF.
+3. Parse explicit provider coordinates, observation/generation/validity timestamps, quality metadata, and source provenance into the CP-0008A ionospheric-product boundary.
+4. Keep the parser transport-independent and deterministic; use captured fixtures for the required CI gate.
+5. A live schema-freshness check may inspect the public endpoint structure but must not make tests depend on today's TEC values.
+6. Do not derive MUF, band/path usability, or a heat-map score directly from TEC without a separately justified and tested scientific model.
+7. Keep GIRO, PSK Reporter, WSPRnet, HFcast/VOACAP, Android/Compose/map-SDK rendering, and account/credential providers outside this checkpoint.
+8. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
+9. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 
 ## README maintenance contract
 

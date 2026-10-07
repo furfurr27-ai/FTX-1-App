@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008B — NOAA SWPC public propagation source adapter**
+**CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter**
 
-Pin the exact official no-credential NOAA/SWPC planetary-Kp and F10.7 endpoints, capture/version/hash representative response fixtures, and implement a transport-independent parser/normalizer into the CP-0008A solar/geomagnetic domain. Preserve observed/estimated/forecast distinctions and provider timestamps; keep current-value-dependent assertions, credentials, other providers, and Android rendering out of this checkpoint.
+Pin the exact official no-credential GloTEC GeoJSON schema, capture/hash a bounded representative fixture, extend the provider-neutral ionospheric metric model only as required for TEC, and normalize explicit coordinates/timestamps/provenance without deriving MUF or path usability directly from TEC.

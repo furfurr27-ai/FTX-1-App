@@ -1,34 +1,34 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION**
-Project version: `v26-propagation-intelligence-foundation`
-Phase: **Propagation intelligence foundation host-verified with synthetic evidence; NOAA SWPC public source adapter next; hardware/account checkpoints remain deferred by owner**
-Test status: **GREEN host/CI: propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37582214327**
+Latest verified checkpoint: **CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER**
+Project version: `v27-noaa-swpc-propagation-adapter`
+Phase: **NOAA SWPC solar/geomagnetic public source adapter host-verified; GloTEC ionospheric map adapter next; hardware/account checkpoints remain deferred by owner**
+Test status: **GREEN host/CI: noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37602514427**
 
 ## What is complete in this checkpoint
-- Provider-neutral propagation sources retain id/provider/class/version/retrieval UTC plus optional HTTPS source and terms URLs
-- Evidence confidence basis/explanation, quality flags, explicit geography, and configurable FRESH/AGING/STALE/FUTURE_DATED freshness are host-verified
-- Solar/geomagnetic context normalizes F10.7, planetary Kp/Ap, sunspot number, and X-ray flux without treating context as observed RF path evidence
-- NOAA Kp>=5/G1 semantics are used only for an explainable geomagnetic-storm caution and never as standalone path proof
-- Ionospheric map products support provider-neutral foF2/MUF/hmF2 samples with explicit MUF reference distance and provenance/coverage/time/quality/confidence metadata
-- Heard/spot path observations remain separate from QSO/LoTW state and require explicit transmitter/receiver geography rather than callsign inference
-- Modeled path estimates remain separate from observed paths and retain explicit endpoints, MUF/LUF limits, model input summary, provenance, quality, and confidence
-- Explainable path assessment returns GOOD/MARGINAL/POOR/UNKNOWN with structured reasons and exact evidence ids; stale/future evidence is ignored for current decisions
-- PropagationSnapshotStore defines offline save/latest/id/as-of/history semantics with deterministic conflict-safe host implementation
-- Focused propagation PASS 154; production state pack PASS 363; geometry provider PASS 102; map PASS 96; extended catalog PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062
+- Exact public NOAA/SWPC endpoints are pinned for planetary Kp history, Kp observed/estimated/predicted status, and F10.7 summary
+- NWS SCN 26-21 post-March-2026 object/numeric JSON generation is pinned as swpc-json-post-scn26-21-v1
+- Three representative NOAA fixtures are committed with byte counts and SHA-256 hashes for deterministic parser CI
+- Observed, estimated, and predicted Kp states preserve distinct quality/provenance; predicted records remain FORECAST
+- Provider time_tag is retained as UTC separately from caller-supplied retrieval UTC; future forecast validity is not replaced by device time
+- Historical Kp running-a and station-count provider metadata is retained without silently remapping running-a to planetary Ap
+- F10.7 summary is normalized in solar flux units as contextual measurement evidence, not direct RF-path evidence
+- Legacy quoted numerics, missing/extra fields, unknown statuses, malformed timestamps, duplicate keys, and invalid domains fail closed
+- Core NOAA parser has no network transport, Android/map SDK, QSO/LoTW, FTX-1/PTT, or direct path-score dependency
+- Focused NOAA PASS 53; propagation PASS 154; production state pack PASS 363; geometry provider PASS 102; map PASS 96; extended catalog PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'
 - Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint
 - CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete
-- CP-0008A uses deterministic synthetic propagation evidence only; live NOAA/GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration remains unproven
-- GIRO/LGDC data has explicit licensing/access/acknowledgement constraints; no live GIRO integration is authorized or implied by this checkpoint
-- Android map rendering and on-device network/cache adapters remain later work
+- NOAA endpoint uptime and future schema stability are external; deterministic fixtures prove the pinned schema only
+- Kp/F10.7 are contextual inputs and do not by themselves establish a specific HF path or universal propagation score
+- GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP and Android map/network integrations remain unproven
 
 ## Continue with these exact actions
-1. CP-0008B: pin exact official no-credential NOAA/SWPC planetary-Kp and F10.7 endpoints, captured schemas, units/timestamp semantics, and fixture hashes
-2. Implement a transport-independent parser/normalizer into CP-0008A solar/geomagnetic evidence while preserving observed/estimated/forecast distinctions and provider timestamps
-3. Keep current-value-dependent assertions, credentials, GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP, Android rendering, and hardware work outside CP-0008B
+1. CP-0008C: pin the official public NOAA/SWPC GloTEC GeoJSON schema and a bounded deterministic fixture with SHA-256
+2. Extend provider-neutral ionospheric metrics only as required for TEC/TECU and preserve explicit coordinates/provider timestamps/provenance
+3. Do not derive MUF or path usability directly from TEC; keep credentialed/restricted providers, Android rendering, and hardware work outside CP-0008C
 
 ## Verification before continuing
 Run:

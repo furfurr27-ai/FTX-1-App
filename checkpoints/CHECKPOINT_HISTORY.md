@@ -286,3 +286,19 @@ Host/CI gate: propagation foundation 154; production state pack 363; geometry pr
 Finalization workflow run: 37582214327.
 
 Evidence: research/propagation/CP-0008A_PROPAGATION_FOUNDATION.md and research/propagation/PROPAGATION_SOURCES.tsv.
+
+## CP-0008B — NOAA SWPC public propagation source adapter
+
+Parent durable checkpoint: CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now has a transport-independent NOAA/SWPC solar/geomagnetic adapter pinned to the post-SCN 26-21 JSON object schema. Planetary Kp history, provider-labeled observed/estimated/predicted Kp records, and F10.7 summary observations normalize into the CP-0008A evidence domain with provider timestamps, retrieval UTC, explicit provenance, confidence basis/explanation, and quality metadata. Forecast records remain FORECAST; quoted legacy numeric fields and schema drift fail closed.
+
+Three representative NOAA fixtures captured on 2026-10-07 are pinned by SHA-256. A separate live schema-only check verifies the public endpoints without asserting current values.
+
+Host/CI gate: NOAA adapter 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended award catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37602514427.
+
+Evidence: research/propagation/CP-0008B_NOAA_SWPC_ADAPTER.md, research/propagation/NOAA_SWPC_FIXTURES.json, and research/propagation/PROPAGATION_SOURCES.tsv.

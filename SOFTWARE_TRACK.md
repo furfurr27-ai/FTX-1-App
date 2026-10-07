@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION`
+`CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,21 +25,19 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER
+CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER
 
 Required scope:
 
-- exact official no-credential NOAA/SWPC endpoint pins for planetary Kp and F10.7 solar flux
-- captured representative response fixtures with retrieval date and SHA-256
-- documented response schema, units, timestamp/cadence semantics, and any sentinel/missing-value behavior
-- transport-independent NOAA parser/adapter into CP-0008A SolarGeomagneticObservation
-- explicit observed vs estimated vs forecast source/provenance distinction
-- provider timestamps retained; no replacement with device/current time
-- fail-closed malformed/missing required fields
-- deterministic parser tests against pinned fixtures
-- optional live schema-freshness check must not assert changing current values
-- no universal path score derived directly from Kp/F10.7
-- no GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration in this checkpoint
+- exact official no-credential NOAA/SWPC GloTEC GeoJSON endpoint/schema pin
+- bounded captured fixture with byte count and SHA-256
+- provider-neutral ionospheric metric extension only as required for TEC/TECU
+- explicit coordinates and provider observation/generation/validity timestamps
+- provenance/confidence/quality retained without callsign-derived geography
+- transport-independent parser and deterministic fixture CI
+- optional live schema-freshness guard must not assert changing current TEC values
+- no derived MUF/path-usability score directly from TEC
+- no GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration
 - no Android/Compose/map SDK dependency
 - no real accounts/credentials
 - no phone/radio/RF/manual hardware work
