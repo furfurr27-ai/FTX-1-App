@@ -204,33 +204,16 @@ class PropagationSnapshotAggregator {
         heardPaths: List<HeardPathObservation>,
         modeledPaths: List<ModeledPathEstimate>,
     ): String {
-        val canonical = buildString {
-            append("FIELDOPS_PROPAGATION_SNAPSHOT_V1\n")
-            append("captured=").append(capturedAtUtcMillis).append('\n')
-            solarGeomagnetic.forEach {
-                append("SOLAR|")
-                append(it.evidenceId).append('|')
-                append(it.source.retrievedAtUtcMillis).append('\n')
-            }
-            ionosphericProducts.forEach {
-                append("IONO|")
-                append(it.evidenceId).append('|')
-                append(it.source.retrievedAtUtcMillis).append('\n')
-            }
-            heardPaths.forEach {
-                append("HEARD|")
-                append(it.evidenceId).append('|')
-                append(it.source.retrievedAtUtcMillis).append('|')
-                append(it.reportCount).append('\n')
-            }
-            modeledPaths.forEach {
-                append("MODEL|")
-                append(it.evidenceId).append('|')
-                append(it.source.retrievedAtUtcMillis).append('\n')
-            }
-        }
+        val provisional = PropagationSnapshot(
+            snapshotId = "__fingerprint__",
+            capturedAtUtcMillis = capturedAtUtcMillis,
+            solarGeomagnetic = solarGeomagnetic,
+            ionosphericProducts = ionosphericProducts,
+            heardPaths = heardPaths,
+            modeledPaths = modeledPaths,
+        )
         val digest = MessageDigest.getInstance("SHA-256")
-            .digest(canonical.toByteArray(Charsets.UTF_8))
+            .digest(PropagationSnapshotBinaryCodec.encode(listOf(provisional)))
             .joinToString("") { "%02x".format(it) }
         return "propagation-$capturedAtUtcMillis-${digest.take(24)}"
     }
