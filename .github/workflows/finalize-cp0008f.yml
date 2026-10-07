@@ -1,0 +1,123 @@
+name: Finalize CP-0008F checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionModels.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionService.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationProjectionServiceTests.kt'
+      - 'research/propagation/CP-0008F_PROPAGATION_PROJECTION.md'
+      - 'scripts/test_propagation_projection.sh'
+      - 'scripts/finalize_cp0008f.py'
+      - '.github/workflows/finalize-cp0008e.yml'
+      - '.github/workflows/finalize-cp0008f.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  projection:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_propagation_projection.sh
+
+  inherited:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: aggregation, script: scripts/test_propagation_aggregation_offline_cache.sh}
+          - {label: psk-reporter, script: scripts/test_psk_reporter_heard_path_adapter.sh}
+          - {label: glotec, script: scripts/test_glotec_ionospheric_adapter.sh}
+          - {label: noaa-swpc, script: scripts/test_noaa_swpc_propagation_adapter.sh}
+          - {label: propagation, script: scripts/test_propagation_foundation.sh}
+          - {label: production-pack, script: scripts/test_production_us_state_geometry_pack.sh}
+          - {label: geometry, script: scripts/test_award_geometry_providers.sh}
+          - {label: map, script: scripts/test_award_area_map_projection.sh}
+          - {label: extended, script: scripts/test_extended_award_catalog.sh}
+          - {label: service, script: scripts/test_awards_center_application_service.sh}
+          - {label: persistence, script: scripts/test_award_evidence_persistence.sh}
+          - {label: awards-projection, script: scripts/test_awards_center_projection.sh}
+          - {label: target, script: scripts/test_award_target_enrichment.sh}
+          - {label: catalog, script: scripts/test_official_award_catalog.sh}
+          - {label: award, script: scripts/test_award_evaluation.sh}
+          - {label: queue, script: scripts/test_manual_qso_lotw_queue.sh}
+          - {label: logger, script: scripts/test_universal_qso_logger.sh}
+          - {label: lotw, script: scripts/test_lotw_transaction.sh}
+          - {label: core, script: scripts/test_core_regression.sh}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash "${{ matrix.script }}"
+
+  checkpoint:
+    needs: [projection, inherited]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Update durable handoff
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0008f.py
+      - name: Create and verify immutable checkpoint
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION \
+            --parent CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE \
+            --summary "Deterministic platform-independent propagation workspace projection with source-aware freshness, filtering, offline-cache status, and explainable selected-path assessment" \
+            --phase "Propagation workspace projection host-verified; source refresh coordinator next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Heard, ionospheric, solar/geomagnetic and modeled evidence project into distinct deterministic workspace records" \
+            --completed "Heard projection retains explicit endpoint geography, callsigns, frequency, band, mode, SNR, reportCount, provenance, confidence, quality and source-specific freshness" \
+            --completed "Ionospheric projection preserves metric/sample identity and does not convert VTEC/TECU into MUF or an opaque heat score" \
+            --completed "Band/mode/frequency filters affect heard records only; source/freshness filters apply across evidence categories" \
+            --completed "Selected-path assessment reuses PropagationAssessmentEngine against the complete snapshot and retains reason/evidence links independent of display filters" \
+            --completed "Projection status exposes snapshot age, source retrieval bounds, stale/future evidence state and offline-cache availability" \
+            --completed "Future snapshot/retrieval timestamps remain explicit with null age rather than fabricated negative age" \
+            --completed "FilePropagationSnapshotStore implements OfflinePropagationSnapshotStore without coupling projection service to its concrete class" \
+            --completed "Projection code contains no Android/map-SDK, live HTTP/provider polling, FTX-1/PTT, QSO/logbook-write, LoTW or heat-score state" \
+            --completed "Superseded CP-0008E finalizer is manual-only" \
+            --completed "Focused projection PASS 79; aggregation PASS 101; PSK Reporter PASS 168; GloTEC PASS 87; NOAA PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; awards projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
+            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
+            --blocker "Android UI/map rendering, concrete network scheduling, WSPRnet/WSPR.live, GIRO and HFcast/VOACAP remain unproven" \
+            --next "CP-0008G: build platform-neutral propagation source refresh coordinator over normalized adapters, aggregation/cache and projection" \
+            --next "Track source cadence, success/failure, bounded retry/backoff, canonical NOAA Kp source selection, partial failure and last-good cached snapshots" \
+            --next "Use deterministic fake-source CI; keep Android scheduling/network transport and new providers outside CP-0008G"
+          python3 scripts/verify_checkpoint.py --root . --latest
+      - name: Commit checkpoint
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION.json
+          git add -f checkpoints/snapshots/CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION.tar.gz
+          git commit -m "Checkpoint CP-0008F propagation operating picture projection"
+          git push

@@ -15,7 +15,7 @@ import java.nio.file.StandardOpenOption
 class FilePropagationSnapshotStore(
     directory: Path,
     private val maxSnapshots: Int = 24,
-) : PropagationSnapshotStore {
+) : OfflinePropagationSnapshotStore {
     private val cacheFile: Path
     private val snapshots = linkedMapOf<String, PropagationSnapshot>()
 
