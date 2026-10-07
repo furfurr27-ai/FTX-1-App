@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE`
+CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,25 +25,22 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
+CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
 
 Required scope:
 
-- platform-independent projection/application service over PropagationSnapshot and PropagationSnapshotStore
-- deterministic heard-path map-ready records retaining explicit endpoint geography, callsigns, frequency/band/mode/SNR/reportCount/provenance/freshness
-- provider-neutral ionospheric metric/sample projection with no TEC-to-MUF or unexplained heat-score conversion
-- concise solar/geomagnetic context projection with freshness/provenance
-- modeled paths remain distinct from observed heard paths
-- deterministic band/frequency/mode/source/freshness filters
-- optional selected-path assessment using existing explainable PropagationAssessmentEngine
-- snapshot capture/source-retrieval/offline-cache status surfaced explicitly
-- no QSO promotion from heard evidence
-- no Android/Compose/Google Maps/Mapbox dependency
+- platform-neutral refresh coordinator over normalized propagation source adapters
+- deterministic source cadence and eligibility state
+- source success/failure, last-attempt/last-success and bounded retry/backoff metadata
+- canonical NOAA Kp observed versus estimated/predicted source selection
+- partial-source failure without fabricated replacement evidence
+- last-good snapshot preservation through PropagationSnapshotStore
+- deterministic fake-source host/CI tests
+- no Android WorkManager/concrete HTTP client
 - no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
-- no live provider polling requirement
-- no real accounts/credentials
+- no credentials/accounts
 - no phone/radio/RF/manual hardware work
-- skip hardware/account-gated checkpoints under the owner execution override
+- preserve CP-0003C owner deferral
 
 ## Resume rule
 

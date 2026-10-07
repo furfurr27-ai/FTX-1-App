@@ -39,37 +39,32 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE
+**Latest verified checkpoint:** CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
 
-Parent durable checkpoint: CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER.
+Parent durable checkpoint: CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008E is a GREEN host/CI checkpoint. It adds deterministic provider-neutral propagation evidence aggregation, source-specific FieldOps freshness policies, repeated-payload deduplication, and a bounded versioned offline snapshot cache around the existing PropagationSnapshotStore contract.
+CP-0008F is a GREEN host/CI checkpoint. It projects cached provider-neutral propagation evidence into deterministic platform-independent workspace state without Android/map-SDK rendering or evidence-category collapse.
 
-CP-0008E proves:
+CP-0008F proves:
 
-- Already-normalized NOAA solar/geomagnetic, GloTEC ionospheric, PSK Reporter heard-path and modeled-path evidence can be combined into deterministic PropagationSnapshot instances.
-- Snapshot capture UTC cannot precede retained source retrieval UTC; provider observation/retrieval timestamps are preserved rather than rewritten.
-- Missing provider generation timestamps remain missing, including GloTEC generatedAtUtcMillis = null.
-- Evidence categories are sorted deterministically and remain separate: solar/geomagnetic, ionospheric, heard paths and modeled paths.
-- Repeated payloads from the same normalized source deduplicate by evidence id and retain latest retrieval provenance.
-- Heard-path repeated-payload merge uses max(reportCount), not addition, so repeated polling cannot inflate path evidence.
-- Same evidence ids with materially different content/provenance fail closed.
-- The overlapping NOAA observed-Kp row present in both dedicated Kp and forecast fixtures is treated as a provenance collision; orchestration uses the dedicated Kp feed for observed records and forecast feed for estimated/predicted records.
-- Source-specific FieldOps freshness defaults exist for PSK Reporter, GloTEC, NOAA Kp-family and NOAA F10.7; unknown providers retain the inherited operational default.
-- Future-dated provider timestamps remain FUTURE_DATED rather than being rewritten to look current.
-- Deterministic snapshot ids fingerprint the complete versioned normalized snapshot content rather than depending on input ordering.
-- FilePropagationSnapshotStore persists a bounded versioned history in propagation-snapshots-v1.bin and supports latest, exact-id, as-of and history lookup across restart.
-- The binary codec preserves all current propagation domain fields, all coverage shapes, optional values, confidence/quality metadata and source provenance.
-- Cache collection/string sizes are bounded; corrupt files, unsupported versions and trailing bytes fail closed.
-- Writes use a temporary file plus atomic replace where supported.
-- Context-only aggregation does not create a heard path, modeled path or propagation score; assessment remains UNKNOWN without matching path evidence.
-- Production aggregation/cache code contains no HTTP transport, Android/Compose/map-SDK, FTX-1/PTT, QSO/logbook-write or LoTW behavior.
-- The superseded CP-0008D finalizer is manual-only so later propagation checkpoints cannot regress durable state.
+- Heard paths project separately with explicit endpoints, callsigns, exact frequency, band, mode, SNR, reportCount, provenance, confidence, quality and source-specific freshness.
+- Ionospheric products preserve coverage, metric identity, samples, provider quality and optional generation/reference-distance fields; VTEC remains VTEC and is not converted into MUF or a heat score.
+- Solar/geomagnetic context preserves explicit measurements without becoming an observed RF path.
+- Modeled paths remain separate from heard paths and preserve explicit endpoints, MUF/LUF limits, model-input summary and provenance.
+- Deterministic band/mode/frequency filtering applies only to heard records where those fields exist; source/freshness filtering applies across evidence categories.
+- Projection ordering is deterministic: newest observation first, evidence id as tie-break.
+- Optional selected-path assessment uses the existing explainable PropagationAssessmentEngine against the complete snapshot and retains reason/evidence links independently of display filtering.
+- Snapshot status exposes capture time/age, source count, source retrieval bounds, stale/future evidence flags and offline-cache availability.
+- Future snapshot/retrieval times are explicit and use null age rather than fabricated negative ages.
+- FilePropagationSnapshotStore advertises OfflinePropagationSnapshotStore capability without coupling the projection service to the concrete file-store class.
+- Production projection code has no Android/Compose, Google Maps/Mapbox, HTTP/provider polling, FTX-1/PTT, QSO/logbook-write, LoTW or opaque heat-score state.
+- The superseded CP-0008E finalizer is manual-only.
 
 Host/CI gates:
 
+- CP-0008F propagation projection: **79/79 PASS**.
 - CP-0008E propagation aggregation/offline cache: **101/101 PASS**.
 - CP-0008D PSK Reporter heard-path adapter: **168/168 PASS**.
 - CP-0008C GloTEC ionospheric adapter: **87/87 PASS**.
@@ -92,20 +87,20 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008E_PROPAGATION_AGGREGATION_OFFLINE_CACHE.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationAggregation.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationAggregationOfflineCacheTests.kt
+- research/propagation/CP-0008F_PROPAGATION_PROJECTION.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionModels.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationProjectionServiceTests.kt
 - SOFTWARE_TRACK.md
-- CP-0008E finalization workflow run: 37653853853
+- CP-0008F finalization workflow run: 37658173873
 
 ### Evidence boundary
 
-CP-0008E proves deterministic aggregation and bounded offline persistence of already-normalized propagation evidence. It does not claim live provider polling, Android filesystem behavior, multi-process locking, WSPRnet/GIRO ingestion, HFcast/VOACAP prediction, map rendering, or real-world propagation accuracy.
+CP-0008F proves deterministic provider-neutral projection/application state over stored propagation snapshots. It does not claim Android UI/map rendering, live provider polling, WSPRnet/GIRO ingestion, HFcast/VOACAP prediction, geographic interpolation, or real-world propagation accuracy.
 
 ### Inherited verified ancestry
 
-CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION, CP-0007C-US_STATE_GEOMETRY_PACK, CP-0007B-AWARD_GEOMETRY_PROVIDERS, CP-0007A-AWARD_MAP_PROJECTION, CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -129,7 +124,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008F — propagation operating-picture projection service
+**Active software track:** CP-0008G — propagation source refresh coordinator
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -354,7 +349,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE`
+- Current Git source baseline: CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -367,19 +362,17 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008F — propagation operating-picture projection service.**
+**CP-0008G — propagation source refresh coordinator.**
 
-1. Build a platform-independent projection/application service over PropagationSnapshot and PropagationSnapshotStore for the operating map/workspace.
-2. Project heard-path evidence into deterministic map-ready path records while preserving explicit endpoint geography, callsign labels, frequency, band, mode, SNR, reportCount, source provenance and source-specific freshness.
-3. Project ionospheric products into provider-neutral metric/sample records with explicit metric identity and freshness; do not interpolate GloTEC/TEC into MUF or an unexplained heat score.
-4. Project solar/geomagnetic context into concise provider-neutral status records with freshness and provenance.
-5. Support deterministic filters for band/frequency, mode, source and freshness without modifying underlying evidence.
-6. Allow an optional selected-path assessment using the existing explainable PropagationAssessmentEngine and preserve its reason/evidence links.
-7. Surface snapshot capture time, source retrieval age and offline-cache availability so stale/offline operating pictures remain inspectable rather than appearing live.
-8. Keep logged QSOs, heard paths, ionospheric context and modeled paths visually/logically distinct in projection state.
-9. Keep Android, Compose, Google Maps/Mapbox and concrete rendering outside CP-0008F.
-10. Keep WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, live provider polling, accounts/credentials, phone/radio/RF testing and manual hardware validation outside this checkpoint.
-11. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
+1. Add a platform-neutral refresh coordinator above the existing normalized source adapters, aggregator, snapshot store and projection service.
+2. Define source fetch-result interfaces and deterministic scheduling/cadence state without binding core code to Android WorkManager or a concrete HTTP client.
+3. Encode canonical NOAA Kp selection: dedicated Kp for observed records; forecast product for estimated/predicted records.
+4. Track per-source success/failure, last attempt, last success, next eligible refresh and bounded retry/backoff state without discarding the last good snapshot.
+5. Aggregate successful normalized source results into a new snapshot only when capture/provenance invariants hold, then persist through PropagationSnapshotStore.
+6. Preserve partial-source failure explicitly; do not invent evidence for a failed source and do not erase still-inspectable cached state.
+7. Provide deterministic fake-source CI proving cadence, retry, canonical-source handling, partial failure and last-good snapshot behavior.
+8. Keep Android scheduling/network stacks, credentials/accounts, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, phone/radio/RF/manual validation outside CP-0008G.
+9. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
 
 ## README maintenance contract
 

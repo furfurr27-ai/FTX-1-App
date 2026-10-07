@@ -352,3 +352,20 @@ Host/CI gate: aggregation/offline cache 101; PSK Reporter 168; GloTEC 87; NOAA a
 Finalization workflow run: 37653853853.
 
 Evidence: research/propagation/CP-0008E_PROPAGATION_AGGREGATION_OFFLINE_CACHE.md, core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationAggregation.kt, core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt.
+
+
+## CP-0008F — Propagation operating-picture projection service
+
+Parent durable checkpoint: CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.
+
+FieldOps now projects stored provider-neutral propagation snapshots into deterministic workspace state while keeping heard RF paths, ionospheric context, solar/geomagnetic context and modeled paths distinct. Heard records retain explicit endpoint geography/callsigns/frequency/band/mode/SNR/reportCount/provenance/freshness. Ionospheric VTEC remains VTEC and is not converted into MUF or a heat score. Optional selected-path assessment reuses the explainable assessment engine against the complete snapshot.
+
+Projection status exposes snapshot age, source retrieval bounds, stale/future evidence state and whether an offline-persistent store is available. FilePropagationSnapshotStore now advertises that capability through a provider-neutral marker interface.
+
+Host/CI gate: projection 79; aggregation/offline cache 101; PSK Reporter 168; GloTEC 87; NOAA 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended awards 96; Awards service 64; persistence 92; Awards projection 114; target 77; catalog 115; award evaluator 67; queue 47; logger 78; LoTW transaction 53; core 42,062, all PASS.
+
+Finalization workflow run: 37658173873.
+
+CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
+
+Evidence: research/propagation/CP-0008F_PROPAGATION_PROJECTION.md and the PropagationProjectionModels/PropagationProjectionService source and tests.

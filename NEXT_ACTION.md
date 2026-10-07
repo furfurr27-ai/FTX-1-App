@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008F — propagation operating-picture projection service**
+**CP-0008G — propagation source refresh coordinator**
 
-Build a platform-independent projection/application service over PropagationSnapshot/PropagationSnapshotStore that exposes deterministic heard-path, ionospheric, solar/geomagnetic, modeled-path and optional explainable selected-path assessment records for the future operating map/workspace. Preserve provenance/freshness and evidence-category separation; do not add Android/map-SDK rendering or new live providers in this checkpoint.
+Build a platform-neutral refresh coordinator over the existing public-source adapters, aggregation/cache, and projection layers. Track source cadence, success/failure, bounded retry/backoff, canonical NOAA observed/forecast selection, partial-source failure, and last-good cached snapshots using deterministic fake-source CI. Keep concrete Android scheduling/network transport and new providers outside this checkpoint.
