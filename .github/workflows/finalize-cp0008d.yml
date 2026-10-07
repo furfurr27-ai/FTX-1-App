@@ -1,0 +1,149 @@
+name: Finalize CP-0008D checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PskReporterHeardPathAdapter.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PskReporterHeardPathAdapterTests.kt'
+      - 'research/propagation/CP-0008D_PSK_REPORTER_HEARD_PATH_ADAPTER.md'
+      - 'research/propagation/PSK_REPORTER_FIXTURE.json'
+      - 'research/propagation/fixtures/psk_reporter_*'
+      - 'research/propagation/PROPAGATION_SOURCES.tsv'
+      - 'scripts/test_psk_reporter_heard_path_adapter.sh'
+      - 'scripts/finalize_cp0008d.py'
+      - '.github/workflows/finalize-cp0008c.yml'
+      - '.github/workflows/finalize-cp0008d.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  psk-reporter-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_psk_reporter_heard_path_adapter.sh
+
+  inherited-regression:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: glotec
+            script: scripts/test_glotec_ionospheric_adapter.sh
+          - label: noaa-swpc
+            script: scripts/test_noaa_swpc_propagation_adapter.sh
+          - label: propagation
+            script: scripts/test_propagation_foundation.sh
+          - label: production-pack
+            script: scripts/test_production_us_state_geometry_pack.sh
+          - label: geometry
+            script: scripts/test_award_geometry_providers.sh
+          - label: map
+            script: scripts/test_award_area_map_projection.sh
+          - label: extended
+            script: scripts/test_extended_award_catalog.sh
+          - label: service
+            script: scripts/test_awards_center_application_service.sh
+          - label: persistence
+            script: scripts/test_award_evidence_persistence.sh
+          - label: projection
+            script: scripts/test_awards_center_projection.sh
+          - label: target
+            script: scripts/test_award_target_enrichment.sh
+          - label: catalog
+            script: scripts/test_official_award_catalog.sh
+          - label: award
+            script: scripts/test_award_evaluation.sh
+          - label: queue
+            script: scripts/test_manual_qso_lotw_queue.sh
+          - label: logger
+            script: scripts/test_universal_qso_logger.sh
+          - label: lotw
+            script: scripts/test_lotw_transaction.sh
+          - label: core
+            script: scripts/test_core_regression.sh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run inherited gate
+        run: bash "${{ matrix.script }}"
+
+  checkpoint:
+    needs: [psk-reporter-adapter, inherited-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0008d.py
+
+      - name: Create immutable CP-0008D snapshot
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER \
+            --parent CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER \
+            --summary "Pinned PSK Reporter XML reception normalization into explicit-grid one-way heard-path evidence with per-report rejection, QSO separation, deterministic fixture, XML hardening, and no live transport dependency" \
+            --phase "PSK Reporter heard-path adapter host-verified; propagation aggregation/offline cache next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Official PSK Reporter public query, XML field semantics and five-minute retrieval guidance are source-pinned" \
+            --completed "Bounded four-report fixture is 1196 bytes with SHA-256 fb41c07330c8d446dbd52eb4b35358950145b8a75fab76f225e69859b5752da7" \
+            --completed "Accepted paths require explicit valid sender and receiver Maidenhead locators; no callsign-derived geography is used" \
+            --completed "Frequency Hz, amateur band, Unix observation time, mode and optional integer SNR are retained with provider/retrieval provenance" \
+            --completed "Missing or invalid report facts are explicitly rejected per report without discarding other valid rows" \
+            --completed "Present QSO/manual/test informationSource values are rejected from direct heard-path normalization" \
+            --completed "Exact duplicate normalized rows collapse deterministically and increment reportCount" \
+            --completed "XML parser disables DOCTYPE, external entities, external DTD/schema access and XInclude" \
+            --completed "Core PSK Reporter adapter performs no network access and contains no Android/map SDK, FTX-1/PTT, QSO-write or LoTW behavior" \
+            --completed "Superseded CP-0008C finalizer is manual-only to prevent checkpoint-state regression" \
+            --completed "Focused PSK Reporter PASS 168; GloTEC PASS 87; NOAA adapter PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'" \
+            --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint" \
+            --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete" \
+            --blocker "PSK Reporter uptime/current station activity is external; deterministic fixture proves pinned parsing/normalization only" \
+            --blocker "Reception reports are provisional one-way evidence and do not prove QSO completion, callsign truth, or locator truth" \
+            --blocker "WSPRnet/GIRO/HFcast/VOACAP and Android live-network/map integrations remain unproven" \
+            --next "CP-0008E: aggregate already-normalized NOAA, GloTEC and PSK Reporter evidence into deterministic PropagationSnapshot instances" \
+            --next "Define source-specific freshness defaults, repeated-payload deduplication and bounded offline PropagationSnapshotStore persistence/reload" \
+            --next "Keep observed, ionospheric and modeled evidence categories separate and do not create a path score merely by aggregation"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER.json
+          git add -f checkpoints/snapshots/CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER.tar.gz
+          git commit -m "Checkpoint CP-0008D PSK Reporter heard-path adapter"
+          git push
