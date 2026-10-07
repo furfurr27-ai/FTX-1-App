@@ -66,7 +66,10 @@ object PropagationAggregationOfflineCacheTests {
             first.snapshotId.startsWith("propagation-$captured-"),
             "generated snapshot id includes capture time",
         )
-        eq(64, first.snapshotId.length, "generated snapshot id has bounded deterministic shape")
+        checkThat(
+            first.snapshotId.matches(Regex("""propagation-[0-9]+-[0-9a-f]{24}""")),
+            "generated snapshot id has bounded deterministic shape",
+        )
         eq(7, first.solarGeomagnetic.size, "NOAA observed/forecast/F10.7 records deduplicated")
         eq(2, first.ionosphericProducts.size, "GloTEC plus synthetic point product retained")
         eq(4, first.heardPaths.size, "PSK Reporter paths deduplicated")
