@@ -273,7 +273,23 @@ object PropagationProjectionServiceTests {
         val futurePath = picture.heardPaths.first { it.metadata.evidenceId == "heard-20m-ft8" }
         checkThat(futurePath.metadata.retrievalIsFutureDated, "future retrieval surfaced")
         eq(null, futurePath.metadata.retrievalAgeMillis, "future retrieval does not expose negative age")
-        checkThat(picture.status.containsStaleEvidence, "stale evidence remains visible alongside future evidence")
+        checkThat(!picture.status.containsStaleEvidence, "future fixture does not invent stale evidence")
+
+        val staleBase = snapshot()
+        val staleSnapshot = staleBase.copy(
+            snapshotId = "stale",
+            heardPaths = staleBase.heardPaths.map {
+                if (it.evidenceId == "heard-40m-js8") it.copy(observedAtUtcMillis = 0L) else it
+            },
+        )
+        val stalePicture = PropagationWorkspaceProjectionService(
+            InMemoryPropagationSnapshotStore()
+        ).project(
+            staleSnapshot,
+            PropagationProjectionQuery(nowUtcMillis = 4_000_001),
+        )
+        checkThat(stalePicture.status.containsStaleEvidence, "stale evidence surfaced in status")
+        checkThat(!stalePicture.status.containsFutureDatedEvidence, "stale fixture does not invent future evidence")
     }
 
     private fun deterministicOrderingDoesNotDependOnInputOrder() {
