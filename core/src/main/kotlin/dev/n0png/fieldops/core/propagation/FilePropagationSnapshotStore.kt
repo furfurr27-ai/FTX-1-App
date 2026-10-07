@@ -127,7 +127,7 @@ class FilePropagationSnapshotStore(
     }
 }
 
-internal object PropagationSnapshotBinaryCodec {
+object PropagationSnapshotBinaryCodec {
     private const val MAGIC = "FIELDOPS_PROPAGATION_SNAPSHOT_CACHE"
     private const val VERSION = 1
     private const val MAX_COLLECTION = 100_000
