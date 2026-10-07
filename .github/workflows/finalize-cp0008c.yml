@@ -1,22 +1,9 @@
 name: Finalize CP-0008C checkpoint
 
+# CP-0008C is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationDomain.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecAdapter.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/NoaaSwpcGlotecAdapterTests.kt'
-      - 'research/propagation/CP-0008C_GLOTEC_IONOSPHERIC_ADAPTER.md'
-      - 'research/propagation/NOAA_SWPC_GLOTEC_FIXTURE.json'
-      - 'research/propagation/fixtures/noaa_swpc_glotec_*'
-      - 'research/propagation/PROPAGATION_SOURCES.tsv'
-      - 'scripts/test_glotec_ionospheric_adapter.sh'
-      - 'scripts/finalize_cp0008c.py'
-      - '.github/workflows/finalize-cp0008b.yml'
-      - '.github/workflows/finalize-cp0008c.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
