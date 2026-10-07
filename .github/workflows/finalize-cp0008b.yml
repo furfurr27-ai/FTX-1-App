@@ -1,21 +1,9 @@
 name: Finalize CP-0008B checkpoint
 
+# CP-0008B is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcPropagationAdapter.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/NoaaSwpcPropagationAdapterTests.kt'
-      - 'research/propagation/CP-0008B_NOAA_SWPC_ADAPTER.md'
-      - 'research/propagation/NOAA_SWPC_FIXTURES.json'
-      - 'research/propagation/fixtures/noaa_swpc_*'
-      - 'research/propagation/PROPAGATION_SOURCES.tsv'
-      - 'scripts/test_noaa_swpc_propagation_adapter.sh'
-      - 'scripts/check_noaa_swpc_schema.py'
-      - 'scripts/finalize_cp0008b.py'
-      - '.github/workflows/finalize-cp0008a.yml'
-      - '.github/workflows/finalize-cp0008b.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
