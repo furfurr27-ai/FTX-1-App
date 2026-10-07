@@ -29,6 +29,7 @@ object PropagationRefreshCoordinatorTests {
         aggregationFailurePreservesLastGoodSnapshot()
         emptySuccessfulRefreshDoesNotEraseOnlyLastGoodSnapshot()
         stateStoreSurvivesCoordinatorRecreation()
+        refreshWorkspaceBridgeUsesLatestGoodSnapshot()
         configurationAndTimeValidation()
         platformBoundary()
 
@@ -484,6 +485,68 @@ object PropagationRefreshCoordinatorTests {
         eq(1, due.attempts.size, "recreated coordinator refreshes when stored cadence becomes due")
         eq(2, calls, "due refresh calls source after recreation")
         eq(2, snapshots.history(10).size, "both successful refresh snapshots retained")
+    }
+
+    private fun refreshWorkspaceBridgeUsesLatestGoodSnapshot() {
+        val store = InMemoryPropagationSnapshotStore()
+        var calls = 0
+        val definition = source(
+            "WORKSPACE",
+            PropagationRefreshSourceRole.GENERIC,
+            policy(100, 10, 40),
+        ) { now ->
+            calls++
+            if (calls == 1) {
+                PropagationSourceFetchResult.Success(
+                    PropagationAggregationInput(
+                        solarGeomagnetic = listOf(
+                            solar("workspace-good", "WORKSPACE", now, now, 2.0)
+                        )
+                    )
+                )
+            } else {
+                PropagationSourceFetchResult.Failure(
+                    "workspace source unavailable",
+                    retryable = true,
+                )
+            }
+        }
+        val coordinator = PropagationSourceRefreshCoordinator(
+            listOf(definition),
+            store,
+        )
+        val service = PropagationRefreshWorkspaceService(
+            refreshCoordinator = coordinator,
+            projectionService = PropagationWorkspaceProjectionService(store),
+        )
+
+        val first = service.refreshAndProject(
+            PropagationProjectionQuery(
+                nowUtcMillis = 100,
+                filter = PropagationProjectionFilter(sourceIds = setOf("WORKSPACE")),
+            )
+        )
+        checkThat(first.refresh.savedSnapshot != null, "workspace bridge persists successful refresh")
+        val firstProjection = requireNotNull(first.projection)
+        eq(
+            first.refresh.savedSnapshot!!.snapshotId,
+            firstProjection.status.snapshotId,
+            "workspace bridge projects newly saved snapshot",
+        )
+        eq(1, firstProjection.solarGeomagnetic.size, "workspace bridge exposes refreshed solar context")
+        eq("workspace-good", firstProjection.solarGeomagnetic.single().metadata.evidenceId, "workspace evidence identity retained")
+
+        val second = service.refreshAndProject(
+            PropagationProjectionQuery(
+                nowUtcMillis = 200,
+                filter = PropagationProjectionFilter(sourceIds = setOf("WORKSPACE")),
+            )
+        )
+        eq(null, second.refresh.savedSnapshot, "failed workspace refresh writes no snapshot")
+        eq(1, second.refresh.failedAttemptCount, "workspace refresh failure remains explicit")
+        val secondProjection = requireNotNull(second.projection)
+        eq(firstProjection.status.snapshotId, secondProjection.status.snapshotId, "workspace bridge projects last good snapshot after failure")
+        eq("workspace-good", secondProjection.solarGeomagnetic.single().metadata.evidenceId, "last good workspace evidence remains inspectable")
     }
 
     private fun configurationAndTimeValidation() {
