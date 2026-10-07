@@ -1,16 +1,9 @@
 name: Finalize CP-0008A checkpoint
 
+# CP-0008A is immutable and superseded. Manual-only prevents later propagation checkpoints
+# from accidentally re-finalizing this historical checkpoint.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/**'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationFoundationTests.kt'
-      - 'research/propagation/**'
-      - 'scripts/test_propagation_foundation.sh'
-      - 'scripts/finalize_cp0008a.py'
-      - '.github/workflows/finalize-cp0008a.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
