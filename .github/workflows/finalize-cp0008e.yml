@@ -1,0 +1,149 @@
+name: Finalize CP-0008E checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationAggregation.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationAggregationOfflineCacheTests.kt'
+      - 'research/propagation/CP-0008E_PROPAGATION_AGGREGATION_OFFLINE_CACHE.md'
+      - 'scripts/test_propagation_aggregation_offline_cache.sh'
+      - 'scripts/finalize_cp0008e.py'
+      - '.github/workflows/finalize-cp0008d.yml'
+      - '.github/workflows/finalize-cp0008e.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  propagation-aggregation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_propagation_aggregation_offline_cache.sh
+
+  inherited-regression:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: psk-reporter
+            script: scripts/test_psk_reporter_heard_path_adapter.sh
+          - label: glotec
+            script: scripts/test_glotec_ionospheric_adapter.sh
+          - label: noaa-swpc
+            script: scripts/test_noaa_swpc_propagation_adapter.sh
+          - label: propagation
+            script: scripts/test_propagation_foundation.sh
+          - label: production-pack
+            script: scripts/test_production_us_state_geometry_pack.sh
+          - label: geometry
+            script: scripts/test_award_geometry_providers.sh
+          - label: map
+            script: scripts/test_award_area_map_projection.sh
+          - label: extended
+            script: scripts/test_extended_award_catalog.sh
+          - label: service
+            script: scripts/test_awards_center_application_service.sh
+          - label: persistence
+            script: scripts/test_award_evidence_persistence.sh
+          - label: projection
+            script: scripts/test_awards_center_projection.sh
+          - label: target
+            script: scripts/test_award_target_enrichment.sh
+          - label: catalog
+            script: scripts/test_official_award_catalog.sh
+          - label: award
+            script: scripts/test_award_evaluation.sh
+          - label: queue
+            script: scripts/test_manual_qso_lotw_queue.sh
+          - label: logger
+            script: scripts/test_universal_qso_logger.sh
+          - label: lotw
+            script: scripts/test_lotw_transaction.sh
+          - label: core
+            script: scripts/test_core_regression.sh
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run inherited gate
+        run: bash "${{ matrix.script }}"
+
+  checkpoint:
+    needs: [propagation-aggregation, inherited-regression]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0008e.py
+
+      - name: Create immutable CP-0008E snapshot
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE \
+            --parent CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER \
+            --summary "Deterministic provider-neutral propagation aggregation with source-aware freshness, repeated-payload deduplication, complete-content snapshot fingerprints, and bounded versioned offline snapshot persistence" \
+            --phase "Propagation aggregation/offline cache host-verified; operating-picture projection next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Already-normalized NOAA, GloTEC, PSK Reporter and modeled evidence aggregate into deterministic PropagationSnapshot instances" \
+            --completed "Provider observation/retrieval timestamps are preserved and capture UTC cannot precede retained source retrieval UTC" \
+            --completed "Repeated same-source payloads deduplicate by evidence id with latest retrieval provenance; heard reportCount merges by max rather than addition" \
+            --completed "Materially conflicting same-id content/provenance and cross-category id collisions fail closed" \
+            --completed "Overlapping NOAA observed-Kp identity across dedicated/forecast products is treated as provenance conflict; orchestration uses dedicated observed plus forecast estimated/predicted records" \
+            --completed "Source-specific FieldOps freshness defaults cover PSK Reporter, GloTEC, NOAA Kp family and F10.7 while unknown sources retain the operational default" \
+            --completed "Snapshot ids deterministically fingerprint complete versioned normalized content independent of input-batch ordering" \
+            --completed "FilePropagationSnapshotStore implements bounded versioned offline latest/exact/as-of/history persistence with restart/reload and deterministic trimming" \
+            --completed "Binary codec preserves all current propagation domain fields/coverage shapes and rejects corrupt versions, oversized collections/strings and trailing bytes" \
+            --completed "Context-only aggregation creates no heard/model path or opaque propagation score; QSO/LoTW and Android/map/network/radio state remain outside the layer" \
+            --completed "Superseded CP-0008D finalizer is manual-only to prevent checkpoint-state regression" \
+            --completed "Focused aggregation PASS 101; PSK Reporter PASS 168; GloTEC PASS 87; NOAA adapter PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'" \
+            --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint" \
+            --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete" \
+            --blocker "CP-0008E does not implement live provider polling, Android filesystem integration or multi-process cache locking" \
+            --blocker "WSPRnet/WSPR.live, GIRO, HFcast/VOACAP and Android map rendering remain unproven" \
+            --next "CP-0008F: build a platform-independent propagation operating-picture projection/application service over PropagationSnapshot and PropagationSnapshotStore" \
+            --next "Project heard, ionospheric, solar/geomagnetic and modeled evidence with provenance/freshness plus deterministic band/mode/source/freshness filters" \
+            --next "Expose optional explainable selected-path assessment and offline snapshot status without Android/map-SDK rendering or new live providers"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.json
+          git add -f checkpoints/snapshots/CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.tar.gz
+          git commit -m "Checkpoint CP-0008E propagation aggregation offline cache"
+          git push
