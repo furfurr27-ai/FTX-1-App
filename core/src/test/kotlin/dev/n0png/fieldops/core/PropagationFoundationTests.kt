@@ -315,7 +315,7 @@ object PropagationFoundationTests {
             )
         }
         expectFailure("snapshot cannot predate retrieval") {
-            snapshot.copy(capturedAtUtcMillis = 999_999)
+            snapshot.copy(capturedAtUtcMillis = 998_999)
         }
         expectFailure("snapshot id required") { snapshot.copy(snapshotId = " ") }
         expectFailure("snapshot UTC nonnegative") { snapshot.copy(capturedAtUtcMillis = -1) }
