@@ -34,6 +34,21 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Deterministic CP-0008E gate
         run: bash scripts/test_propagation_aggregation_offline_cache.sh
+      - name: Dry-run CP-0008E checkpoint handoff generator
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008e.py
+          python3 scripts/finalize_cp0008e.py
+          grep -Fq 'CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE' README.md
+          grep -Fq 'CP-0008F — propagation operating-picture projection service' NEXT_ACTION.md
+          grep -Fq 'CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0008E — Propagation evidence aggregation and offline cache service' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0008E snapshot' .github/workflows/finalize-cp0008e.yml
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008d.yml
+          git diff --check
 
   inherited-regression:
     name: inherited — ${{ matrix.label }}
