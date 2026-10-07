@@ -453,7 +453,12 @@ object PropagationFoundationTests {
         )
         val staleAssessment = PropagationAssessmentEngine().assess(
             stale,
-            query(frequencyHz = 14_074_000, band = "20m", now = 1_000_000),
+            query(
+                frequencyHz = 14_074_000,
+                band = "20m",
+                now = 1_000_000,
+                policy = PropagationFreshnessPolicy(10_000, 60_000),
+            ),
         )
         eq(PropagationUsability.UNKNOWN, staleAssessment.usability, "stale path evidence not treated current")
         eq(null, staleAssessment.confidence, "stale-only assessment has no current confidence")
