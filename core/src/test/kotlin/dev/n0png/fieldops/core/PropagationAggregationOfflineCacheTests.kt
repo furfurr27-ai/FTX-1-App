@@ -447,7 +447,7 @@ object PropagationAggregationOfflineCacheTests {
             it.evidenceId == "SYNTH_IONO_POINT_CP0008E"
         }
         eq(
-            1_798_765_000_000L,
+            1_791_374_100_000L,
             reloadedPoint.generatedAtUtcMillis,
             "explicit synthetic generation time survives reload",
         )
@@ -731,7 +731,7 @@ object PropagationAggregationOfflineCacheTests {
                 sourceVersion = "cp0008e-v1",
                 retrievedAtUtcMillis = noaaRetrieved2,
             ),
-            observedAtUtcMillis = 1_798_764_900_000L,
+            observedAtUtcMillis = 1_791_374_040_000L,
             confidence = PropagationConfidence(
                 value = 0.60,
                 basis = PropagationConfidenceBasis.SYNTHETIC,
@@ -772,7 +772,7 @@ object PropagationAggregationOfflineCacheTests {
                     providerQualityExplanation = "Synthetic provider quality code.",
                 )
             ),
-            generatedAtUtcMillis = 1_798_765_000_000L,
+            generatedAtUtcMillis = 1_791_374_100_000L,
         )
 
     private fun gridPosition(grid: String): PropagationPosition =
