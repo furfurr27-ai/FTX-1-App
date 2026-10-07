@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008E — propagation evidence aggregation and offline cache service**
+**CP-0008F — propagation operating-picture projection service**
 
-Build a transport-neutral orchestration layer that combines already-normalized NOAA solar/geomagnetic, GloTEC ionospheric and PSK Reporter heard-path evidence into deterministic PropagationSnapshot instances, with source-specific freshness rules, deduplication, bounded offline persistence/reload, and strict separation between observed context and modeled path predictions.
+Build a platform-independent projection/application service over PropagationSnapshot/PropagationSnapshotStore that exposes deterministic heard-path, ionospheric, solar/geomagnetic, modeled-path and optional explainable selected-path assessment records for the future operating map/workspace. Preserve provenance/freshness and evidence-category separation; do not add Android/map-SDK rendering or new live providers in this checkpoint.

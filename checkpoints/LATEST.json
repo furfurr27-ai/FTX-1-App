@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER",
-  "created_utc": "2026-10-07T14:53:26+00:00",
-  "manifest": "checkpoints/manifests/CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER.json",
-  "snapshot": "checkpoints/snapshots/CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER.tar.gz",
-  "snapshot_sha256": "8df2383e3498ac9c905a58d6889e7aff356763832397541dca22399575772400"
+  "checkpoint_id": "CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE",
+  "created_utc": "2026-10-07T16:45:05+00:00",
+  "manifest": "checkpoints/manifests/CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.json",
+  "snapshot": "checkpoints/snapshots/CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.tar.gz",
+  "snapshot_sha256": "fda6821380750d18f42a430c09ff17df94440128e6f5ed0cd31c70d1ae4f7c98"
 }

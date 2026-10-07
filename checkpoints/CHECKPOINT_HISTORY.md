@@ -334,3 +334,21 @@ Host/CI gate: PSK Reporter adapter 168; GloTEC adapter 87; NOAA adapter 53; prop
 Finalization workflow run: 37639835383.
 
 Evidence: research/propagation/CP-0008D_PSK_REPORTER_HEARD_PATH_ADAPTER.md, research/propagation/PSK_REPORTER_FIXTURE.json, research/propagation/PROPAGATION_SOURCES.tsv, and core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PskReporterHeardPathAdapter.kt.
+
+## CP-0008E — Propagation evidence aggregation and offline cache service
+
+Parent durable checkpoint: CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now aggregates already-normalized NOAA solar/geomagnetic, GloTEC ionospheric, PSK Reporter heard-path and modeled evidence into deterministic PropagationSnapshot instances. Provider observation/retrieval timestamps survive unchanged, repeated same-source payloads deduplicate deterministically, heard reportCount uses max rather than addition, and materially conflicting provenance fails closed.
+
+The existing PropagationSnapshotStore contract now has a bounded versioned file-backed implementation with deterministic binary round-trip, restart/reload history, as-of lookup, deterministic trimming and corruption/version checks. Context-only aggregation remains UNKNOWN for path usability and no new QSO, LoTW, model or heat score is created by aggregation.
+
+The pinned NOAA fixtures expose one observed-Kp identity in both the dedicated Kp and forecast products. CP-0008E treats differing provenance as a collision; deterministic orchestration uses the dedicated feed for observed Kp and the forecast feed for estimated/predicted Kp.
+
+Host/CI gate: aggregation/offline cache 101; PSK Reporter 168; GloTEC 87; NOAA adapter 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended award catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37653853853.
+
+Evidence: research/propagation/CP-0008E_PROPAGATION_AGGREGATION_OFFLINE_CACHE.md, core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationAggregation.kt, core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt.

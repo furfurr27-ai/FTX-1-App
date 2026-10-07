@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER`
+`CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,20 +25,22 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE
+CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
 
 Required scope:
 
-- transport-neutral aggregation of normalized NOAA, GloTEC and PSK Reporter evidence
-- deterministic PropagationSnapshot construction
-- source-specific freshness defaults without rewriting provider timestamps
-- deterministic repeated-payload deduplication and merge behavior
-- bounded offline PropagationSnapshotStore persistence/reload semantics
-- preserve observed, ionospheric and modeled evidence as separate categories
-- no automatic path score created merely by aggregation
-- no Android/Compose/map SDK dependency
-- no live network scheduling requirement in deterministic CI
-- no WSPRnet/GIRO/HFcast/VOACAP integration
+- platform-independent projection/application service over PropagationSnapshot and PropagationSnapshotStore
+- deterministic heard-path map-ready records retaining explicit endpoint geography, callsigns, frequency/band/mode/SNR/reportCount/provenance/freshness
+- provider-neutral ionospheric metric/sample projection with no TEC-to-MUF or unexplained heat-score conversion
+- concise solar/geomagnetic context projection with freshness/provenance
+- modeled paths remain distinct from observed heard paths
+- deterministic band/frequency/mode/source/freshness filters
+- optional selected-path assessment using existing explainable PropagationAssessmentEngine
+- snapshot capture/source-retrieval/offline-cache status surfaced explicitly
+- no QSO promotion from heard evidence
+- no Android/Compose/Google Maps/Mapbox dependency
+- no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
+- no live provider polling requirement
 - no real accounts/credentials
 - no phone/radio/RF/manual hardware work
 - skip hardware/account-gated checkpoints under the owner execution override

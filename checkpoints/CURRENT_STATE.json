@@ -1,33 +1,33 @@
 {
-  "project_version": "v29-psk-reporter-heard-path-adapter",
-  "latest_checkpoint": "CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER",
-  "phase": "PSK Reporter heard-path adapter host-verified; propagation aggregation/offline cache next; hardware/account checkpoints remain deferred by owner",
-  "test_status": "GREEN host/CI: pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37639835383",
+  "project_version": "v30-propagation-aggregation-offline-cache",
+  "latest_checkpoint": "CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE",
+  "phase": "Propagation aggregation/offline cache host-verified; operating-picture projection next; hardware/account checkpoints remain deferred by owner",
+  "test_status": "GREEN host/CI: aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37653853853",
   "completed": [
-    "Official PSK Reporter public query, XML field semantics and five-minute retrieval guidance are source-pinned",
-    "Bounded four-report fixture is 1196 bytes with SHA-256 fb41c07330c8d446dbd52eb4b35358950145b8a75fab76f225e69859b5752da7",
-    "Accepted paths require explicit valid sender and receiver Maidenhead locators; no callsign-derived geography is used",
-    "Frequency Hz, amateur band, Unix observation time, mode and optional integer SNR are retained with provider/retrieval provenance",
-    "Missing or invalid report facts are explicitly rejected per report without discarding other valid rows",
-    "Present QSO/manual/test informationSource values are rejected from direct heard-path normalization",
-    "Exact duplicate normalized rows collapse deterministically and increment reportCount",
-    "XML parser disables DOCTYPE, external entities, external DTD/schema access and XInclude",
-    "Core PSK Reporter adapter performs no network access and contains no Android/map SDK, FTX-1/PTT, QSO-write or LoTW behavior",
-    "Superseded CP-0008C finalizer is manual-only to prevent checkpoint-state regression",
-    "Focused PSK Reporter PASS 168; GloTEC PASS 87; NOAA adapter PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"
+    "Already-normalized NOAA, GloTEC, PSK Reporter and modeled evidence aggregate into deterministic PropagationSnapshot instances",
+    "Provider observation/retrieval timestamps are preserved and capture UTC cannot precede retained source retrieval UTC",
+    "Repeated same-source payloads deduplicate by evidence id with latest retrieval provenance; heard reportCount merges by max rather than addition",
+    "Materially conflicting same-id content/provenance and cross-category id collisions fail closed",
+    "Overlapping NOAA observed-Kp identity across dedicated/forecast products is treated as provenance conflict; orchestration uses dedicated observed plus forecast estimated/predicted records",
+    "Source-specific FieldOps freshness defaults cover PSK Reporter, GloTEC, NOAA Kp family and F10.7 while unknown sources retain the operational default",
+    "Snapshot ids deterministically fingerprint complete versioned normalized content independent of input-batch ordering",
+    "FilePropagationSnapshotStore implements bounded versioned offline latest/exact/as-of/history persistence with restart/reload and deterministic trimming",
+    "Binary codec preserves all current propagation domain fields/coverage shapes and rejects corrupt versions, oversized collections/strings and trailing bytes",
+    "Context-only aggregation creates no heard/model path or opaque propagation score; QSO/LoTW and Android/map/network/radio state remain outside the layer",
+    "Superseded CP-0008D finalizer is manual-only to prevent checkpoint-state regression",
+    "Focused aggregation PASS 101; PSK Reporter PASS 168; GloTEC PASS 87; NOAA adapter PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"
   ],
   "blockers": [
     "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'",
     "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint",
     "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete",
-    "PSK Reporter uptime/current station activity is external; deterministic fixture proves pinned parsing/normalization only",
-    "Reception reports are provisional one-way evidence and do not prove QSO completion, callsign truth, or locator truth",
-    "WSPRnet/GIRO/HFcast/VOACAP and Android live-network/map integrations remain unproven"
+    "CP-0008E does not implement live provider polling, Android filesystem integration or multi-process cache locking",
+    "WSPRnet/WSPR.live, GIRO, HFcast/VOACAP and Android map rendering remain unproven"
   ],
   "next_actions": [
-    "CP-0008E: aggregate already-normalized NOAA, GloTEC and PSK Reporter evidence into deterministic PropagationSnapshot instances",
-    "Define source-specific freshness defaults, repeated-payload deduplication and bounded offline PropagationSnapshotStore persistence/reload",
-    "Keep observed, ionospheric and modeled evidence categories separate and do not create a path score merely by aggregation"
+    "CP-0008F: build a platform-independent propagation operating-picture projection/application service over PropagationSnapshot and PropagationSnapshotStore",
+    "Project heard, ionospheric, solar/geomagnetic and modeled evidence with provenance/freshness plus deterministic band/mode/source/freshness filters",
+    "Expose optional explainable selected-path assessment and offline snapshot status without Android/map-SDK rendering or new live providers"
   ],
-  "updated_utc": "2026-10-07T14:53:26+00:00"
+  "updated_utc": "2026-10-07T16:45:05+00:00"
 }
