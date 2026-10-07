@@ -33,6 +33,21 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - name: Deterministic CP-0008C gate
         run: bash scripts/test_glotec_ionospheric_adapter.sh
+      - name: Dry-run CP-0008C checkpoint handoff generator
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008c.py
+          python3 scripts/finalize_cp0008c.py
+          grep -Fq 'CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER' README.md
+          grep -Fq 'CP-0008D — PSK Reporter public heard-path adapter' NEXT_ACTION.md
+          grep -Fq 'CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter' checkpoints/CHECKPOINT_HISTORY.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'Create immutable CP-0008C snapshot' .github/workflows/finalize-cp0008c.yml
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008b.yml
+          git diff --check
 
   inherited-regression:
     name: inherited — ${{ matrix.label }}
