@@ -62,22 +62,6 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_production_us_state_geometry_pack.sh
 
-      - name: Dry-run CP-0007C checkpoint handoff generator
-        shell: bash
-        env:
-          FINALIZE_RUN_ID: premerge-dry-run
-        run: |
-          set -euo pipefail
-          python3 -m py_compile scripts/finalize_cp0007c.py
-          python3 scripts/finalize_cp0007c.py
-          grep -Fq 'CP-0007C-US_STATE_GEOMETRY_PACK' README.md
-          grep -Fq 'CP-0008A — Propagation intelligence domain and source-normalization foundation' NEXT_ACTION.md
-          grep -Fq 'CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION' SOFTWARE_TRACK.md
-          grep -Fq 'CP-0007C — Production U.S. state offline geometry pack' checkpoints/CHECKPOINT_HISTORY.md
-          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
-          grep -Fq 'Create immutable CP-0007C snapshot' .github/workflows/finalize-cp0007c.yml
-          git diff --check
-
   geometry-providers:
     runs-on: ubuntu-latest
     steps:
