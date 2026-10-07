@@ -11,7 +11,10 @@ on:
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationProjectionServiceTests.kt'
       - 'research/propagation/CP-0008F_PROPAGATION_PROJECTION.md'
       - 'scripts/test_propagation_projection.sh'
+      - 'scripts/finalize_cp0008f.py'
       - '.github/workflows/cp0008f-propagation-projection.yml'
+      - '.github/workflows/finalize-cp0008e.yml'
+      - '.github/workflows/finalize-cp0008f.yml'
 
 permissions:
   contents: read
@@ -30,6 +33,20 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_propagation_projection.sh
+      - name: Dry-run CP-0008F durable handoff
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008f.py
+          python3 scripts/finalize_cp0008f.py
+          grep -Fq 'CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION' README.md
+          grep -Fq 'CP-0008G — propagation source refresh coordinator' NEXT_ACTION.md
+          grep -Fq 'CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008e.yml
+          grep -Fq 'CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION' .github/workflows/finalize-cp0008f.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
