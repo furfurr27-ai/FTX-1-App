@@ -1,0 +1,100 @@
+name: Finalize CP-0008B checkpoint
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcPropagationAdapter.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/NoaaSwpcPropagationAdapterTests.kt'
+      - 'research/propagation/CP-0008B_NOAA_SWPC_ADAPTER.md'
+      - 'research/propagation/NOAA_SWPC_FIXTURES.json'
+      - 'research/propagation/fixtures/noaa_swpc_*'
+      - 'research/propagation/PROPAGATION_SOURCES.tsv'
+      - 'scripts/test_noaa_swpc_propagation_adapter.sh'
+      - 'scripts/check_noaa_swpc_schema.py'
+      - 'scripts/finalize_cp0008b.py'
+      - '.github/workflows/finalize-cp0008b.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  noaa-adapter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_noaa_swpc_propagation_adapter.sh
+
+  inherited-regressions:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Run inherited verified gates
+        run: |
+          set -euo pipefail
+          bash scripts/test_propagation_foundation.sh
+          bash scripts/test_production_us_state_geometry_pack.sh
+          bash scripts/test_award_geometry_providers.sh
+          bash scripts/test_award_area_map_projection.sh
+          bash scripts/test_extended_award_catalog.sh
+          bash scripts/test_awards_center_application_service.sh
+          bash scripts/test_award_evidence_persistence.sh
+          bash scripts/test_awards_center_projection.sh
+          bash scripts/test_award_target_enrichment.sh
+          bash scripts/test_official_award_catalog.sh
+          bash scripts/test_award_evaluation.sh
+          bash scripts/test_manual_qso_lotw_queue.sh
+          bash scripts/test_universal_qso_logger.sh
+          bash scripts/test_lotw_transaction.sh
+          bash scripts/test_core_regression.sh
+
+  checkpoint:
+    needs: [noaa-adapter, inherited-regressions]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update durable handoff documents
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0008b.py
+
+      - name: Create immutable CP-0008B snapshot
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py             --root .             --id CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER             --parent CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION             --summary "Pinned no-credential NOAA SWPC planetary-Kp and F10.7 adapter with status-aware provenance, deterministic captured fixtures, fail-closed post-SCN schema parsing, and transport-independent normalization"             --phase "NOAA SWPC solar/geomagnetic public source adapter host-verified; GloTEC ionospheric map adapter next; hardware/account checkpoints remain deferred by owner"             --test-status "GREEN host/CI: noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID"             --completed "Exact public NOAA/SWPC endpoints are pinned for planetary Kp history, Kp observed/estimated/predicted status, and F10.7 summary"             --completed "NWS SCN 26-21 post-March-2026 object/numeric JSON generation is pinned as swpc-json-post-scn26-21-v1"             --completed "Three representative NOAA fixtures are committed with byte counts and SHA-256 hashes for deterministic parser CI"             --completed "Observed, estimated, and predicted Kp states preserve distinct quality/provenance; predicted records remain FORECAST"             --completed "Provider time_tag is retained as UTC separately from caller-supplied retrieval UTC; future forecast validity is not replaced by device time"             --completed "Historical Kp running-a and station-count provider metadata is retained without silently remapping running-a to planetary Ap"             --completed "F10.7 summary is normalized in solar flux units as contextual measurement evidence, not direct RF-path evidence"             --completed "Legacy quoted numerics, missing/extra fields, unknown statuses, malformed timestamps, duplicate keys, and invalid domains fail closed"             --completed "Core NOAA parser has no network transport, Android/map SDK, QSO/LoTW, FTX-1/PTT, or direct path-score dependency"             --completed "Focused NOAA PASS 53; propagation PASS 154; production state pack PASS 363; geometry provider PASS 102; map PASS 96; extended catalog PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'"             --blocker "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint"             --blocker "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete"             --blocker "NOAA endpoint uptime and future schema stability are external; deterministic fixtures prove the pinned schema only"             --blocker "Kp/F10.7 are contextual inputs and do not by themselves establish a specific HF path or universal propagation score"             --blocker "GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP and Android map/network integrations remain unproven"             --next "CP-0008C: pin the official public NOAA/SWPC GloTEC GeoJSON schema and a bounded deterministic fixture with SHA-256"             --next "Extend provider-neutral ionospheric metrics only as required for TEC/TECU and preserve explicit coordinates/provider timestamps/provenance"             --next "Do not derive MUF or path usability directly from TEC; keep credentialed/restricted providers, Android rendering, and hardware work outside CP-0008C"
+
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit immutable checkpoint and handoff
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.json
+          git add -f checkpoints/snapshots/CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.tar.gz
+          git commit -m "Checkpoint CP-0008B NOAA SWPC propagation adapter"
+          git push
