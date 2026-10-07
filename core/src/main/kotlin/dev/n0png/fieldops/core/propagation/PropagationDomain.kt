@@ -249,16 +249,30 @@ enum class IonosphericMetric {
     FOF2_MHZ,
     MUF_MHZ,
     HMF2_KM,
+    VTEC_TECU,
 }
 
 data class IonosphericSample(
     val position: PropagationPosition,
     val value: Double,
     val confidence: PropagationConfidence? = null,
+    val providerQualityCode: Int? = null,
+    val providerQualityExplanation: String? = null,
 ) {
     init {
         require(value > 0.0 && value.isFinite()) {
             "Ionospheric sample value must be finite and positive"
+        }
+        providerQualityCode?.let {
+            require(it >= 0) { "Ionospheric provider quality code must be non-negative" }
+        }
+        providerQualityExplanation?.let {
+            require(it.isNotBlank()) {
+                "Ionospheric provider quality explanation must not be blank"
+            }
+        }
+        require((providerQualityCode == null) == (providerQualityExplanation == null)) {
+            "Ionospheric provider quality code and explanation must be supplied together"
         }
     }
 }

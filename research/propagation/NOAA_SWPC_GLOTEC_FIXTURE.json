@@ -1,0 +1,27 @@
+{
+  "schema_version": "glotec-operational-geojson-v1",
+  "captured_on_utc_date": "2026-10-07",
+  "official_product_url": "https://www.spaceweather.gov/index.php/products/glotec",
+  "official_directory_url": "https://services.swpc.noaa.gov/products/glotec/geojson_2d_urt/",
+  "official_source_url": "https://services.swpc.noaa.gov/products/glotec/geojson_2d_urt/glotec_icao_20260909T151500Z.geojson",
+  "source_artifact_filename": "glotec_icao_20260909T151500Z.geojson",
+  "source_artifact_observed_size": "approximately 2.4 MB",
+  "fixture": {
+    "path": "research/propagation/fixtures/noaa_swpc_glotec_20260909T151500Z_bounded.geojson",
+    "bytes": 1573,
+    "sha256": "a98741d9a9586082db0eb357f3baf35be09a2646c8ab5b1b4203d4852b09bac2",
+    "feature_count": 4,
+    "extraction": "Exact top-level schema metadata and four exact feature rows selected from the recorded NOAA GloTEC artifact; this bounded fixture is deterministic parser evidence and is not the complete global grid."
+  },
+  "recorded_full_grid_mirror": {
+    "repository": "RealDougEubanks/solarham",
+    "commit": "7382dc23cd5f74c00fae99387d2052940c5c63b7",
+    "path": "internal/source/glotec/testdata/grid.geojson",
+    "role": "Secondary fixture provenance only. NOAA/NWS remains authoritative for product semantics and the official artifact location."
+  },
+  "notes": [
+    "The moving geojson_2d_urt.json index is not a deterministic fixture and is not required by CP-0008C CI.",
+    "The fixture's provider time_tag and canonical source filename both identify 2026-09-09T15:15:00Z.",
+    "Only vertical TEC is normalized by CP-0008C; anomaly, hmF2 and NmF2 remain schema-checked source fields rather than newly normalized metrics."
+  ]
+}
