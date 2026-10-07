@@ -76,6 +76,19 @@ Using maximum report count prevents repeated polling of the same PSK Reporter pa
 
 A single evidence id appearing in different evidence categories is rejected.
 
+### NOAA observed-Kp overlap
+
+The pinned NOAA fixtures expose one important orchestration edge case: the dedicated planetary-Kp product and the Kp forecast product can both carry the same normalized observed Kp identity while retaining different product provenance.
+
+CP-0008E does not silently collapse those different source records.
+
+The deterministic orchestration fixture uses:
+
+- the dedicated planetary-Kp feed for observed Kp;
+- the forecast feed for estimated/predicted Kp.
+
+If callers provide the same evidence id from two materially different source-provenance records anyway, aggregation fails closed. A later source coordinator must preserve the same canonical-source rule rather than resolving the collision by input order.
+
 ## Source-specific freshness defaults
 
 CP-0008E adds FieldOps policy defaults for inspection/orchestration:
