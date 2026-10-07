@@ -1,19 +1,9 @@
 name: Finalize CP-0008F checkpoint
 
+# CP-0008F is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionModels.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionService.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationSnapshotStore.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationProjectionServiceTests.kt'
-      - 'research/propagation/CP-0008F_PROPAGATION_PROJECTION.md'
-      - 'scripts/test_propagation_projection.sh'
-      - 'scripts/finalize_cp0008f.py'
-      - '.github/workflows/finalize-cp0008e.yml'
-      - '.github/workflows/finalize-cp0008f.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
