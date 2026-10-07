@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER",
-  "created_utc": "2026-10-07T09:45:12+00:00",
-  "manifest": "checkpoints/manifests/CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.json",
-  "snapshot": "checkpoints/snapshots/CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.tar.gz",
-  "snapshot_sha256": "5bc2806f264d6ed813847fb68f30e7d7bac8f31a9ceff9331bea5537f9f67350"
+  "checkpoint_id": "CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER",
+  "created_utc": "2026-10-07T14:12:41+00:00",
+  "manifest": "checkpoints/manifests/CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER.json",
+  "snapshot": "checkpoints/snapshots/CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER.tar.gz",
+  "snapshot_sha256": "8ddbdb9ef6a95336482cbb9e3dd6673b886f16c14712a06502c4dd2f28c52489"
 }

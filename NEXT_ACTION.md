@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter**
+**CP-0008D — PSK Reporter public heard-path adapter**
 
-Pin the exact official no-credential GloTEC GeoJSON schema, capture/hash a bounded representative fixture, extend the provider-neutral ionospheric metric model only as required for TEC, and normalize explicit coordinates/timestamps/provenance without deriving MUF or path usability directly from TEC.
+Pin the official no-credential PSK Reporter retrieval/query schema and a deterministic XML fixture, then normalize only reports with explicit transmitter and receiver Maidenhead locators into HeardPathObservation. Preserve provider frequency/time/mode/SNR/provenance, never infer geography from callsigns, never promote a reception report into a QSO, and keep live polling out of deterministic CI.

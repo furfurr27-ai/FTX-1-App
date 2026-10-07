@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER`
+`CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,19 +25,22 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER
+CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER
 
 Required scope:
 
-- exact official no-credential NOAA/SWPC GloTEC GeoJSON endpoint/schema pin
-- bounded captured fixture with byte count and SHA-256
-- provider-neutral ionospheric metric extension only as required for TEC/TECU
-- explicit coordinates and provider observation/generation/validity timestamps
-- provenance/confidence/quality retained without callsign-derived geography
-- transport-independent parser and deterministic fixture CI
-- optional live schema-freshness guard must not assert changing current TEC values
-- no derived MUF/path-usability score directly from TEC
-- no GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration
+- official no-credential PSK Reporter retrieval endpoint/query/schema pin
+- deterministic representative XML fixture; no live-service dependency in required CI
+- transport-independent parser/normalizer into CP-0008A HeardPathObservation
+- explicit valid transmitter and receiver Maidenhead locators required; no callsign-derived geography
+- exact provider frequency and observation timestamp retained
+- mode/SNR retained when explicitly supplied by provider
+- sender/receiver callsigns retained as labels only
+- source/retrieval provenance, quality and confidence explanation retained
+- one-way reports remain separate from QSO/logbook/LoTW state
+- fail closed or explicitly reject records missing minimum geographic/path fields
+- published PSK Reporter retrieval-rate guidance documented and respected by any later transport adapter
+- no WSPRnet/GIRO/HFcast/VOACAP integration
 - no Android/Compose/map SDK dependency
 - no real accounts/credentials
 - no phone/radio/RF/manual hardware work

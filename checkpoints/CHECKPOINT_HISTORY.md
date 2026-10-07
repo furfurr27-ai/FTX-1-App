@@ -302,3 +302,19 @@ Host/CI gate: NOAA adapter 53; propagation foundation 154; production state pack
 Finalization workflow run: 37602514427.
 
 Evidence: research/propagation/CP-0008B_NOAA_SWPC_ADAPTER.md, research/propagation/NOAA_SWPC_FIXTURES.json, and research/propagation/PROPAGATION_SOURCES.tsv.
+
+## CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter
+
+Parent durable checkpoint: CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now normalizes the pinned NOAA/SWPC GloTEC GeoJSON product into provider-neutral VTEC/TECU ionospheric-map evidence. Explicit provider coordinates, provider time_tag, retrieval UTC, quality_flag metadata, source identity, confidence basis/explanation and bounded coverage are retained. VTEC remains distinct from foF2/MUF/hmF2, and GloTEC-only context cannot produce a GOOD/MARGINAL/POOR path assessment or become a QSO.
+
+The bounded deterministic fixture contains four exact feature rows from the recorded NOAA 2026-09-09T15:15:00Z grid, is 1,573 bytes, and has SHA-256 a98741d9a9586082db0eb357f3baf35be09a2646c8ab5b1b4203d4852b09bac2. NOAA/NWS remains authoritative for product semantics; the pinned public GitHub mirror is used only for exact fixture-row provenance.
+
+Host/CI gate: GloTEC adapter 87; NOAA solar/geomagnetic adapter 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended award catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37634077198.
+
+Evidence: research/propagation/CP-0008C_GLOTEC_IONOSPHERIC_ADAPTER.md, research/propagation/NOAA_SWPC_GLOTEC_FIXTURE.json, research/propagation/PROPAGATION_SOURCES.tsv, and core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecAdapter.kt.

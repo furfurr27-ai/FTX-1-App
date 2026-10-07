@@ -39,37 +39,42 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER
+**Latest verified checkpoint:** CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER
 
-Parent durable checkpoint: CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION.
+Parent durable checkpoint: CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008B is a GREEN host/CI + pinned-public-source checkpoint. It adds a transport-independent NOAA/SWPC adapter for planetary Kp and observed F10.7 context while preserving the CP-0008A provider-neutral propagation model.
+CP-0008C is a GREEN host/CI + pinned-public-source checkpoint. It adds transport-independent normalization of NOAA/SWPC GloTEC vertical total electron content into the provider-neutral ionospheric-map domain without converting TEC into MUF, heard-path evidence, a QSO, or an unexplained propagation score.
 
-CP-0008B proves:
+CP-0008C proves:
 
-- Exact public no-credential NOAA/SWPC endpoints are pinned for planetary Kp history, the Kp observed/estimated/predicted feed, and the F10.7 summary.
-- The 2026 NWS Service Change Notice 26-21 JSON format boundary is recorded as `swpc-json-post-scn26-21-v1`.
-- Three deterministic representative fixtures are committed with byte counts and SHA-256 hashes.
-- Historical Kp `time_tag`, `Kp`, `a_running`, and `station_count` fields are parsed fail-closed.
-- `a_running` is retained as NOAA provider metadata and is not silently promoted to planetary Ap.
-- The Kp feed's provider states `observed`, `estimated`, and `predicted` remain distinct through normalization.
-- Predicted Kp records use FORECAST provenance rather than masquerading as observations.
-- Estimated/predicted quality metadata is explicit and provider timestamps are retained separately from retrieval UTC.
-- F10.7 is normalized in solar flux units from the NOAA 10.7 cm / 2800 MHz summary without becoming path evidence.
-- Old quoted-number schema rows, unknown statuses, missing fields, extra fields, malformed timestamps, duplicate keys, and invalid numeric domains fail closed.
-- A live no-credential schema guard verifies only structural invariants and never asserts changing current space-weather values.
-- Production NOAA parsing code contains no network transport, Android/Compose/map-SDK types, QSO/LoTW state, FTX-1 hardware control, PTT behavior, or direct path-usability scoring.
+- The official NOAA/SWPC GloTEC operational product, versioned GeoJSON directory, cadence, global grid semantics, TEC units, and provider quality semantics are source-pinned.
+- Provider-neutral ionospheric metrics now include VTEC_TECU while remaining distinct from foF2, MUF, and hmF2.
+- Generic ionospheric samples can retain paired provider quality code/explanation metadata without hard-coding GloTEC into the domain model.
+- A bounded four-cell fixture extracted from the recorded NOAA 2026-09-09T15:15:00Z grid is pinned at 1,573 bytes with SHA-256 a98741d9a9586082db0eb357f3baf35be09a2646c8ab5b1b4203d4852b09bac2.
+- GeoJSON coordinates remain explicit provider coordinates in longitude/latitude order; no callsign-derived geography is introduced.
+- Canonical artifact filename time must match provider time_tag; retrieval UTC remains separate.
+- No separately established generation timestamp is fabricated; generatedAtUtcMillis remains null for this pinned schema.
+- GloTEC quality_flag values 0 through 5 are preserved per sample with provider semantics rather than being converted into path confidence.
+- Root, metadata, feature, geometry, property, numeric-domain, duplicate-coordinate, timestamp, source-URL, and duplicate-JSON-key drift fail closed.
+- GloTEC-only ionospheric context remains UNKNOWN for HF path usability and retains INSUFFICIENT_PATH_EVIDENCE.
+- Production GloTEC parsing code contains no network transport, Android/Compose/map-SDK types, QSO/LoTW state, FTX-1/PTT behavior, or direct TEC-to-MUF/path conversion.
+- The superseded CP-0008B finalizer is manual-only so later propagation checkpoints cannot regress durable state.
 
-Authoritative research checked:
+Authoritative/direct research checked:
 
-- NOAA/SWPC public product directory and live public JSON products.
-- NWS Service Change Notice 26-21 for the March 2026 JSON object/numeric-value migration.
-- NOAA F10.7 technical documentation for 10.7 cm / 2800 MHz solar flux units and semantics.
+- NWS Service Change Notice 25-04 for GloTEC transition to operations, real-time assimilation, ten-minute ASCII GeoJSON cadence, and the 2.5-degree latitude by 5-degree longitude global grid.
+- Current NOAA/SWPC GloTEC product information for TEC output and quality_flag semantics.
+- NOAA/SWPC public versioned GloTEC GeoJSON directory.
+
+Fixture provenance additionally checked:
+
+- RealDougEubanks/solarham pinned commit 7382dc23cd5f74c00fae99387d2052940c5c63b7, which retains the recorded full NOAA grid used only to extract exact deterministic fixture rows.
 
 Host/CI gates:
 
+- CP-0008C GloTEC ionospheric adapter: **87/87 PASS**.
 - CP-0008B NOAA SWPC adapter: **53/53 PASS**.
 - CP-0008A propagation intelligence foundation: **154/154 PASS**.
 - CP-0007C production U.S. state geometry pack: **363/363 PASS**.
@@ -89,20 +94,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008B_NOAA_SWPC_ADAPTER.md
-- research/propagation/NOAA_SWPC_FIXTURES.json
+- research/propagation/CP-0008C_GLOTEC_IONOSPHERIC_ADAPTER.md
+- research/propagation/NOAA_SWPC_GLOTEC_FIXTURE.json
 - research/propagation/PROPAGATION_SOURCES.tsv
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcPropagationAdapter.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecAdapter.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationDomain.kt
 - SOFTWARE_TRACK.md
-- CP-0008B finalization workflow run: 37602514427
+- CP-0008C finalization workflow run: 37634077198
 
 ### Evidence boundary
 
-CP-0008B proves deterministic normalization of the pinned post-SCN NOAA schemas and a successful schema-only live check at verification time. It does not claim NOAA uptime, current propagation conditions, a scientifically calibrated universal path score, GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration, Android network caching, or map rendering.
+CP-0008C proves deterministic normalization of the pinned GloTEC GeoJSON shape into provider-neutral VTEC context and preservation of provider quality/provenance. It does not claim NOAA uptime, current real-world TEC, a complete runtime global fetch, TEC-to-MUF conversion, HF path prediction from TEC, Android network caching/rendering, or GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP integration.
 
 ### Inherited verified ancestry
 
-CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION, CP-0007C-US_STATE_GEOMETRY_PACK, CP-0007B-AWARD_GEOMETRY_PROVIDERS, CP-0007A-AWARD_MAP_PROJECTION, CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
+CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION, CP-0007C-US_STATE_GEOMETRY_PACK, CP-0007B-AWARD_GEOMETRY_PROVIDERS, CP-0007A-AWARD_MAP_PROJECTION, CP-0006G-EXTENDED_AWARD_CATALOG, CP-0006F-AWARDS_APPLICATION_SERVICE, CP-0006E-AWARD_EVIDENCE_PERSISTENCE, CP-0006D-AWARDS_CENTER_PROJECTION, CP-0006C-AWARD_TARGET_ENRICHMENT, CP-0006B-OFFICIAL_AWARD_CATALOG, CP-0006A-AWARD_EVALUATION_ENGINE, CP-0005B-MANUAL_QSO_LOTW_QUEUE, CP-0005A-UNIVERSAL_QSO_LOGGER, CP-0003B-LOTW_TRANSACTION_SAFE, CP-0003A-TRUSTEDQSL_SIGNER, CP-0002E-NATIVE_MODE_REGRESSION, and prior native-mode checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -126,7 +132,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter
+**Active software track:** CP-0008D — PSK Reporter public heard-path adapter
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -351,7 +357,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: `CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER`
+- Current Git source baseline: `CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER`
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -364,17 +370,18 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008C — NOAA SWPC GloTEC public ionospheric map adapter.**
+**CP-0008D — PSK Reporter public heard-path adapter.**
 
-1. Pin the exact official no-credential NOAA/SWPC GloTEC GeoJSON endpoint/schema and capture a bounded representative fixture with SHA-256.
-2. Extend the provider-neutral ionospheric metric model only as required to represent vertical TEC in TECU; do not reinterpret TEC as foF2 or MUF.
-3. Parse explicit provider coordinates, observation/generation/validity timestamps, quality metadata, and source provenance into the CP-0008A ionospheric-product boundary.
-4. Keep the parser transport-independent and deterministic; use captured fixtures for the required CI gate.
-5. A live schema-freshness check may inspect the public endpoint structure but must not make tests depend on today's TEC values.
-6. Do not derive MUF, band/path usability, or a heat-map score directly from TEC without a separately justified and tested scientific model.
-7. Keep GIRO, PSK Reporter, WSPRnet, HFcast/VOACAP, Android/Compose/map-SDK rendering, and account/credential providers outside this checkpoint.
-8. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
-9. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
+1. Pin the official no-credential PSK Reporter retrieval endpoint/query semantics and a deterministic representative XML response fixture.
+2. Normalize reception reports into CP-0008A HeardPathObservation only when both transmitter and receiver have explicit valid Maidenhead locators; never derive geography from callsigns.
+3. Preserve sender/receiver callsigns as labels, exact frequency, provider observation timestamp, mode and SNR when supplied, plus source/retrieval provenance and data quality.
+4. Keep every reception report separate from QSO/logbook/LoTW state; a one-way heard report must never become an authoritative contact.
+5. Fail closed or explicitly reject records lacking the minimum fields required for a geographic heard path; do not invent location, frequency, mode or time.
+6. Respect PSK Reporter's published retrieval guidance, including avoiding retrieval more often than once every five minutes; deterministic CI must not poll the live service.
+7. Keep transport outside the parser/normalizer boundary. A live schema check, if used, must be separately bounded and must not make CI depend on current station activity.
+8. Keep WSPRnet, GIRO, HFcast/VOACAP, Android/Compose/map-SDK rendering and account/credential providers outside this checkpoint.
+9. CP-0003C remains DEFERRED; do not return to it until the owner explicitly says resume CP-0003C.
+10. Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue with the next GitHub/CI-only checkpoint.
 
 ## README maintenance contract
 
