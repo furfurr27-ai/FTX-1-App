@@ -126,6 +126,14 @@ This reuses CP-0008E's aggregation and cache invariants instead of creating a se
 
 No wall-clock read occurs inside the coordinator. The caller supplies `nowUtcMillis`.
 
+## Refresh-to-projection bridge
+
+`PropagationRefreshWorkspaceService` composes the refresh coordinator with the existing `PropagationWorkspaceProjectionService`.
+
+A single caller-supplied UTC is used for both refresh and projection. After a successful refresh, the newly saved snapshot is projected. After an all-source or aggregate failure, the projection service reads the still-authoritative last good snapshot instead.
+
+The bridge therefore exposes source-health/refresh state and operating-picture state together without teaching the projection layer how to fetch or schedule providers.
+
 ## Platform boundary
 
 Production CP-0008G refresh code contains no:
