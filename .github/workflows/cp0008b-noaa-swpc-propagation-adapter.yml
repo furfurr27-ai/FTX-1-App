@@ -56,9 +56,44 @@ jobs:
       - name: Verify current public NOAA schemas without asserting current values
         run: python3 scripts/check_noaa_swpc_schema.py
 
-  inherited-regressions:
+  inherited-regression:
+    name: inherited — ${{ matrix.label }}
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: propagation
+            script: scripts/test_propagation_foundation.sh
+          - label: production-pack
+            script: scripts/test_production_us_state_geometry_pack.sh
+          - label: geometry
+            script: scripts/test_award_geometry_providers.sh
+          - label: map
+            script: scripts/test_award_area_map_projection.sh
+          - label: extended
+            script: scripts/test_extended_award_catalog.sh
+          - label: service
+            script: scripts/test_awards_center_application_service.sh
+          - label: persistence
+            script: scripts/test_award_evidence_persistence.sh
+          - label: projection
+            script: scripts/test_awards_center_projection.sh
+          - label: target
+            script: scripts/test_award_target_enrichment.sh
+          - label: catalog
+            script: scripts/test_official_award_catalog.sh
+          - label: award
+            script: scripts/test_award_evaluation.sh
+          - label: queue
+            script: scripts/test_manual_qso_lotw_queue.sh
+          - label: logger
+            script: scripts/test_universal_qso_logger.sh
+          - label: lotw
+            script: scripts/test_lotw_transaction.sh
+          - label: core
+            script: scripts/test_core_regression.sh
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v5
@@ -68,21 +103,5 @@ jobs:
           curl -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - name: Run inherited verified gates
-        run: |
-          set -euo pipefail
-          bash scripts/test_propagation_foundation.sh
-          bash scripts/test_production_us_state_geometry_pack.sh
-          bash scripts/test_award_geometry_providers.sh
-          bash scripts/test_award_area_map_projection.sh
-          bash scripts/test_extended_award_catalog.sh
-          bash scripts/test_awards_center_application_service.sh
-          bash scripts/test_award_evidence_persistence.sh
-          bash scripts/test_awards_center_projection.sh
-          bash scripts/test_award_target_enrichment.sh
-          bash scripts/test_official_award_catalog.sh
-          bash scripts/test_award_evaluation.sh
-          bash scripts/test_manual_qso_lotw_queue.sh
-          bash scripts/test_universal_qso_logger.sh
-          bash scripts/test_lotw_transaction.sh
-          bash scripts/test_core_regression.sh
+      - name: Run inherited gate
+        run: bash "${{ matrix.script }}"
