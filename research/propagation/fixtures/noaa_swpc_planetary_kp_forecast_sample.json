@@ -1,0 +1,5 @@
+[
+  {"time_tag":"2026-10-07T06:00:00","kp":1.00,"observed":"observed","noaa_scale":null},
+  {"time_tag":"2026-10-07T09:00:00","kp":2.00,"observed":"estimated","noaa_scale":null},
+  {"time_tag":"2026-10-08T00:00:00","kp":1.33,"observed":"predicted","noaa_scale":null}
+]
