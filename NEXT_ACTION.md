@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008G — propagation source refresh coordinator**
+**CP-0008H — public propagation transport adapters**
 
-Build a platform-neutral refresh coordinator over the existing public-source adapters, aggregation/cache, and projection layers. Track source cadence, success/failure, bounded retry/backoff, canonical NOAA observed/forecast selection, partial-source failure, and last-good cached snapshots using deterministic fake-source CI. Keep concrete Android scheduling/network transport and new providers outside this checkpoint.
+Add a platform-neutral request/response transport boundary and source adapters that feed the existing NOAA SWPC, GloTEC, and PSK Reporter parsers into the CP-0008G refresh coordinator. Prove exact endpoint handling, GloTEC latest-artifact selection, response/error/size handling, and PSK Reporter provenance restrictions with deterministic fake transport CI. Keep concrete Android networking/scheduling and new providers outside this checkpoint.

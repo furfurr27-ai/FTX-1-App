@@ -39,31 +39,34 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
+**Latest verified checkpoint:** CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
 
-Parent durable checkpoint: CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE.
+Parent durable checkpoint: CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008F is a GREEN host/CI checkpoint. It projects cached provider-neutral propagation evidence into deterministic platform-independent workspace state without Android/map-SDK rendering or evidence-category collapse.
+CP-0008G is a GREEN host/CI checkpoint. It adds deterministic, platform-neutral refresh orchestration over already-normalized propagation sources, the snapshot aggregator/cache, and the operating-picture projection layer.
 
-CP-0008F proves:
+CP-0008G proves:
 
-- Heard paths project separately with explicit endpoints, callsigns, exact frequency, band, mode, SNR, reportCount, provenance, confidence, quality and source-specific freshness.
-- Ionospheric products preserve coverage, metric identity, samples, provider quality and optional generation/reference-distance fields; VTEC remains VTEC and is not converted into MUF or a heat score.
-- Solar/geomagnetic context preserves explicit measurements without becoming an observed RF path.
-- Modeled paths remain separate from heard paths and preserve explicit endpoints, MUF/LUF limits, model-input summary and provenance.
-- Deterministic band/mode/frequency filtering applies only to heard records where those fields exist; source/freshness filtering applies across evidence categories.
-- Projection ordering is deterministic: newest observation first, evidence id as tie-break.
-- Optional selected-path assessment uses the existing explainable PropagationAssessmentEngine against the complete snapshot and retains reason/evidence links independently of display filtering.
-- Snapshot status exposes capture time/age, source count, source retrieval bounds, stale/future evidence flags and offline-cache availability.
-- Future snapshot/retrieval times are explicit and use null age rather than fabricated negative ages.
-- FilePropagationSnapshotStore advertises OfflinePropagationSnapshotStore capability without coupling the projection service to the concrete file-store class.
-- Production projection code has no Android/Compose, Google Maps/Mapbox, HTTP/provider polling, FTX-1/PTT, QSO/logbook-write, LoTW or opaque heat-score state.
-- The superseded CP-0008E finalizer is manual-only.
+- Refresh sources declare a stable key, source role, normal cadence, retry policy, and a fetcher returning normalized PropagationAggregationInput or explicit failure.
+- Per-source state retains last attempt, last success, consecutive failures, next eligible refresh, failure message, and retryability.
+- Retryable failures use bounded exponential backoff; non-retryable normalized-contract failures wait normal cadence; success clears failure state.
+- Source exceptions are isolated as explicit retryable failures rather than aborting the full refresh cycle.
+- Built-in source roles fail closed on unmanaged provenance, wrong evidence categories, or retrieval timestamps later than the refresh UTC.
+- Canonical NOAA Kp selection uses the dedicated planetary-Kp feed for observed records and removes forecast-product observed rows while retaining estimated/predicted rows.
+- Successful sources replace only the cached evidence they manage.
+- Failed, cadence-skipped, and unmanaged cached evidence is carried forward unchanged, including original retrieval provenance, so stale evidence ages naturally.
+- All-attempt failure and aggregate-invariant failure preserve the last good snapshot and do not mutate snapshot history.
+- Empty successful source results never force an invalid empty snapshot.
+- Refresh state can survive coordinator recreation through the PropagationRefreshStateStore contract.
+- PropagationRefreshWorkspaceService composes refresh with the existing projection layer: successful refresh projects the new snapshot; failed refresh projects the last good snapshot while failure state remains explicit.
+- Production refresh code contains no Android/Compose/WorkManager, concrete HTTP/java.net transport, credentials/accounts, FTX-1/PTT/RF behavior, QSO/logbook writes, or LoTW mutation.
+- The superseded CP-0008F finalizer is manual-only.
 
 Host/CI gates:
 
+- CP-0008G propagation refresh coordinator: **112/112 PASS**.
 - CP-0008F propagation projection: **79/79 PASS**.
 - CP-0008E propagation aggregation/offline cache: **101/101 PASS**.
 - CP-0008D PSK Reporter heard-path adapter: **168/168 PASS**.
@@ -87,20 +90,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008F_PROPAGATION_PROJECTION.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionModels.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationProjectionService.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationProjectionServiceTests.kt
+- research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshModels.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshCoordinator.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshWorkspaceService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshCoordinatorTests.kt
 - SOFTWARE_TRACK.md
-- CP-0008F finalization workflow run: 37658173873
+- CP-0008G finalization workflow run: 37670764894
 
 ### Evidence boundary
 
-CP-0008F proves deterministic provider-neutral projection/application state over stored propagation snapshots. It does not claim Android UI/map rendering, live provider polling, WSPRnet/GIRO ingestion, HFcast/VOACAP prediction, geographic interpolation, or real-world propagation accuracy.
+CP-0008G proves deterministic source orchestration over already-normalized evidence and stored snapshots. It does not claim live network access, provider uptime, Android background execution, battery behavior, new provider schemas, or real-world propagation accuracy.
 
 ### Inherited verified ancestry
 
-CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
+CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION, CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -124,7 +128,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008G — propagation source refresh coordinator
+**Active software track:** CP-0008H — public propagation transport adapters
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -349,7 +353,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
+- Current Git source baseline: CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -362,17 +366,16 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008G — propagation source refresh coordinator.**
+**CP-0008H — public propagation transport adapters.**
 
-1. Add a platform-neutral refresh coordinator above the existing normalized source adapters, aggregator, snapshot store and projection service.
-2. Define source fetch-result interfaces and deterministic scheduling/cadence state without binding core code to Android WorkManager or a concrete HTTP client.
-3. Encode canonical NOAA Kp selection: dedicated Kp for observed records; forecast product for estimated/predicted records.
-4. Track per-source success/failure, last attempt, last success, next eligible refresh and bounded retry/backoff state without discarding the last good snapshot.
-5. Aggregate successful normalized source results into a new snapshot only when capture/provenance invariants hold, then persist through PropagationSnapshotStore.
-6. Preserve partial-source failure explicitly; do not invent evidence for a failed source and do not erase still-inspectable cached state.
-7. Provide deterministic fake-source CI proving cadence, retry, canonical-source handling, partial failure and last-good snapshot behavior.
-8. Keep Android scheduling/network stacks, credentials/accounts, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, phone/radio/RF/manual validation outside CP-0008G.
-9. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
+1. Add a platform-neutral request/response transport boundary that can feed the existing NOAA SWPC, GloTEC, and PSK Reporter parsers without putting a concrete HTTP client in core propagation logic.
+2. Build source factories/adapters that translate successful public responses into CP-0008G PropagationRefreshSourceDefinition fetch results.
+3. Preserve the pinned exact NOAA planetary-Kp, Kp forecast, F10.7, GloTEC index/artifact, and PSK Reporter HTTPS endpoint rules already established by the adapter checkpoints.
+4. Implement deterministic GloTEC index-to-latest-artifact selection and fail closed on malformed or non-official artifact URLs.
+5. Preserve PSK Reporter query/provenance restrictions and do not persist appcontact or other contact identifiers.
+6. Prove response status/body/size/error handling with deterministic fake transport CI; optional live public schema smoke may verify structure but must not make deterministic tests depend on network availability.
+7. Keep Android WorkManager, concrete Android networking, credentials/accounts, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, phone/radio/RF/manual validation outside CP-0008H.
+8. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
 
 ## README maintenance contract
 

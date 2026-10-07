@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION
+CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,18 +25,19 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
+CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
 
 Required scope:
 
-- platform-neutral refresh coordinator over normalized propagation source adapters
-- deterministic source cadence and eligibility state
-- source success/failure, last-attempt/last-success and bounded retry/backoff metadata
-- canonical NOAA Kp observed versus estimated/predicted source selection
-- partial-source failure without fabricated replacement evidence
-- last-good snapshot preservation through PropagationSnapshotStore
-- deterministic fake-source host/CI tests
-- no Android WorkManager/concrete HTTP client
+- platform-neutral public request/response transport boundary
+- source adapters/factories feeding existing NOAA SWPC, GloTEC and PSK Reporter parsers into CP-0008G refresh source definitions
+- exact established official HTTPS endpoint restrictions
+- deterministic GloTEC index-to-latest-artifact selection
+- bounded response/status/body/error handling
+- PSK Reporter provenance/contact-identifier restrictions retained
+- deterministic fake-transport host/CI tests
+- live schema smoke optional and non-authoritative for deterministic completion
+- no Android WorkManager/concrete Android networking
 - no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
 - no credentials/accounts
 - no phone/radio/RF/manual hardware work

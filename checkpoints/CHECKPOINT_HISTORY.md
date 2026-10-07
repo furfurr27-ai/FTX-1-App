@@ -369,3 +369,21 @@ Finalization workflow run: 37658173873.
 CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
 
 Evidence: research/propagation/CP-0008F_PROPAGATION_PROJECTION.md and the PropagationProjectionModels/PropagationProjectionService source and tests.
+
+## CP-0008G — Propagation source refresh coordinator
+
+Parent durable checkpoint: CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION.
+
+FieldOps now has a deterministic platform-neutral source refresh coordinator over already-normalized propagation evidence. Source definitions carry role/cadence/retry policy, source state tracks attempts/successes/failures/next eligibility, retryable failures use bounded exponential backoff, and successful recovery resets failure state.
+
+Canonical NOAA Kp handling keeps the dedicated Kp feed as observed truth and removes forecast-product observed rows while preserving estimated/predicted rows. Successful sources replace only evidence they manage; failed or cadence-skipped source evidence is carried forward with original retrieval provenance. All-attempt and aggregate failures preserve the last good snapshot.
+
+PropagationRefreshWorkspaceService bridges refresh to the existing projection layer so a successful cycle projects its new snapshot while a failed cycle continues to expose the last good operating picture together with explicit source failure state.
+
+Host/CI gate: refresh coordinator 112; projection 79; aggregation/offline cache 101; PSK Reporter 168; GloTEC 87; NOAA 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended awards 96; Awards service 64; persistence 92; Awards projection 114; target 77; catalog 115; award evaluator 67; queue 47; logger 78; LoTW transaction 53; core 42,062, all PASS.
+
+Finalization workflow run: 37670764894.
+
+CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
+
+Evidence: research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md, PropagationRefreshModels.kt, PropagationRefreshCoordinator.kt, PropagationRefreshWorkspaceService.kt, and PropagationRefreshCoordinatorTests.kt.
