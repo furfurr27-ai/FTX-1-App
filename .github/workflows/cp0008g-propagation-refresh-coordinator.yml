@@ -7,6 +7,7 @@ on:
     paths:
       - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshModels.kt'
       - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshCoordinator.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshWorkspaceService.kt'
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshCoordinatorTests.kt'
       - 'research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md'
       - 'scripts/test_propagation_refresh_coordinator.sh'
