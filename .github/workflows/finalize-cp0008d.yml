@@ -1,21 +1,9 @@
 name: Finalize CP-0008D checkpoint
 
+# CP-0008D is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PskReporterHeardPathAdapter.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PskReporterHeardPathAdapterTests.kt'
-      - 'research/propagation/CP-0008D_PSK_REPORTER_HEARD_PATH_ADAPTER.md'
-      - 'research/propagation/PSK_REPORTER_FIXTURE.json'
-      - 'research/propagation/fixtures/psk_reporter_*'
-      - 'research/propagation/PROPAGATION_SOURCES.tsv'
-      - 'scripts/test_psk_reporter_heard_path_adapter.sh'
-      - 'scripts/finalize_cp0008d.py'
-      - '.github/workflows/finalize-cp0008c.yml'
-      - '.github/workflows/finalize-cp0008d.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
