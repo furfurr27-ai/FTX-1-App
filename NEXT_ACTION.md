@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008D — PSK Reporter public heard-path adapter**
+**CP-0008E — propagation evidence aggregation and offline cache service**
 
-Pin the official no-credential PSK Reporter retrieval/query schema and a deterministic XML fixture, then normalize only reports with explicit transmitter and receiver Maidenhead locators into HeardPathObservation. Preserve provider frequency/time/mode/SNR/provenance, never infer geography from callsigns, never promote a reception report into a QSO, and keep live polling out of deterministic CI.
+Build a transport-neutral orchestration layer that combines already-normalized NOAA solar/geomagnetic, GloTEC ionospheric and PSK Reporter heard-path evidence into deterministic PropagationSnapshot instances, with source-specific freshness rules, deduplication, bounded offline persistence/reload, and strict separation between observed context and modeled path predictions.

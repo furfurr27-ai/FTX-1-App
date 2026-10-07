@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-`CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER`
+`CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER`
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,23 +25,20 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER
+CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE
 
 Required scope:
 
-- official no-credential PSK Reporter retrieval endpoint/query/schema pin
-- deterministic representative XML fixture; no live-service dependency in required CI
-- transport-independent parser/normalizer into CP-0008A HeardPathObservation
-- explicit valid transmitter and receiver Maidenhead locators required; no callsign-derived geography
-- exact provider frequency and observation timestamp retained
-- mode/SNR retained when explicitly supplied by provider
-- sender/receiver callsigns retained as labels only
-- source/retrieval provenance, quality and confidence explanation retained
-- one-way reports remain separate from QSO/logbook/LoTW state
-- fail closed or explicitly reject records missing minimum geographic/path fields
-- published PSK Reporter retrieval-rate guidance documented and respected by any later transport adapter
-- no WSPRnet/GIRO/HFcast/VOACAP integration
+- transport-neutral aggregation of normalized NOAA, GloTEC and PSK Reporter evidence
+- deterministic PropagationSnapshot construction
+- source-specific freshness defaults without rewriting provider timestamps
+- deterministic repeated-payload deduplication and merge behavior
+- bounded offline PropagationSnapshotStore persistence/reload semantics
+- preserve observed, ionospheric and modeled evidence as separate categories
+- no automatic path score created merely by aggregation
 - no Android/Compose/map SDK dependency
+- no live network scheduling requirement in deterministic CI
+- no WSPRnet/GIRO/HFcast/VOACAP integration
 - no real accounts/credentials
 - no phone/radio/RF/manual hardware work
 - skip hardware/account-gated checkpoints under the owner execution override

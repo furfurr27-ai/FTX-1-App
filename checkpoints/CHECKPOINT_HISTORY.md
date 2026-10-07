@@ -318,3 +318,19 @@ Host/CI gate: GloTEC adapter 87; NOAA solar/geomagnetic adapter 53; propagation 
 Finalization workflow run: 37634077198.
 
 Evidence: research/propagation/CP-0008C_GLOTEC_IONOSPHERIC_ADAPTER.md, research/propagation/NOAA_SWPC_GLOTEC_FIXTURE.json, research/propagation/PROPAGATION_SOURCES.tsv, and core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecAdapter.kt.
+
+## CP-0008D — PSK Reporter public heard-path adapter
+
+Parent durable checkpoint: CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER.
+
+Hardware/account checkpoints CP-0003C and CP-0004A/B/C remain deferred and incomplete. Owner override remains active: do not return to CP-0003C until the owner explicitly says resume CP-0003C; skip checkpoints requiring phone/radio/real credentials/accounts/RF/manual hardware validation.
+
+FieldOps now normalizes the pinned PSK Reporter public XML retrieval shape into provider-neutral one-way HeardPathObservation evidence only when both endpoints carry explicit valid Maidenhead locators. Frequency/time/mode/SNR/source provenance are retained, incomplete reports are explicitly rejected rather than repaired from callsigns, and QSO/manual/test informationSource values are excluded when exposed. Exact duplicates collapse into reportCount rather than generating unstable evidence ids.
+
+The deterministic fixture is 1,196 bytes with SHA-256 fb41c07330c8d446dbd52eb4b35358950145b8a75fab76f225e69859b5752da7 and contains four exact rows from the pinned public go-pskreporter recorded response. PSK Reporter developer documentation remains authoritative for API and field semantics.
+
+Host/CI gate: PSK Reporter adapter 168; GloTEC adapter 87; NOAA adapter 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended award catalog/grid evaluator 96; Awards Center application service 64; award evidence persistence/import 92; Awards Center projection 114; target/composite evaluator 77; base official catalog 115; award evaluator 67; manual/digital LoTW queue 47; universal logger 78; LoTW transaction 53; inherited core 42,062 assertions, all PASS.
+
+Finalization workflow run: 37639835383.
+
+Evidence: research/propagation/CP-0008D_PSK_REPORTER_HEARD_PATH_ADAPTER.md, research/propagation/PSK_REPORTER_FIXTURE.json, research/propagation/PROPAGATION_SOURCES.tsv, and core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PskReporterHeardPathAdapter.kt.

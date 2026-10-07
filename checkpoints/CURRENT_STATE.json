@@ -1,33 +1,33 @@
 {
-  "project_version": "v28-noaa-swpc-glotec-ionospheric-adapter",
-  "latest_checkpoint": "CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER",
-  "phase": "NOAA SWPC GloTEC ionospheric map adapter host-verified; PSK Reporter public heard-path adapter next; hardware/account checkpoints remain deferred by owner",
-  "test_status": "GREEN host/CI: glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37634077198",
+  "project_version": "v29-psk-reporter-heard-path-adapter",
+  "latest_checkpoint": "CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER",
+  "phase": "PSK Reporter heard-path adapter host-verified; propagation aggregation/offline cache next; hardware/account checkpoints remain deferred by owner",
+  "test_status": "GREEN host/CI: pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37639835383",
   "completed": [
-    "Official NOAA/NWS GloTEC product semantics, ten-minute GeoJSON cadence, 2.5-degree by 5-degree global grid, TEC units, versioned artifact directory, and quality-flag semantics are source-pinned",
-    "Provider-neutral ionospheric metrics now include VTEC_TECU without reinterpreting TEC as foF2, MUF, or hmF2",
-    "IonosphericSample retains optional paired provider quality code/explanation metadata; GloTEC quality_flag 0..5 survives normalization",
-    "Bounded four-cell 2026-09-09T15:15:00Z fixture is 1573 bytes with SHA-256 a98741d9a9586082db0eb357f3baf35be09a2646c8ab5b1b4203d4852b09bac2",
-    "GeoJSON longitude/latitude coordinates remain explicit PROVIDER_COORDINATE geography with no callsign inference",
-    "Canonical artifact filename time must match provider time_tag while retrieval UTC remains separate; no undocumented generation timestamp is fabricated",
-    "GloTEC-only context remains UNKNOWN for path usability with explicit ionospheric-context and insufficient-path reasons",
-    "Schema, source URL, time, coordinate, numeric, quality, duplicate-key, and duplicate-coordinate drift fail closed",
-    "Core GloTEC parser has no network transport, Android/map SDK, QSO/LoTW, FTX-1/PTT, or direct TEC-to-MUF/path-score dependency",
-    "Superseded CP-0008B finalizer is manual-only to prevent checkpoint-state regression",
-    "Focused GloTEC PASS 87; NOAA adapter PASS 53; propagation PASS 154; production state pack PASS 363; geometry provider PASS 102; map PASS 96; extended catalog PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"
+    "Official PSK Reporter public query, XML field semantics and five-minute retrieval guidance are source-pinned",
+    "Bounded four-report fixture is 1196 bytes with SHA-256 fb41c07330c8d446dbd52eb4b35358950145b8a75fab76f225e69859b5752da7",
+    "Accepted paths require explicit valid sender and receiver Maidenhead locators; no callsign-derived geography is used",
+    "Frequency Hz, amateur band, Unix observation time, mode and optional integer SNR are retained with provider/retrieval provenance",
+    "Missing or invalid report facts are explicitly rejected per report without discarding other valid rows",
+    "Present QSO/manual/test informationSource values are rejected from direct heard-path normalization",
+    "Exact duplicate normalized rows collapse deterministically and increment reportCount",
+    "XML parser disables DOCTYPE, external entities, external DTD/schema access and XInclude",
+    "Core PSK Reporter adapter performs no network access and contains no Android/map SDK, FTX-1/PTT, QSO-write or LoTW behavior",
+    "Superseded CP-0008C finalizer is manual-only to prevent checkpoint-state regression",
+    "Focused PSK Reporter PASS 168; GloTEC PASS 87; NOAA adapter PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"
   ],
   "blockers": [
     "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return to CP-0003C until the owner explicitly says 'resume CP-0003C'",
     "Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation; continue to the next GitHub/CI-only checkpoint",
     "CP-0004A/B/C FTX-1 Android hardware checkpoints remain deferred and incomplete",
-    "NOAA endpoint uptime/current global GloTEC state is external; deterministic fixture proves the pinned schema/normalization only",
-    "TEC is ionospheric context and no TEC-to-MUF or direct HF path-usability model is proven by CP-0008C",
-    "GIRO/PSK Reporter/WSPRnet/HFcast/VOACAP and Android network/map integrations remain unproven"
+    "PSK Reporter uptime/current station activity is external; deterministic fixture proves pinned parsing/normalization only",
+    "Reception reports are provisional one-way evidence and do not prove QSO completion, callsign truth, or locator truth",
+    "WSPRnet/GIRO/HFcast/VOACAP and Android live-network/map integrations remain unproven"
   ],
   "next_actions": [
-    "CP-0008D: pin the official no-credential PSK Reporter retrieval/query schema and a deterministic representative XML response fixture",
-    "Normalize only reports with explicit valid transmitter and receiver Maidenhead locators into HeardPathObservation; preserve exact provider frequency/time/mode/SNR/provenance and never infer geography from callsigns",
-    "Keep reception reports separate from QSO/logbook/LoTW, respect published retrieval-rate guidance, and keep live polling out of deterministic CI"
+    "CP-0008E: aggregate already-normalized NOAA, GloTEC and PSK Reporter evidence into deterministic PropagationSnapshot instances",
+    "Define source-specific freshness defaults, repeated-payload deduplication and bounded offline PropagationSnapshotStore persistence/reload",
+    "Keep observed, ionospheric and modeled evidence categories separate and do not create a path score merely by aggregation"
   ],
-  "updated_utc": "2026-10-07T14:12:41+00:00"
+  "updated_utc": "2026-10-07T14:53:26+00:00"
 }
