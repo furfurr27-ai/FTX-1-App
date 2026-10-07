@@ -1,0 +1,27 @@
+{
+  "schema_version": "swpc-json-post-scn26-21-v1",
+  "captured_on_utc_date": "2026-10-07",
+  "fixtures": [
+    {
+      "path": "research/propagation/fixtures/noaa_swpc_planetary_kp_sample.json",
+      "source_url": "https://services.swpc.noaa.gov/products/noaa-planetary-k-index.json",
+      "sha256": "a5e3aed635b9fc26d98326fbcbbc75fe8eaaac1a1cbf41f20f42b6f2d1243cda",
+      "bytes": 243,
+      "capture": "Representative exact rows from the live post-SCN 26-21 object schema; values are test fixtures, not current-state assertions."
+    },
+    {
+      "path": "research/propagation/fixtures/noaa_swpc_planetary_kp_forecast_sample.json",
+      "source_url": "https://services.swpc.noaa.gov/products/noaa-planetary-k-index-forecast.json",
+      "sha256": "fedebb18935589bf394cd6bd55ae54ce871379722aca2ef6b5ce9c84adf736ba",
+      "bytes": 269,
+      "capture": "Representative exact observed, estimated, and predicted rows from the live post-SCN 26-21 object schema."
+    },
+    {
+      "path": "research/propagation/fixtures/noaa_swpc_f107_summary_sample.json",
+      "source_url": "https://services.swpc.noaa.gov/products/summary/10cm-flux.json",
+      "sha256": "5b16306eb6f466b127b6ac32f293559284268928011df7c4f6bb949792f7c675",
+      "bytes": 52,
+      "capture": "Representative exact live summary row; the fixture proves schema parsing only and is not a current solar-flux assertion."
+    }
+  ]
+}
