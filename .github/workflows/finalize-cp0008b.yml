@@ -14,6 +14,7 @@ on:
       - 'scripts/test_noaa_swpc_propagation_adapter.sh'
       - 'scripts/check_noaa_swpc_schema.py'
       - 'scripts/finalize_cp0008b.py'
+      - '.github/workflows/finalize-cp0008a.yml'
       - '.github/workflows/finalize-cp0008b.yml'
 
 permissions:
