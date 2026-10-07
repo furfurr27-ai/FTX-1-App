@@ -11,7 +11,10 @@ on:
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshCoordinatorTests.kt'
       - 'research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md'
       - 'scripts/test_propagation_refresh_coordinator.sh'
+      - 'scripts/finalize_cp0008g.py'
       - '.github/workflows/cp0008g-propagation-refresh-coordinator.yml'
+      - '.github/workflows/finalize-cp0008f.yml'
+      - '.github/workflows/finalize-cp0008g.yml'
 
 permissions:
   contents: read
@@ -30,6 +33,20 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_propagation_refresh_coordinator.sh
+      - name: Dry-run CP-0008G durable handoff
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008g.py
+          python3 scripts/finalize_cp0008g.py
+          grep -Fq 'CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR' README.md
+          grep -Fq 'CP-0008H — public propagation transport adapters' NEXT_ACTION.md
+          grep -Fq 'CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008f.yml
+          grep -Fq 'CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR' .github/workflows/finalize-cp0008g.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
