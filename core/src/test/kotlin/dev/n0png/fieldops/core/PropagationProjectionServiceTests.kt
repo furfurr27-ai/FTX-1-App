@@ -219,18 +219,18 @@ object PropagationProjectionServiceTests {
 
     private fun snapshotSelectionUsesStoreContract() {
         val store = InMemoryPropagationSnapshotStore()
-        val older = snapshot().copy(snapshotId = "older", capturedAtUtcMillis = 900_000)
-        val newer = snapshot().copy(snapshotId = "newer", capturedAtUtcMillis = 1_000_000)
+        val older = snapshot().copy(snapshotId = "older", capturedAtUtcMillis = 1_000_000)
+        val newer = snapshot().copy(snapshotId = "newer", capturedAtUtcMillis = 1_100_000)
         store.save(newer)
         store.save(older)
         val service = PropagationWorkspaceProjectionService(store)
-        val query = PropagationProjectionQuery(nowUtcMillis = 1_100_000)
+        val query = PropagationProjectionQuery(nowUtcMillis = 1_200_000)
 
         eq("newer", service.latest(query)!!.status.snapshotId, "latest store snapshot selected")
         eq("older", service.snapshot("older", query)!!.status.snapshotId, "exact snapshot selected")
         eq(null, service.snapshot("missing", query), "missing exact snapshot returns null")
-        eq("older", service.latestAtOrBefore(950_000, query)!!.status.snapshotId, "as-of snapshot selected")
-        eq(null, service.latestAtOrBefore(899_999, query), "as-of before history returns null")
+        eq("older", service.latestAtOrBefore(1_050_000, query)!!.status.snapshotId, "as-of snapshot selected")
+        eq(null, service.latestAtOrBefore(999_999, query), "as-of before history returns null")
     }
 
     private fun offlineCacheStatusIsExplicit() {
