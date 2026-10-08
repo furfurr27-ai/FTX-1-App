@@ -367,6 +367,16 @@ object PublicPropagationSourceAdapters {
     ): ValidatedPublicBody {
         val response = try {
             transport.get(request)
+        } catch (e: PublicPropagationTransportException) {
+            return ValidatedPublicBody.Failure(
+                message = boundedMessage(
+                    "Transport failure: " +
+                        e::class.java.simpleName +
+                        ": " +
+                        (e.message ?: "no message")
+                ),
+                retryable = e.retryable,
+            )
         } catch (e: Exception) {
             return ValidatedPublicBody.Failure(
                 message = boundedMessage(
