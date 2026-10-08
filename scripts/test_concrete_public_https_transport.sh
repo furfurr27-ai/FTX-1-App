@@ -50,7 +50,7 @@ echo "[7/8] Enforce platform/account/radio separation"
 
 echo "[8/8] Verify evidence boundary and owner override"
 grep -Fq 'deterministic injectable HttpsURLConnection tests' "$EVIDENCE"
-grep -Fq 'bounded streaming reads' "$EVIDENCE"
+grep -Fq 'Bounded streaming reads' "$EVIDENCE"
 grep -Fq 'strict UTF-8' "$EVIDENCE"
 grep -Fq 'CP-0003C remains **DEFERRED**' "$EVIDENCE"
 
