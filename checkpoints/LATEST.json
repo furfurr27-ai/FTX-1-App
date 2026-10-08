@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL",
-  "created_utc": "2026-10-08T17:58:53+00:00",
-  "manifest": "checkpoints/manifests/CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.json",
-  "snapshot": "checkpoints/snapshots/CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.tar.gz",
-  "snapshot_sha256": "8ee4e881092121f1aa042102cfe60a2943416d0498111fcd44945a58454e7ab1"
+  "checkpoint_id": "CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS",
+  "created_utc": "2026-10-08T18:30:14+00:00",
+  "manifest": "checkpoints/manifests/CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.json",
+  "snapshot": "checkpoints/snapshots/CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.tar.gz",
+  "snapshot_sha256": "45c7e2217cb70a184ac72c5e96fdfa15ae67d7bb37a37ec3399084cc600803d6"
 }

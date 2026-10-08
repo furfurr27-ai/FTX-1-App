@@ -476,3 +476,16 @@ Focused read-model tests PASS; full inherited host/CI matrix PASS. Finalizer run
 A sequential single-snapshot read does not guarantee atomic cross-store state. CP-0003C and CP-0004A/B/C remain deferred/incomplete.
 
 Evidence: research/propagation/CP-0008M_OPERATING_PICTURE_READ_MODEL.md and PropagationOperatingPictureTests.kt.
+
+
+## CP-0008N — Propagation read-model consistency diagnostics
+
+Parent: CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.
+
+A pure read-only diagnostic projection now compares cached snapshot capture, last source success and newest source evidence retrieval at one explicit UTC, with signed time deltas, before/equal/after/unknown ordering, source-specific observation freshness counts and future-date markers. It does not read stores or call providers separately. Runtime entrypoint composes without changing the existing operating picture.
+
+Host CI focused suite PASS; inherited propagation, awards, logger/LoTW and core suites PASS. Finalizer run: 37823404574.
+
+Cross-store atomicity remains explicitly unverified. CP-0003C and CP-0004A/B/C remain deferred/incomplete.
+
+Evidence: research/propagation/CP-0008N_READ_MODEL_CONSISTENCY_DIAGNOSTICS.md and PropagationReadModelConsistencyTests.kt.

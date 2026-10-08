@@ -2,12 +2,12 @@
 
 ## Execution override
 
-CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly says resume CP-0003C.
+CP-0003C is **DEFERRED**. Do not return until the owner explicitly says resume CP-0003C.
 
-Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Skipped checkpoints remain incomplete.
+Skip any checkpoint requiring phone, radio, real credentials/certificates, real accounts, RF testing or manual hardware validation. Skipped checkpoints remain incomplete.
 
 ## Next software checkpoint
 
-**CP-0008N — propagation read-model consistency diagnostics**
+**CP-0008O — propagation offline diagnostic report payload**
 
-Build platform-neutral read-only diagnostics for the CP-0008M operating picture: state/cache timestamp skew, freshness provenance and explicit consistency limitations. No mutating stores, invented data or live provider dependency; checkpoint-first deterministic GitHub/CI.
+Build a platform-neutral deterministic offline report DTO from the existing CP-0008N operating picture and source provenance diagnostics, with explicit UTC and unknown fields. No network/provider dependency or new evidence; immutable GitHub/CI checkpoint first.
