@@ -450,3 +450,16 @@ Verification: CP-0008K focused persistence PASS; CP-0008J runtime 67 PASS; all i
 Deferred hardware checkpoints CP-0003C and CP-0004A/B/C remain incomplete.
 
 Evidence: research/propagation/CP-0008K_REFRESH_STATE_PERSISTENCE.md, FilePropagationRefreshStateStore.kt, PropagationRefreshStatePersistenceTests.kt.
+
+
+## CP-0008L — Propagation source-status presentation
+
+Parent: CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE.
+
+A read-only, explicit-UTC service now projects per-source scheduler eligibility, time until next refresh, last attempt and retry/backoff details separately from last-good cached evidence ages and per-observation freshness counts. Role matching keeps NOAA Kp observed/forecast, F10.7, GloTEC and PSK Reporter separate. PropagationRuntime.sourceStatus uses the existing injected stores. No network, hardware or Android background behavior was introduced.
+
+Focused status suite PASS; inherited CP-0008K persistence/runtime/propagation/awards/logger/LoTW/core regression jobs PASS. Finalization run: 37815535216.
+
+Deferred hardware/account checkpoints CP-0003C and CP-0004A/B/C remain incomplete.
+
+Evidence: research/propagation/CP-0008L_SOURCE_STATUS_PRESENTATION.md, PropagationSourceStatusService.kt, PropagationRuntime.kt and PropagationSourceStatusTests.kt.

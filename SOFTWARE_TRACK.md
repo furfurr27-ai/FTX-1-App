@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE
+CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,16 +25,17 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION
+CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL
 
 Required scope:
 
-- read-only, platform-neutral source refresh/status presentation model
-- explicit remaining wait time, failure/backoff and freshness; no invented propagation evidence
-- preserve CP-0008K persisted refresh-state and existing runtime factory composition
-- no Android lifecycle, WorkManager, background scheduling or permission work
-- no new propagation providers or external provider dependency in CI
-- no credentials/accounts/phone/radio/RF/manual testing
+- platform-neutral read-only combined operating-picture model
+- explicit UTC, no provider fetch or internal clock
+- preserve original propagation workspace projection and CP-0008L source-status fidelity
+- prevent conflicting snapshot/state read consistency where practicable without mutating underlying stores
+- no changes to provider cadence/parsers, cache writes or propagation evidence semantics
+- deterministic offline host/CI gates and immutable checkpoint
+- no Android/WorkManager/network permission, credentials/accounts, new providers, phone/radio/RF validation
 - CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
 
 ## Resume rule

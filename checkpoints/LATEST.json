@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE",
-  "created_utc": "2026-10-08T16:53:50+00:00",
-  "manifest": "checkpoints/manifests/CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE.json",
-  "snapshot": "checkpoints/snapshots/CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE.tar.gz",
-  "snapshot_sha256": "17e4ca69bc415311aeff7ce560aab57496328ce8f161465d8fcfc52ecfcf6439"
+  "checkpoint_id": "CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION",
+  "created_utc": "2026-10-08T17:27:35+00:00",
+  "manifest": "checkpoints/manifests/CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION.json",
+  "snapshot": "checkpoints/snapshots/CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION.tar.gz",
+  "snapshot_sha256": "c9c9a22e271b3a0dc584d49e904eb78b341d93151433dd17c9e336d3431d7946"
 }
