@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT
+CP-0008J-PROPAGATION_RUNTIME_COMPOSITION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,19 +25,18 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008J-PROPAGATION_RUNTIME_COMPOSITION
+CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE
 
 Required scope:
 
-- platform-neutral runtime config/factory
-- compose CP-0008I concrete HTTPS transport
-- compose all five CP-0008H public source definitions
-- compose snapshot/state storage, CP-0008G refresh coordinator and CP-0008F workspace projection service
-- explicit operator callsign/PSK query settings; no inferred station geography
-- explicit source cadence policies with safe provider-minimum defaults
-- one manually-invoked refresh-and-project runtime entry point
-- deterministic injected transport/storage host/CI tests
-- no external-provider dependency
+- platform-neutral file-backed PropagationRefreshStateStore
+- deterministic versioned serialization
+- atomic replace semantics
+- preserve role/attempt/success/failure/next-eligible state across runtime recreation
+- fail closed on corrupt, duplicate, unknown-version or role-mismatched state
+- preserve last valid file on failed write
+- explicit integration through PropagationRuntimeFactory store injection
+- deterministic filesystem host/CI tests
 - no WorkManager/background scheduling or Android lifecycle/network-permission work
 - no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
 - no credentials/accounts

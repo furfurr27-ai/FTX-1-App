@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT",
-  "created_utc": "2026-10-08T14:43:49+00:00",
-  "manifest": "checkpoints/manifests/CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT.json",
-  "snapshot": "checkpoints/snapshots/CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT.tar.gz",
-  "snapshot_sha256": "4d62577d57f74b38298b916eb50b6ca6158164652ca2b33b444be628e862bbd0"
+  "checkpoint_id": "CP-0008J-PROPAGATION_RUNTIME_COMPOSITION",
+  "created_utc": "2026-10-08T16:28:53+00:00",
+  "manifest": "checkpoints/manifests/CP-0008J-PROPAGATION_RUNTIME_COMPOSITION.json",
+  "snapshot": "checkpoints/snapshots/CP-0008J-PROPAGATION_RUNTIME_COMPOSITION.tar.gz",
+  "snapshot_sha256": "e890d8351f2540aae294d033030856c9032ccfd5f4887b802067046e0f33fe38"
 }

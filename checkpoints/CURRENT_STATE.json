@@ -1,31 +1,30 @@
 {
-  "project_version": "v34-concrete-public-https-transport",
-  "latest_checkpoint": "CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT",
-  "phase": "Concrete public HTTPS transport host-verified; propagation runtime composition next; hardware/account checkpoints remain deferred by owner",
-  "test_status": "GREEN host/CI: concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37793790597",
+  "project_version": "v35-propagation-runtime-composition",
+  "latest_checkpoint": "CP-0008J-PROPAGATION_RUNTIME_COMPOSITION",
+  "phase": "Propagation runtime composition host-verified; refresh-state persistence next; hardware/account checkpoints remain deferred by owner",
+  "test_status": "GREEN host/CI: runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37808105308",
   "completed": [
-    "HttpsUrlConnectionPublicPropagationTransport provides a concrete JVM/Android-compatible GET implementation behind PublicPropagationTransport",
-    "HTTPS parsing rejects missing host, URL user-info credentials and fragments before connection creation",
-    "GET, redirect refusal, bounded connect/read timeouts, cache/input/output settings and deterministic Accept/UTF-8/identity/User-Agent headers are configured",
-    "Declared and streamed response byte limits enforce request.maxResponseBytes without unbounded buffering",
-    "Non-identity Content-Encoding and malformed/unmappable UTF-8 fail closed as non-retryable contract failures",
-    "HTTP error streams preserve status/body; timeout/I/O/open failures are retryable while contract failures remain non-retryable",
-    "PublicPropagationSourceAdapters preserves explicit PublicPropagationTransportException retryability",
-    "Streams close and every opened connection disconnects across success and failure paths",
-    "Concrete transport integration feeds the verified NOAA F10.7 parser without parser-policy changes",
-    "Required CI has no external-provider dependency and production CP-0008I code has no Android framework/WorkManager/Compose/OkHttp/Retrofit, credentials/accounts, FTX-1/PTT/RF, QSO/logbook-write or LoTW behavior",
-    "Superseded CP-0008H finalizer is manual-only",
-    "Focused concrete HTTPS PASS 70; public transport PASS 98; refresh PASS 112; projection PASS 79; aggregation PASS 101; PSK Reporter PASS 168; GloTEC PASS 87; NOAA PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; awards projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"
+    "PropagationRuntimeConfig requires explicit operator callsign and carries explicit PSK Reporter query, refresh policies and HTTPS transport configuration",
+    "Safe default cadences are observed Kp 15m, Kp forecast 15m, F10.7 60m, GloTEC 10m and PSK Reporter 5m with provider-minimum validation",
+    "PropagationRuntimeFactory composes concrete HTTPS transport by default, all five verified public source definitions, snapshot/state stores, refresh coordinator and projection service",
+    "Transport, snapshot store, refresh-state store, aggregator and assessment engine remain injectable",
+    "PropagationRuntime.refreshAndProject is a manual explicit-UTC entry point with no internal wall-clock read",
+    "Deterministic full-source integration saves and projects canonical NOAA Kp/F10.7, GloTEC and PSK Reporter evidence",
+    "Cadence behavior refreshes no source at four minutes, only PSK Reporter at five minutes, and GloTEC plus PSK Reporter at ten minutes",
+    "Eligible-source failure preserves the last good projection and exposes source failure state without writing a new snapshot",
+    "Runtime configuration contains no inferred station geography and production composition contains no Android lifecycle/WorkManager, credentials/accounts, FTX-1/PTT/RF, QSO/logbook-write or LoTW behavior",
+    "Superseded CP-0008I finalizer is manual-only",
+    "Focused runtime PASS 67; concrete HTTPS PASS 70; public transport PASS 98; refresh PASS 112; projection PASS 79; aggregation PASS 101; PSK Reporter PASS 168; GloTEC PASS 87; NOAA PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; awards projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062"
   ],
   "blockers": [
     "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'",
     "CP-0004A/B/C hardware checkpoints remain incomplete",
-    "Android app lifecycle/network permission/background scheduling, live provider uptime, WSPRnet/WSPR.live, GIRO and HFcast/VOACAP remain unproven"
+    "Process-restart persistence for default refresh state, Android background scheduling/lifecycle/network permission, WSPRnet/WSPR.live, GIRO and HFcast/VOACAP remain unproven"
   ],
   "next_actions": [
-    "CP-0008J: compose concrete HTTPS transport, all five public sources, refresh/cache state and workspace projection into one platform-neutral runtime",
-    "Make callsign/query and cadence configuration explicit with safe provider-minimum defaults and deterministic injected transport/storage CI",
-    "Keep WorkManager/background scheduling, Android lifecycle/network permission, credentials/accounts and new providers outside CP-0008J"
+    "CP-0008K: add platform-neutral file-backed PropagationRefreshStateStore with versioned deterministic serialization and atomic replace semantics",
+    "Prove restart, corrupt/duplicate/unknown-version input, role mismatch and failed-write preservation with deterministic filesystem CI",
+    "Keep WorkManager/background scheduling, Android lifecycle/network permission, credentials/accounts and new providers outside CP-0008K"
   ],
-  "updated_utc": "2026-10-08T14:43:49+00:00"
+  "updated_utc": "2026-10-08T16:28:53+00:00"
 }

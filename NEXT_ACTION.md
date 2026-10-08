@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008J — propagation runtime composition**
+**CP-0008K — propagation refresh-state persistence**
 
-Compose the CP-0008I concrete HTTPS transport, CP-0008H source definitions, CP-0008G refresh coordinator/cache state, and CP-0008F projection service behind one platform-neutral manually-invoked runtime. Make callsign/query and cadence policy explicit, preserve minimum provider intervals, and prove the full composition with deterministic injected transport/storage CI. Keep Android background scheduling and new propagation providers outside this checkpoint.
+Add a platform-neutral file-backed PropagationRefreshStateStore with deterministic versioned serialization and atomic replacement. Preserve cadence/failure state across runtime recreation and prove restart/corruption/write-failure behavior with deterministic filesystem CI. Keep Android background scheduling and new propagation providers outside this checkpoint.

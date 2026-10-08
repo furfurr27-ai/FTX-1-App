@@ -421,3 +421,19 @@ Finalization workflow run: 37793790597.
 CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
 
 Evidence: research/propagation/CP-0008I_CONCRETE_PUBLIC_HTTPS_TRANSPORT.md, HttpsUrlConnectionPublicPropagationTransport.kt, PublicPropagationSourceAdapters.kt, and HttpsUrlConnectionPublicPropagationTransportTests.kt.
+
+## CP-0008J — Propagation runtime composition
+
+Parent durable checkpoint: CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT.
+
+FieldOps now has a platform-neutral PropagationRuntime factory/config layer composing the concrete HTTPS transport, all five verified public sources, snapshot/state storage, refresh coordination and workspace projection behind one manual refresh-and-project entry point.
+
+The runtime requires explicit operator callsign/query configuration, uses safe provider-respecting default cadences, does not infer station geography, and retains prior checkpoint behavior for canonical Kp selection, retry/backoff, last-good snapshots and projection filtering.
+
+Host/CI gate: runtime 67; concrete HTTPS 70; public transport 98; refresh 112; projection 79; aggregation 101; PSK Reporter 168; GloTEC 87; NOAA 53; propagation 154; production state pack 363; geometry 102; map 96; extended 96; service 64; persistence 92; awards projection 114; target 77; catalog 115; award 67; queue 47; logger 78; LoTW transaction 53; core 42,062, all PASS.
+
+Finalization workflow run: 37808105308.
+
+CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
+
+Evidence: research/propagation/CP-0008J_PROPAGATION_RUNTIME_COMPOSITION.md, PropagationRuntime.kt and PropagationRuntimeTests.kt.
