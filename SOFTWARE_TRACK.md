@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008J-PROPAGATION_RUNTIME_COMPOSITION
+CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,23 +25,17 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE
+CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION
 
 Required scope:
 
-- platform-neutral file-backed PropagationRefreshStateStore
-- deterministic versioned serialization
-- atomic replace semantics
-- preserve role/attempt/success/failure/next-eligible state across runtime recreation
-- fail closed on corrupt, duplicate, unknown-version or role-mismatched state
-- preserve last valid file on failed write
-- explicit integration through PropagationRuntimeFactory store injection
-- deterministic filesystem host/CI tests
-- no WorkManager/background scheduling or Android lifecycle/network-permission work
-- no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
-- no credentials/accounts
-- no phone/radio/RF/manual hardware work
-- preserve CP-0003C owner deferral
+- read-only, platform-neutral source refresh/status presentation model
+- explicit remaining wait time, failure/backoff and freshness; no invented propagation evidence
+- preserve CP-0008K persisted refresh-state and existing runtime factory composition
+- no Android lifecycle, WorkManager, background scheduling or permission work
+- no new propagation providers or external provider dependency in CI
+- no credentials/accounts/phone/radio/RF/manual testing
+- CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
 
 ## Resume rule
 

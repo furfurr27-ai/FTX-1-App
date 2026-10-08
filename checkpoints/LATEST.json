@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008J-PROPAGATION_RUNTIME_COMPOSITION",
-  "created_utc": "2026-10-08T16:28:53+00:00",
-  "manifest": "checkpoints/manifests/CP-0008J-PROPAGATION_RUNTIME_COMPOSITION.json",
-  "snapshot": "checkpoints/snapshots/CP-0008J-PROPAGATION_RUNTIME_COMPOSITION.tar.gz",
-  "snapshot_sha256": "e890d8351f2540aae294d033030856c9032ccfd5f4887b802067046e0f33fe38"
+  "checkpoint_id": "CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE",
+  "created_utc": "2026-10-08T16:53:50+00:00",
+  "manifest": "checkpoints/manifests/CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE.json",
+  "snapshot": "checkpoints/snapshots/CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE.tar.gz",
+  "snapshot_sha256": "17e4ca69bc415311aeff7ce560aab57496328ce8f161465d8fcfc52ecfcf6439"
 }

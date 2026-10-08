@@ -437,3 +437,16 @@ Finalization workflow run: 37808105308.
 CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
 
 Evidence: research/propagation/CP-0008J_PROPAGATION_RUNTIME_COMPOSITION.md, PropagationRuntime.kt and PropagationRuntimeTests.kt.
+
+
+## CP-0008K — Propagation refresh-state persistence
+
+Parent: CP-0008J-PROPAGATION_RUNTIME_COMPOSITION.
+
+Versioned and strictly validated per-source refresh-state serialization now survives injected runtime/store recreation. A same-directory atomic replace protects the last valid file on failed writes; corrupt/duplicate/version/role mismatches fail closed. The unchanged factory injection keeps network providers, cadence, snapshots and projection separate. CI tests synthetic provider failures without real network requests.
+
+Verification: CP-0008K focused persistence PASS; CP-0008J runtime 67 PASS; all inherited regression jobs PASS. Finalizer run: 37811486748.
+
+Deferred hardware checkpoints CP-0003C and CP-0004A/B/C remain incomplete.
+
+Evidence: research/propagation/CP-0008K_REFRESH_STATE_PERSISTENCE.md, FilePropagationRefreshStateStore.kt, PropagationRefreshStatePersistenceTests.kt.

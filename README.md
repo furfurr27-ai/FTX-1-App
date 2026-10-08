@@ -39,33 +39,30 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008J-PROPAGATION_RUNTIME_COMPOSITION
+**Latest verified checkpoint:** CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE
 
-Parent durable checkpoint: CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT.
+Parent durable checkpoint: CP-0008J-PROPAGATION_RUNTIME_COMPOSITION.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008J is a GREEN host/CI checkpoint. It composes the verified propagation transport, five public sources, refresh/cache state and workspace projection into one platform-neutral manually-invoked runtime.
+CP-0008K is a GREEN host/CI checkpoint. It provides explicit file-backed propagation refresh-state persistence across runtime recreation without modifying upstream propagation providers or cadence policies.
 
-CP-0008J proves:
+CP-0008K proves:
 
-- PropagationRuntimeConfig requires an explicit operator callsign and carries an explicit PSK Reporter query, refresh policies and HTTPS transport configuration.
-- Runtime configuration contains no inferred station latitude, longitude or Maidenhead grid.
-- Safe default cadences are observed Kp 15 minutes, Kp forecast 15 minutes, F10.7 60 minutes, GloTEC 10 minutes and PSK Reporter 5 minutes.
-- Runtime configuration rejects GloTEC cadence below the pinned 10-minute product cadence and PSK Reporter cadence below the documented five-minute retrieval minimum.
-- PropagationRuntimeFactory composes the CP-0008I concrete HTTPS transport by default and all five CP-0008H public source definitions.
-- The runtime composes snapshot storage, refresh-state storage, CP-0008G PropagationSourceRefreshCoordinator and CP-0008F PropagationWorkspaceProjectionService.
-- Transport, snapshot store, refresh-state store, aggregator and assessment engine remain injectable for deterministic testing and later application integration.
-- PropagationRuntime.refreshAndProject is the single manually-invoked refresh/project entry point and never reads wall-clock time internally.
-- Full fake-transport integration produces canonical NOAA Kp/F10.7 evidence, GloTEC ionospheric context and PSK Reporter heard paths in one saved/projected snapshot.
-- At four minutes all sources remain cadence-skipped; at five minutes only PSK Reporter refreshes; at ten minutes GloTEC and PSK Reporter refresh.
-- If the only eligible source fails, no new snapshot is written and the runtime continues projecting the last good snapshot while explicit source failure state remains inspectable.
-- Caller-provided stores and projection filters remain authoritative.
-- Production CP-0008J code contains no Android framework/AndroidX, WorkManager, Android lifecycle/network-permission behavior, credentials/accounts, FTX-1/PTT/RF, QSO/logbook-write or LoTW behavior.
-- The superseded CP-0008I finalizer is manual-only.
+- FilePropagationRefreshStateStore implements PropagationRefreshStateStore and is explicitly injectable through the existing PropagationRuntimeFactory refreshStateStore argument.
+- The default runtime remains in-memory; no Android application lifecycle, scheduler or storage directory is invented.
+- Versioned deterministic binary serialization persists each source key and role, last attempt UTC, last success UTC, consecutive failures, next eligible refresh UTC, last failure message and retryability.
+- Strict version, corruption, duplicate-source, role/source, length, trailing-data and state-validation boundaries fail closed.
+- Atomic file replacement uses a same-directory temporary file and has no non-atomic move fallback.
+- Failed atomic replacement leaves the previous valid state file bit-for-bit unchanged and does not mutate the in-memory state.
+- Runtime recreation retains five source states and expected 4/5/10-minute source cadence.
+- Failure retryability, consecutive failures, message and backoff eligibility survive process/runtime recreation.
+- Host/CI uses deterministic filesystem tests and an offline synthetic provider transport; no live provider, phone or radio validation is claimed.
+- CP-0008J finalizer was changed to manual-only before merge.
 
 Host/CI gates:
 
+- CP-0008K refresh-state persistence: **PASS**.
 - CP-0008J propagation runtime composition: **67/67 PASS**.
 - CP-0008I concrete public HTTPS transport: **70/70 PASS**.
 - CP-0008H public propagation transport adapters: **98/98 PASS**.
@@ -93,19 +90,19 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008J_PROPAGATION_RUNTIME_COMPOSITION.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRuntimeTests.kt
+- research/propagation/CP-0008K_REFRESH_STATE_PERSISTENCE.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/FilePropagationRefreshStateStore.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshStatePersistenceTests.kt
 - SOFTWARE_TRACK.md
-- CP-0008J finalization workflow run: 37808105308
+- CP-0008K finalization workflow run: 37811486748
 
 ### Evidence boundary
 
-CP-0008J proves platform-neutral runtime composition and manual invocation using deterministic injected transport/storage. It does not claim Android app lifecycle/background scheduling, process-restart persistence for the default in-memory stores, provider uptime, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP or real phone/radio/RF behavior.
+CP-0008K proves JVM filesystem persistence, atomic *replacement*, fail-closed validation and deterministic runtime recreation with injected store. It does not prove Android application integration, fsync/power-loss durability, multiprocess concurrent writers, persistent snapshots when the separately injected snapshot store remains in-memory, live provider availability, device/radio/RF behavior or new propagation providers.
 
 ### Inherited verified ancestry
 
-CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT, CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS, CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR, CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION, CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE and all earlier verified checkpoints remain verified ancestry.
+CP-0008J-PROPAGATION_RUNTIME_COMPOSITION and all earlier verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -129,7 +126,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008K — propagation refresh-state persistence
+**Active software track:** CP-0008L — propagation source-status presentation model
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -354,7 +351,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008J-PROPAGATION_RUNTIME_COMPOSITION
+- Current Git source baseline: CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -367,15 +364,12 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008K — propagation refresh-state persistence.**
+**CP-0008L — propagation source-status presentation model.**
 
-1. Add a platform-neutral file-backed PropagationRefreshStateStore with deterministic versioned serialization and atomic replace semantics.
-2. Preserve per-source role, last attempt, last success, consecutive failures, next eligible refresh, failure message and retryability across process/runtime recreation.
-3. Fail closed on corrupt, duplicate, unknown-version or role-mismatched persisted state while preserving the last valid state file when a write fails.
-4. Integrate persisted refresh state with PropagationRuntimeFactory through explicit store injection; do not change provider cadence, parser, cache or projection semantics.
-5. Prove restart/corruption/atomic-write behavior with deterministic filesystem CI.
-6. Keep Android WorkManager/background scheduling, Android lifecycle/network permission, credentials/accounts, new propagation providers and phone/radio/RF/manual validation outside CP-0008K.
-7. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
+1. Define a platform-neutral source-status projection model using existing persisted source states, explicit failure/backoff status and last-good evidence timestamps.
+2. Keep provider cadence and evidence semantics unchanged, prove deterministic host/CI gates and advance only through an immutable checkpoint.
+3. Do not add Android lifecycle, WorkManager, permissions, provider network dependency, credentials, or hardware testing without separate authorization.
+4. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
 
 ## README maintenance contract
 
