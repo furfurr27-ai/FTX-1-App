@@ -39,29 +39,30 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS
+**Latest verified checkpoint:** CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD
 
-Parent durable checkpoint: CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.
+Parent durable checkpoint: CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.
 
 CP-0003C and CP-0004A/B/C remain deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008N is a GREEN platform-neutral read-only propagation source/snapshot consistency diagnostics checkpoint.
+CP-0008O is a GREEN deterministic host/CI-only typed in-memory propagation offline diagnostic report checkpoint.
 
-CP-0008N proves:
+CP-0008O proves:
 
-- PropagationReadModelConsistencyService.diagnose accepts only the already-captured CP-0008M operating picture, without additional store reads, network calls, refresh, writes or internal wall clock.
-- Per-source last-success versus snapshot capture and newest cached retrieval versus last-success timestamps retain signed differences and BEFORE/EQUAL/AFTER/UNKNOWN relations.
-- Explicit future-dated source attempts, retrieval times and cache captures, with snapshot age null for future-dated captures.
-- Source-aware fresh/aging/stale/future-dated evidence counts remain separate; no provider availability, path quality or propagation forecast is invented.
-- Diagnostics are invariant under workspace evidence filters; source status still carries unfiltered cached evidence and last-attempt errors.
-- Aggregated source-success-after-snapshot, retrieval-after-success and future-timestamp source counts are derived from the same rows.
-- The composed runtime `operatingPictureWithDiagnostics` retains the original operating picture, including after file-backed runtime recreation.
-- The model explicitly sets crossStoreAtomicityVerified=false: sequential store reads cannot prove transactionally consistent generations.
-- Deterministic offline synthetic tests prove missing metadata, boundary comparisons, invalid composites, no extra store reads and bit-identical persisted files.
-- Superseded CP-0008M finalizer changed to manual-only.
+- PropagationOfflineDiagnosticReportService.build accepts the already captured CP-0008N operating picture and diagnostics, with no extra refresh-state or snapshot read, provider request, clock or write.
+- A versioned platform-neutral report DTO includes explicit query UTC, nullable snapshot metadata/age and future/unknown statuses rather than invented values.
+- Stable source-key rows preserve complete original per-source status (failed attempt, cooldown, readiness and last-good evidence) and full original timeline diagnostics without collapsing them to a provider-health score.
+- Source totals distinguish cached attributed evidence from evidence visible after workspace filters, retaining provenance for unseen cache records.
+- Original filtered heard, ionospheric, solar/geomagnetic and modeled projection sections and selected-path assessment remain lossless and unmodified.
+- A deterministic evidence index derives exclusively from actually visible existing projection metadata, including kind, source ID, observed/retrieved UTC and original freshness classification.
+- The payload explicitly prohibits cross-store atomicity claims and rejects mismatched source identities/roles, totals, invalid schema versions and corrupt report invariants.
+- Runtime offlineDiagnosticReport overloads reuse existing injected stores, and file-backed recreation yields identical read-only results.
+- No Android UI, JSON/CSV/PDF exporter, network/scheduler/provider, credentials, phone/radio/RF or QSO/LoTW behavior was added.
+- Superseded CP-0008N automatic main finalizer changed to manual-only.
 
 Host/CI gates:
 
+- CP-0008O propagation offline report payload: **PASS**.
 - CP-0008N propagation read-model consistency diagnostics: **PASS**.
 - CP-0008M propagation operating-picture composition: **PASS**.
 - CP-0008L propagation source-status presentation: **PASS**.
@@ -93,20 +94,20 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008N_READ_MODEL_CONSISTENCY_DIAGNOSTICS.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationReadModelConsistencyService.kt
+- research/propagation/CP-0008O_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineDiagnosticReportService.kt
 - core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationReadModelConsistencyTests.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineDiagnosticReportTests.kt
 - SOFTWARE_TRACK.md
-- CP-0008N finalization workflow run: 37823404574
+- CP-0008O finalization workflow run: 37827542903
 
 ### Evidence boundary
 
-Read-model comparisons are provenance diagnostics only. They do not establish atomic cross-store reads, provider errors from timing mismatches, radio conditions or a working Android screen. No device, credentials, LoTW, new provider or RF testing was performed.
+The report is a deterministic in-memory DTO, not a completed UI, actual serialization contract, live provider monitor or RF prediction. Separate snapshot/state store reads do not prove atomicity. No hardware/account/manual Android validation was performed.
 
 ### Inherited verified ancestry
 
-CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL and earlier verified checkpoints remain verified ancestry.
+CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS and earlier verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -130,7 +131,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008O — propagation offline diagnostic report payload
+**Active software track:** CP-0008P — propagation offline report serialization contract
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -355,7 +356,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS
+- Current Git source baseline: CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -368,11 +369,11 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008O — propagation offline diagnostic report payload.**
+**CP-0008P — propagation offline report serialization contract.**
 
-1. Define a platform-neutral deterministic offline diagnostic report payload from CP-0008N's composed operating picture and read-only provenance diagnostics.
-2. Preserve unchanged refresh, projection, source-status and consistency semantics; carry source attribution and unknown/future timestamps without fabricating evidence.
-3. Prove through host/CI-only fixtures and immutable checkpoint. Do not add Android UI, network permissions, new providers, real accounts/credentials or phone/radio/RF work.
+1. Design a deterministic offline report serialization contract from the versioned CP-0008O DTO with explicit schema semantics and safe output validation.
+2. Preserve original source/evidence provenance and unknown/future timestamps; prove stable ordering and no fabricated values with synthetic host/CI fixtures.
+3. Keep provider/cadence/cache/assessment and refresh logic unchanged; no Android lifecycle/UI/WorkManager, credentials, real accounts, new provider or phone/radio/RF proof.
 4. CP-0003C remains DEFERRED until owner explicitly says resume CP-0003C.
 
 ## README maintenance contract

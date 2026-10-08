@@ -1,27 +1,27 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS**
-Project version: `v39-propagation-read-model-consistency-diagnostics`
-Phase: **Propagation consistency diagnostics host-verified; offline report payload next; hardware/account deferred**
-Test status: **GREEN host/CI: read_model_diagnostics=PASS operating_picture=PASS source_status=67 state_persistence=PASS runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37823404574**
+Latest verified checkpoint: **CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD**
+Project version: `v40-propagation-offline-diagnostic-report`
+Phase: **Propagation offline report payload host-verified; serialization contract next; hardware/account deferred**
+Test status: **GREEN host/CI: offline_report=PASS read_model_diagnostics=PASS operating_picture=PASS source_status=67 state_persistence=PASS runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run 37827542903**
 
 ## What is complete in this checkpoint
-- Pure source/cache timeline diagnostics derived from already captured operating picture with no additional store/provider reads
-- BEFORE EQUAL AFTER UNKNOWN comparisons with signed source-success versus cache and retrieval-versus-success timestamp deltas
-- Explicit future-dated source attempts, provider retrievals, cache capture timestamps and nullable future snapshot age
-- Preserved source-aware fresh aging stale future observation counts and workspace-filter independence
-- Aggregate source timing-skew counts derived consistently and no cross-store transaction guarantee claimed
-- Runtime diagnostics overloads tested with file-backed state/snapshot runtime recreation and no network
-- Superseded CP-0008M finalizer set manual-only; full inherited CI matrix green
+- Versioned platform-neutral offline diagnostic report DTO built entirely from CP-0008N already captured read model
+- Complete original source status/timing diagnostics retained, stable source ordering and null/unknown snapshot provenance preserved
+- Complete original selected workspace projections, selected-path assessment and visible evidence attribution/index preserved
+- Source-attributed cached evidence distinct from workspace-filtered visible evidence with explicit source and UTC provenance
+- Report input/schema/identity/count invariants reject fabricated evidence and cross-store atomicity assertions
+- Runtime offlineDiagnosticReport overloads tested against file-backed runtime recreation, no network and bit-identical state/cache
+- Superseded CP-0008N finalizer set manual-only; focused and inherited host/CI green
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'
 - CP-0004A/B/C hardware checkpoints remain incomplete
-- Cross-store read atomicity unverified; no live provider, Android UI/lifecycle or phone/radio/RF proof
+- Cross-store atomicity unverified; no live provider, offline serialization/export format, Android UI/lifecycle or phone/radio/RF proof
 
 ## Continue with these exact actions
-1. CP-0008O: deterministic propagation offline diagnostic report payload based on existing read-model output
-2. Preserve provider/cache/refresh/assessment semantics; deterministic CI and source provenance
+1. CP-0008P: deterministic versioned serialization contract for offline propagation report DTO
+2. Preserve source/cache/evidence fidelity, unknown and future metadata and full inherited CI
 3. Keep hardware/account and Android work outside; CP-0003C remains DEFERRED
 
 ## Verification before continuing

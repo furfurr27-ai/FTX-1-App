@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS
+CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,15 +25,16 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD
+CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT
 
 Required scope:
 
-- read-only deterministic offline data-transfer object for combined operating picture/source timing diagnostics
-- provenance preserved; no invented source, clock, RF measurement or cached evidence
-- unchanged CP-0008M/N APIs and all source/cache/assessment policies
-- focused + inherited deterministic CI, durable immutable checkpoint
-- no Android UI, lifecycle, WorkManager, credentials, real accounts, new provider or phone/radio/RF tests
+- offline deterministic versioned serialization contract for CP-0008O typed report
+- preserve source/evidence provenance and unknown/future timestamps without invented values
+- validation of output consistency and stable canonical ordering; deterministic synthetic host CI
+- preserve CP-0008O/N/M interfaces, cache, refresh, source provider/cadence and assessment behavior
+- immutable main checkpoint after full inherited CI
+- no phone, radio, RF testing, real accounts/credentials, Android lifecycle/UI/WorkManager or new provider
 - CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
 
 ## Resume rule

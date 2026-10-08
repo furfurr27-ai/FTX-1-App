@@ -489,3 +489,16 @@ Host CI focused suite PASS; inherited propagation, awards, logger/LoTW and core 
 Cross-store atomicity remains explicitly unverified. CP-0003C and CP-0004A/B/C remain deferred/incomplete.
 
 Evidence: research/propagation/CP-0008N_READ_MODEL_CONSISTENCY_DIAGNOSTICS.md and PropagationReadModelConsistencyTests.kt.
+
+
+## CP-0008O — Propagation offline diagnostic report payload
+
+Parent: CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.
+
+A versioned platform-neutral in-memory DTO now preserves the existing operating-picture workspace sections, source statuses and CP-0008N timestamp diagnostics with one explicit UTC. Separate source-attributed cached and visible filtered evidence counts prevent misinterpreting workspace filters as missing cache evidence. The visible evidence index reports original source and timing metadata only. Snapshot absence and future/unknown timestamps remain explicit, and cross-store atomicity is never claimed.
+
+Focused offline report CI PASS, full inherited host regressions PASS. Immutable checkpoint finalizer run: 37827542903. No Android UI, serialization, provider fetch, radio hardware or credentials.
+
+CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
+
+Evidence: research/propagation/CP-0008O_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.md and PropagationOfflineDiagnosticReportTests.kt.

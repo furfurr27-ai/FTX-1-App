@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS",
-  "created_utc": "2026-10-08T18:30:14+00:00",
-  "manifest": "checkpoints/manifests/CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.json",
-  "snapshot": "checkpoints/snapshots/CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.tar.gz",
-  "snapshot_sha256": "45c7e2217cb70a184ac72c5e96fdfa15ae67d7bb37a37ec3399084cc600803d6"
+  "checkpoint_id": "CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD",
+  "created_utc": "2026-10-08T19:04:21+00:00",
+  "manifest": "checkpoints/manifests/CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.json",
+  "snapshot": "checkpoints/snapshots/CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.tar.gz",
+  "snapshot_sha256": "c04cc49d425e781d7efae1298def0fd31d5565a843efd76e44613ae5484849fe"
 }
