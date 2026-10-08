@@ -17,6 +17,9 @@ on:
 permissions:
   contents: read
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 jobs:
   refresh-state:
     runs-on: ubuntu-latest
