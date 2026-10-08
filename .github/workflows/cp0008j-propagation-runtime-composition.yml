@@ -9,7 +9,10 @@ on:
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRuntimeTests.kt'
       - 'research/propagation/CP-0008J_PROPAGATION_RUNTIME_COMPOSITION.md'
       - 'scripts/test_propagation_runtime_composition.sh'
+      - 'scripts/finalize_cp0008j.py'
       - '.github/workflows/cp0008j-propagation-runtime-composition.yml'
+      - '.github/workflows/finalize-cp0008i.yml'
+      - '.github/workflows/finalize-cp0008j.yml'
 
 permissions:
   contents: read
@@ -28,6 +31,20 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_propagation_runtime_composition.sh
+      - name: Dry-run CP-0008J durable handoff
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008j.py
+          python3 scripts/finalize_cp0008j.py
+          grep -Fq 'CP-0008J-PROPAGATION_RUNTIME_COMPOSITION' README.md
+          grep -Fq 'CP-0008K — propagation refresh-state persistence' NEXT_ACTION.md
+          grep -Fq 'CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008i.yml
+          grep -Fq 'CP-0008J-PROPAGATION_RUNTIME_COMPOSITION' .github/workflows/finalize-cp0008j.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
