@@ -1,0 +1,126 @@
+name: Finalize CP-0008H checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationTransport.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationSourceAdapters.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecIndexSelector.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PublicPropagationTransportAdapterTests.kt'
+      - 'research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md'
+      - 'research/propagation/PROPAGATION_SOURCES.tsv'
+      - 'scripts/test_public_propagation_transport_adapters.sh'
+      - 'scripts/finalize_cp0008h.py'
+      - '.github/workflows/finalize-cp0008g.yml'
+      - '.github/workflows/finalize-cp0008h.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  public-transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_public_propagation_transport_adapters.sh
+
+  inherited:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: refresh, script: scripts/test_propagation_refresh_coordinator.sh}
+          - {label: projection, script: scripts/test_propagation_projection.sh}
+          - {label: aggregation, script: scripts/test_propagation_aggregation_offline_cache.sh}
+          - {label: psk-reporter, script: scripts/test_psk_reporter_heard_path_adapter.sh}
+          - {label: glotec, script: scripts/test_glotec_ionospheric_adapter.sh}
+          - {label: noaa-swpc, script: scripts/test_noaa_swpc_propagation_adapter.sh}
+          - {label: propagation, script: scripts/test_propagation_foundation.sh}
+          - {label: production-pack, script: scripts/test_production_us_state_geometry_pack.sh}
+          - {label: geometry, script: scripts/test_award_geometry_providers.sh}
+          - {label: map, script: scripts/test_award_area_map_projection.sh}
+          - {label: extended, script: scripts/test_extended_award_catalog.sh}
+          - {label: service, script: scripts/test_awards_center_application_service.sh}
+          - {label: persistence, script: scripts/test_award_evidence_persistence.sh}
+          - {label: awards-projection, script: scripts/test_awards_center_projection.sh}
+          - {label: target, script: scripts/test_award_target_enrichment.sh}
+          - {label: catalog, script: scripts/test_official_award_catalog.sh}
+          - {label: award, script: scripts/test_award_evaluation.sh}
+          - {label: queue, script: scripts/test_manual_qso_lotw_queue.sh}
+          - {label: logger, script: scripts/test_universal_qso_logger.sh}
+          - {label: lotw, script: scripts/test_lotw_transaction.sh}
+          - {label: core, script: scripts/test_core_regression.sh}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash "${{ matrix.script }}"
+
+  checkpoint:
+    needs: [public-transport, inherited]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Update durable handoff
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0008h.py
+      - name: Create and verify immutable checkpoint
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS \
+            --parent CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR \
+            --summary "Platform-neutral bounded public propagation request/response adapters for NOAA SWPC, GloTEC and PSK Reporter with deterministic GloTEC artifact selection and fake-transport CI" \
+            --phase "Public propagation transport adapters host-verified; concrete HTTPS transport next; hardware/account checkpoints remain deferred by owner" \
+            --test-status "GREEN host/CI: public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "PublicPropagationTransport defines a platform-neutral bounded HTTPS GET request/response contract without a concrete client" \
+            --completed "Response validation rejects request-provenance mismatch, unexpected redirects, non-200 status, oversized bodies and unexpected media types" \
+            --completed "Retry classification distinguishes transient HTTP/transport failures from parser/schema/provenance contract failures" \
+            --completed "NOAA observed Kp, Kp forecast and F10.7 source factories reuse exact official endpoints and verified CP-0008B parsers" \
+            --completed "GloTEC two-stage index/artifact adapter uses valid-JSON canonical official artifact selection and enforces a ten-minute minimum cadence" \
+            --completed "PSK Reporter deterministic queries support sender/receiver/either callsign selection, bounded lookback/report count, optional mode/frequency range, and never add appcontact/callback" \
+            --completed "PSK Reporter transport cadence enforces the documented five-minute minimum retrieval guidance" \
+            --completed "Deterministic fake-transport integration feeds all five public source definitions into CP-0008G while preserving canonical observed-Kp selection" \
+            --completed "Required CI has no external-provider dependency and production CP-0008H code has no Android/WorkManager/concrete HTTP client, credentials/accounts, FTX-1/PTT/RF, QSO/logbook-write or LoTW behavior" \
+            --completed "Superseded CP-0008G finalizer is manual-only" \
+            --completed "Focused public transport PASS 98; refresh PASS 112; projection PASS 79; aggregation PASS 101; PSK Reporter PASS 168; GloTEC PASS 87; NOAA PASS 53; propagation PASS 154; production state pack PASS 363; geometry PASS 102; map PASS 96; extended PASS 96; service PASS 64; persistence PASS 92; awards projection PASS 114; target PASS 77; catalog PASS 115; award PASS 67; queue PASS 47; logger PASS 78; LoTW transaction PASS 53; core PASS 42062" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
+            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
+            --blocker "Concrete HTTPS transport, Android background scheduling, WSPRnet/WSPR.live, GIRO and HFcast/VOACAP remain unproven" \
+            --next "CP-0008I: implement a concrete JVM/Android-compatible HTTPS GET transport behind PublicPropagationTransport" \
+            --next "Enforce timeouts, bounded streaming reads, redirect refusal, UTF-8 decoding, exact response metadata and safe cleanup with deterministic CI" \
+            --next "Keep WorkManager/background scheduling, credentials/accounts and new providers outside CP-0008I"
+          python3 scripts/verify_checkpoint.py --root . --latest
+      - name: Commit checkpoint
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.json
+          git add -f checkpoints/snapshots/CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.tar.gz
+          git commit -m "Checkpoint CP-0008H public propagation transport adapters"
+          git push
