@@ -405,3 +405,19 @@ Finalization workflow run: 37786722486.
 CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
 
 Evidence: research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md, PublicPropagationTransport.kt, PublicPropagationSourceAdapters.kt, NoaaSwpcGlotecIndexSelector.kt, and PublicPropagationTransportAdapterTests.kt.
+
+## CP-0008I — Concrete public HTTPS transport
+
+Parent durable checkpoint: CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.
+
+FieldOps now has a concrete JVM/Android-compatible HttpsURLConnection implementation behind PublicPropagationTransport. The transport enforces HTTPS, explicit timeouts, redirect refusal, bounded streaming reads, identity encoding, strict UTF-8 decoding, exact response metadata, deterministic cleanup, and explicit retryability classes.
+
+Connection creation is injectable, so required CI proves concrete connection behavior without live provider access. PublicPropagationSourceAdapters preserves transport retryability, and an integration test proves the concrete transport reaches the existing NOAA F10.7 parser unchanged.
+
+Host/CI gate: concrete HTTPS 70; public transport 98; refresh coordinator 112; projection 79; aggregation/offline cache 101; PSK Reporter 168; GloTEC 87; NOAA 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended awards 96; Awards service 64; persistence 92; Awards projection 114; target 77; catalog 115; award evaluator 67; queue 47; logger 78; LoTW transaction 53; core 42,062, all PASS.
+
+Finalization workflow run: 37793790597.
+
+CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
+
+Evidence: research/propagation/CP-0008I_CONCRETE_PUBLIC_HTTPS_TRANSPORT.md, HttpsUrlConnectionPublicPropagationTransport.kt, PublicPropagationSourceAdapters.kt, and HttpsUrlConnectionPublicPropagationTransportTests.kt.

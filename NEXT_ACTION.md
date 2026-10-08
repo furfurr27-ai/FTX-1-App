@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008I — concrete public HTTPS transport implementation**
+**CP-0008J — propagation runtime composition**
 
-Implement a concrete JVM/Android-compatible HTTPS GET transport behind the CP-0008H PublicPropagationTransport interface. Enforce timeouts, bounded streaming reads, redirect refusal, exact response metadata, UTF-8 decoding, and cleanup with deterministic CI. Keep WorkManager/background scheduling and new propagation providers outside this checkpoint.
+Compose the CP-0008I concrete HTTPS transport, CP-0008H source definitions, CP-0008G refresh coordinator/cache state, and CP-0008F projection service behind one platform-neutral manually-invoked runtime. Make callsign/query and cadence policy explicit, preserve minimum provider intervals, and prove the full composition with deterministic injected transport/storage CI. Keep Android background scheduling and new propagation providers outside this checkpoint.

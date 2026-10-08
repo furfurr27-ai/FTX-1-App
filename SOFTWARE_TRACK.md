@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
+CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,21 +25,20 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT
+CP-0008J-PROPAGATION_RUNTIME_COMPOSITION
 
 Required scope:
 
-- concrete JVM/Android-compatible HTTPS GET transport behind PublicPropagationTransport
-- explicit connect/read timeouts
-- bounded streaming reads using request.maxResponseBytes
-- HTTPS-only request enforcement
-- redirect refusal
-- deterministic UTF-8 decoding
-- response status/content-type/effective-URL reporting
-- safe stream/connection cleanup
-- deterministic CI without external-provider dependency
-- integrate with existing CP-0008H source definitions without parser-policy changes
-- no WorkManager/background scheduling
+- platform-neutral runtime config/factory
+- compose CP-0008I concrete HTTPS transport
+- compose all five CP-0008H public source definitions
+- compose snapshot/state storage, CP-0008G refresh coordinator and CP-0008F workspace projection service
+- explicit operator callsign/PSK query settings; no inferred station geography
+- explicit source cadence policies with safe provider-minimum defaults
+- one manually-invoked refresh-and-project runtime entry point
+- deterministic injected transport/storage host/CI tests
+- no external-provider dependency
+- no WorkManager/background scheduling or Android lifecycle/network-permission work
 - no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
 - no credentials/accounts
 - no phone/radio/RF/manual hardware work

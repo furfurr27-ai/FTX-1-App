@@ -39,33 +39,37 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
+**Latest verified checkpoint:** CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT
 
-Parent durable checkpoint: CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR.
+Parent durable checkpoint: CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008H is a GREEN host/CI checkpoint. It connects the verified NOAA SWPC, GloTEC and PSK Reporter parsers to the CP-0008G refresh coordinator through a bounded platform-neutral public request/response contract.
+CP-0008I is a GREEN host/CI checkpoint. It provides a concrete JVM/Android-compatible HTTPS GET implementation behind the CP-0008H public transport contract while keeping required verification independent of external provider availability.
 
-CP-0008H proves:
+CP-0008I proves:
 
-- PublicPropagationTransport exposes a GET request/response boundary without binding core propagation code to Android, WorkManager, OkHttp, Retrofit, HttpURLConnection, java.net transport or any other concrete client.
-- Requests require HTTPS, reject fragments/control-line separators, declare accepted media types and carry explicit maximum response bytes.
-- Responses preserve requested URL, effective URL, status, optional media type and decoded body.
-- Response validation fails closed on request-provenance mismatch, unexpected redirects, non-200 status, oversized bodies and unexpected media types.
-- Retry classification treats 408/425/429/5xx and transport exceptions as retryable while parser/schema/provenance violations remain non-rapid-retry failures.
-- NOAA observed Kp, Kp forecast and F10.7 source factories reuse the existing verified CP-0008B parsers and exact official endpoints.
-- GloTEC refresh performs a two-stage index then artifact retrieval using exact official NOAA endpoints.
-- NoaaSwpcGlotecIndexSelector requires valid JSON, accepts only canonical glotec_icao_YYYYMMDDTHHMMSSZ.geojson filenames or exact official full URLs, rejects malformed/non-official candidate references and selects the greatest canonical timestamp.
-- GloTEC source cadence may not poll faster than the pinned 10-minute product cadence.
-- PskReporterPublicQuery builds deterministic sender/receiver/either callsign XML queries, enforces a maximum 24-hour lookback, supports bounded report limits/mode/frequency filters, and never adds appcontact or callback.
-- PSK Reporter source cadence may not violate the documented five-minute minimum retrieval guidance.
-- Deterministic fake-transport integration proves five public source definitions feed CP-0008G and still preserve canonical NOAA observed-Kp selection.
-- Required CI never depends on live provider availability.
-- The superseded CP-0008G finalizer is manual-only.
+- HttpsUrlConnectionPublicPropagationTransport uses standard HttpsURLConnection behind the existing PublicPropagationTransport interface.
+- Connection creation remains injectable through HttpsConnectionFactory, allowing deterministic host CI without live network access.
+- HTTPS URL parsing requires a host and rejects user-info credentials and fragments.
+- HTTP GET, redirect refusal, explicit connect/read timeouts, cache disablement, input-only operation, deterministic Accept ordering, UTF-8 and identity-encoding request headers are configured.
+- Default connect/read timeouts are 10/15 seconds and validated configuration is bounded to 1..120 seconds.
+- Declared Content-Length larger than request.maxResponseBytes fails before body read.
+- Unknown-length/chunked bodies are streamed in bounded chunks and fail immediately after crossing request.maxResponseBytes.
+- Accept-Encoding identity is requested and unexpected non-identity Content-Encoding fails closed.
+- Response bytes are decoded with strict UTF-8 using malformed/unmappable REPORT behavior.
+- HTTP >=400 reads the error stream while preserving the provider status for CP-0008H retry classification.
+- Socket timeout, I/O and connection-open failures are retryable; invalid URL/credentials, oversize, unsupported encoding and invalid UTF-8 are non-retryable contract failures.
+- PublicPropagationSourceAdapters preserves explicit PublicPropagationTransportException retryability.
+- Input/error streams close through use and every opened connection reaches disconnect in finally.
+- Concrete transport integration feeds the existing NOAA F10.7 parser without changing provider parser semantics.
+- Production CP-0008I code has no Android framework/AndroidX, WorkManager, Compose, OkHttp/Retrofit, credentials/accounts, FTX-1/PTT/RF, QSO/logbook-write or LoTW behavior.
+- Required CP-0008I CI makes no live HTTP/HTTPS request.
+- The superseded CP-0008H finalizer is manual-only.
 
 Host/CI gates:
 
+- CP-0008I concrete public HTTPS transport: **70/70 PASS**.
 - CP-0008H public propagation transport adapters: **98/98 PASS**.
 - CP-0008G propagation refresh coordinator: **112/112 PASS**.
 - CP-0008F propagation projection: **79/79 PASS**.
@@ -91,21 +95,20 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationTransport.kt
+- research/propagation/CP-0008I_CONCRETE_PUBLIC_HTTPS_TRANSPORT.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/HttpsUrlConnectionPublicPropagationTransport.kt
 - core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationSourceAdapters.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecIndexSelector.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PublicPropagationTransportAdapterTests.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/HttpsUrlConnectionPublicPropagationTransportTests.kt
 - SOFTWARE_TRACK.md
-- CP-0008H finalization workflow run: 37786722486
+- CP-0008I finalization workflow run: 37793790597
 
 ### Evidence boundary
 
-CP-0008H proves transport-independent endpoint/query/response semantics using deterministic fake transport plus pinned provider fixtures. It does not claim a concrete HTTP client, TLS/runtime networking, Android background execution, provider uptime, battery behavior, or real-world propagation accuracy.
+CP-0008I proves deterministic concrete HttpsURLConnection behavior and integration with the existing source/parser chain. It does not claim Android application packaging, Android network permission/background scheduling, provider uptime, TLS behavior on the actual S23 Ultra, cellular/Wi-Fi behavior, battery behavior, or real-world propagation accuracy.
 
 ### Inherited verified ancestry
 
-CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR, CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION, CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
+CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS, CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR, CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION, CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -129,7 +132,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008I — concrete public HTTPS transport implementation
+**Active software track:** CP-0008J — propagation runtime composition
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -354,7 +357,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
+- Current Git source baseline: CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -367,14 +370,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008I — concrete public HTTPS transport implementation.**
+**CP-0008J — propagation runtime composition.**
 
-1. Implement a concrete JVM/Android-compatible HTTPS GET transport behind the CP-0008H PublicPropagationTransport interface.
-2. Enforce connect/read timeouts, bounded streaming reads using request.maxResponseBytes, HTTPS-only requests, redirect refusal, deterministic UTF-8 decoding, status/content-type/effective-URL reporting, and safe connection cleanup.
-3. Prove the implementation with a deterministic local HTTP/HTTPS-compatible test harness or injectable connection factory; required CI must not depend on external provider uptime.
-4. Integrate the concrete transport with the existing CP-0008H source definitions without changing provider parser semantics or CP-0008G refresh/cache behavior.
-5. Keep WorkManager/background scheduling, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, real credentials/accounts, phone/radio/RF/manual validation outside CP-0008I.
-6. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
+1. Add a platform-neutral runtime configuration/factory that composes the CP-0008I concrete HTTPS transport, the five CP-0008H public source definitions, snapshot/state storage, the CP-0008G refresh coordinator, and the CP-0008F workspace projection service.
+2. Make operator callsign/PSK query inputs and source refresh policies explicit configuration; do not hard-code account/contact identity or infer station geography.
+3. Provide safe default refresh cadences that respect GloTEC 10-minute and PSK Reporter five-minute minimum intervals.
+4. Expose one manually-invoked refresh-and-project runtime entry point with deterministic source keys/state and last-good snapshot behavior inherited from prior checkpoints.
+5. Prove composition with deterministic injected transport/storage CI and no external-provider dependency.
+6. Keep WorkManager/background scheduling, Android app lifecycle/network permission, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, credentials/accounts, and phone/radio/RF/manual validation outside CP-0008J.
+7. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
 
 ## README maintenance contract
 

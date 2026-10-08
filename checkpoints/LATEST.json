@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS",
-  "created_utc": "2026-10-08T13:51:24+00:00",
-  "manifest": "checkpoints/manifests/CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.json",
-  "snapshot": "checkpoints/snapshots/CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.tar.gz",
-  "snapshot_sha256": "427f1a67d23b96aa3799b7af826d64b2658182d57370351f47a5a4fdaae56b25"
+  "checkpoint_id": "CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT",
+  "created_utc": "2026-10-08T14:43:49+00:00",
+  "manifest": "checkpoints/manifests/CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT.json",
+  "snapshot": "checkpoints/snapshots/CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT.tar.gz",
+  "snapshot_sha256": "4d62577d57f74b38298b916eb50b6ca6158164652ca2b33b444be628e862bbd0"
 }
