@@ -129,12 +129,12 @@ object PropagationOperatingPictureTests {
         eq(1, stateReads, "states captured once")
         eq("stable", picture.workspace!!.status.snapshotId, "workspace uses first snapshot")
         eq("stable", picture.sourceStatus.snapshotId, "status uses same snapshot")
-        eq(picture.workspace.status.capturedAtUtcMillis,
+        eq(requireNotNull(picture.workspace).status.capturedAtUtcMillis,
             picture.sourceStatus.snapshotCapturedAtUtcMillis,
             "same capture timestamp")
-        eq(picture.workspace.status.snapshotIsFutureDated,
+        eq(requireNotNull(picture.workspace).status.snapshotIsFutureDated,
             picture.sourceStatus.snapshotIsFutureDated, "same future flag")
-        eq(1, picture.workspace.projectedEvidenceCount, "one cached observation")
+        eq(1, requireNotNull(picture.workspace).projectedEvidenceCount, "one cached observation")
         eq(1, picture.sourceStatus.sources.single().evidenceCount,
             "same evidence is source-matched")
     }
@@ -158,8 +158,9 @@ object PropagationOperatingPictureTests {
             "workspace projection exactly unchanged")
         eq(independentSources, picture.sourceStatus,
             "status projection exactly unchanged")
+        val workspace = requireNotNull(picture.workspace)
         eq(listOf("late", "early"),
-            picture.workspace!!.solarGeomagnetic.map { it.metadata.evidenceId },
+            workspace.solarGeomagnetic.map { it.metadata.evidenceId },
             "existing observed-time ordering")
         eq("same", picture.sourceStatus.snapshotId, "matching snapshot")
         eq(2, picture.sourceStatus.sources.single().evidenceCount,
@@ -206,9 +207,9 @@ object PropagationOperatingPictureTests {
             "future evidence explicitly marked")
         checkThat(picture.workspace!!.status.containsStaleEvidence,
             "workspace retains stale evidence metadata")
-        checkThat(picture.workspace.status.containsFutureDatedEvidence,
+        checkThat(requireNotNull(picture.workspace).status.containsFutureDatedEvidence,
             "workspace retains future evidence marker")
-        eq("future-capture", picture.workspace.status.snapshotId, "provenance")
+        eq("future-capture", requireNotNull(picture.workspace).status.snapshotId, "provenance")
         checkThat(picture.sourceStatus.snapshotIsFutureDated,
             "source status snapshot is future-dated")
     }
