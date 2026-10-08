@@ -11,6 +11,9 @@ data class PublicPropagationRequest(
         require(url.startsWith("https://")) {
             "Public propagation request must use HTTPS"
         }
+        require(!url.contains('#')) {
+            "Public propagation request URL must not contain a fragment"
+        }
         require(url.none { it.code == 10 || it.code == 13 }) {
             "Public propagation request URL must not contain control-line separators"
         }
