@@ -1,19 +1,9 @@
 name: Finalize CP-0008G checkpoint
 
+# CP-0008G is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshModels.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshCoordinator.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshWorkspaceService.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshCoordinatorTests.kt'
-      - 'research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md'
-      - 'scripts/test_propagation_refresh_coordinator.sh'
-      - 'scripts/finalize_cp0008g.py'
-      - '.github/workflows/finalize-cp0008f.yml'
-      - '.github/workflows/finalize-cp0008g.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
