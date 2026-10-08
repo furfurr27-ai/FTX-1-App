@@ -12,7 +12,10 @@ on:
       - 'research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md'
       - 'research/propagation/PROPAGATION_SOURCES.tsv'
       - 'scripts/test_public_propagation_transport_adapters.sh'
+      - 'scripts/finalize_cp0008h.py'
       - '.github/workflows/cp0008h-public-propagation-transport-adapters.yml'
+      - '.github/workflows/finalize-cp0008g.yml'
+      - '.github/workflows/finalize-cp0008h.yml'
 
 permissions:
   contents: read
@@ -31,6 +34,20 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_public_propagation_transport_adapters.sh
+      - name: Dry-run CP-0008H durable handoff
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008h.py
+          python3 scripts/finalize_cp0008h.py
+          grep -Fq 'CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS' README.md
+          grep -Fq 'CP-0008I — concrete public HTTPS transport implementation' NEXT_ACTION.md
+          grep -Fq 'CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008g.yml
+          grep -Fq 'CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS' .github/workflows/finalize-cp0008h.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
