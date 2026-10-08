@@ -127,6 +127,23 @@ class PropagationRuntime internal constructor(
             PropagationProjectionQuery(nowUtcMillis, filter, selectedPath)
         )
 
+    /** Complete offline report DTO with no additional stores or provider reads. */
+    fun offlineDiagnosticReport(
+        query: PropagationProjectionQuery,
+    ): PropagationOfflineDiagnosticReport =
+        PropagationOfflineDiagnosticReportService.build(
+            operatingPictureWithDiagnostics(query)
+        )
+
+    fun offlineDiagnosticReport(
+        nowUtcMillis: Long,
+        filter: PropagationProjectionFilter = PropagationProjectionFilter(),
+        selectedPath: PropagationAssessmentQuery? = null,
+    ): PropagationOfflineDiagnosticReport =
+        offlineDiagnosticReport(
+            PropagationProjectionQuery(nowUtcMillis, filter, selectedPath)
+        )
+
     fun refreshAndProject(
         query: PropagationProjectionQuery,
     ): PropagationRefreshWorkspaceResult =
