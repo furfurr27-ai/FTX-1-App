@@ -1,20 +1,9 @@
 name: Finalize CP-0008H checkpoint
 
+# CP-0008H is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationTransport.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationSourceAdapters.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecIndexSelector.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PublicPropagationTransportAdapterTests.kt'
-      - 'research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md'
-      - 'research/propagation/PROPAGATION_SOURCES.tsv'
-      - 'scripts/test_public_propagation_transport_adapters.sh'
-      - 'scripts/finalize_cp0008h.py'
-      - '.github/workflows/finalize-cp0008g.yml'
-      - '.github/workflows/finalize-cp0008h.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
