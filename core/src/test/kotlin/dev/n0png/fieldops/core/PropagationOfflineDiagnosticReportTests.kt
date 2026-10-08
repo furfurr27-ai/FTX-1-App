@@ -162,7 +162,7 @@ object PropagationOfflineDiagnosticReportTests {
             "original observed UTC")
         eq(PropagationFreshness.STALE, report.visibleEvidenceIndex[1].freshness,
             "source freshness from projection unchanged")
-        eq(null, report.workspace.selectedPathAssessment, "no invented selected path")
+        eq(null, requireNotNull(report.workspace).selectedPathAssessment, "no invented selected path")
         assertThat(!report.summary.crossStoreAtomicityVerified, "unverified cross-store atomicity")
     }
     private fun filteredWorkspaceKeepsFullSourceAccounting() {
