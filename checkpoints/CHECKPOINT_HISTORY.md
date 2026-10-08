@@ -463,3 +463,16 @@ Focused status suite PASS; inherited CP-0008K persistence/runtime/propagation/aw
 Deferred hardware/account checkpoints CP-0003C and CP-0004A/B/C remain incomplete.
 
 Evidence: research/propagation/CP-0008L_SOURCE_STATUS_PRESENTATION.md, PropagationSourceStatusService.kt, PropagationRuntime.kt and PropagationSourceStatusTests.kt.
+
+
+## CP-0008M — Propagation operating-picture read model
+
+Parent: CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION.
+
+A platform-neutral read-only composite now exposes the existing propagation workspace projection and per-source status from one captured cached snapshot and source-state list at one explicit UTC. It retains existing evidence/filters/assessments, read-only persistence, status failure/backoff and provenance without introducing providers, scheduling, Android lifecycle or hardware interaction.
+
+Focused read-model tests PASS; full inherited host/CI matrix PASS. Finalizer run: 37819591445.
+
+A sequential single-snapshot read does not guarantee atomic cross-store state. CP-0003C and CP-0004A/B/C remain deferred/incomplete.
+
+Evidence: research/propagation/CP-0008M_OPERATING_PICTURE_READ_MODEL.md and PropagationOperatingPictureTests.kt.
