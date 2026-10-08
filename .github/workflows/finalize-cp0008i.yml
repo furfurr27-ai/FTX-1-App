@@ -1,18 +1,9 @@
 name: Finalize CP-0008I checkpoint
 
+# CP-0008I is immutable and superseded. Manual-only prevents later propagation
+# checkpoints from re-finalizing this historical checkpoint.
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/HttpsUrlConnectionPublicPropagationTransport.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationSourceAdapters.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/HttpsUrlConnectionPublicPropagationTransportTests.kt'
-      - 'research/propagation/CP-0008I_CONCRETE_PUBLIC_HTTPS_TRANSPORT.md'
-      - 'scripts/test_concrete_public_https_transport.sh'
-      - 'scripts/finalize_cp0008i.py'
-      - '.github/workflows/finalize-cp0008h.yml'
-      - '.github/workflows/finalize-cp0008i.yml'
-
+  workflow_dispatch:
 permissions:
   contents: write
 
