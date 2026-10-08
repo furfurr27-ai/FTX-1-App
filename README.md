@@ -39,33 +39,34 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
+**Latest verified checkpoint:** CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
 
-Parent durable checkpoint: CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION.
+Parent durable checkpoint: CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR.
 
 CP-0003C and CP-0004A/B/C remain explicitly deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
 
-CP-0008G is a GREEN host/CI checkpoint. It adds deterministic, platform-neutral refresh orchestration over already-normalized propagation sources, the snapshot aggregator/cache, and the operating-picture projection layer.
+CP-0008H is a GREEN host/CI checkpoint. It connects the verified NOAA SWPC, GloTEC and PSK Reporter parsers to the CP-0008G refresh coordinator through a bounded platform-neutral public request/response contract.
 
-CP-0008G proves:
+CP-0008H proves:
 
-- Refresh sources declare a stable key, source role, normal cadence, retry policy, and a fetcher returning normalized PropagationAggregationInput or explicit failure.
-- Per-source state retains last attempt, last success, consecutive failures, next eligible refresh, failure message, and retryability.
-- Retryable failures use bounded exponential backoff; non-retryable normalized-contract failures wait normal cadence; success clears failure state.
-- Source exceptions are isolated as explicit retryable failures rather than aborting the full refresh cycle.
-- Built-in source roles fail closed on unmanaged provenance, wrong evidence categories, or retrieval timestamps later than the refresh UTC.
-- Canonical NOAA Kp selection uses the dedicated planetary-Kp feed for observed records and removes forecast-product observed rows while retaining estimated/predicted rows.
-- Successful sources replace only the cached evidence they manage.
-- Failed, cadence-skipped, and unmanaged cached evidence is carried forward unchanged, including original retrieval provenance, so stale evidence ages naturally.
-- All-attempt failure and aggregate-invariant failure preserve the last good snapshot and do not mutate snapshot history.
-- Empty successful source results never force an invalid empty snapshot.
-- Refresh state can survive coordinator recreation through the PropagationRefreshStateStore contract.
-- PropagationRefreshWorkspaceService composes refresh with the existing projection layer: successful refresh projects the new snapshot; failed refresh projects the last good snapshot while failure state remains explicit.
-- Production refresh code contains no Android/Compose/WorkManager, concrete HTTP/java.net transport, credentials/accounts, FTX-1/PTT/RF behavior, QSO/logbook writes, or LoTW mutation.
-- The superseded CP-0008F finalizer is manual-only.
+- PublicPropagationTransport exposes a GET request/response boundary without binding core propagation code to Android, WorkManager, OkHttp, Retrofit, HttpURLConnection, java.net transport or any other concrete client.
+- Requests require HTTPS, reject fragments/control-line separators, declare accepted media types and carry explicit maximum response bytes.
+- Responses preserve requested URL, effective URL, status, optional media type and decoded body.
+- Response validation fails closed on request-provenance mismatch, unexpected redirects, non-200 status, oversized bodies and unexpected media types.
+- Retry classification treats 408/425/429/5xx and transport exceptions as retryable while parser/schema/provenance violations remain non-rapid-retry failures.
+- NOAA observed Kp, Kp forecast and F10.7 source factories reuse the existing verified CP-0008B parsers and exact official endpoints.
+- GloTEC refresh performs a two-stage index then artifact retrieval using exact official NOAA endpoints.
+- NoaaSwpcGlotecIndexSelector requires valid JSON, accepts only canonical glotec_icao_YYYYMMDDTHHMMSSZ.geojson filenames or exact official full URLs, rejects malformed/non-official candidate references and selects the greatest canonical timestamp.
+- GloTEC source cadence may not poll faster than the pinned 10-minute product cadence.
+- PskReporterPublicQuery builds deterministic sender/receiver/either callsign XML queries, enforces a maximum 24-hour lookback, supports bounded report limits/mode/frequency filters, and never adds appcontact or callback.
+- PSK Reporter source cadence may not violate the documented five-minute minimum retrieval guidance.
+- Deterministic fake-transport integration proves five public source definitions feed CP-0008G and still preserve canonical NOAA observed-Kp selection.
+- Required CI never depends on live provider availability.
+- The superseded CP-0008G finalizer is manual-only.
 
 Host/CI gates:
 
+- CP-0008H public propagation transport adapters: **98/98 PASS**.
 - CP-0008G propagation refresh coordinator: **112/112 PASS**.
 - CP-0008F propagation projection: **79/79 PASS**.
 - CP-0008E propagation aggregation/offline cache: **101/101 PASS**.
@@ -90,21 +91,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshModels.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshCoordinator.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRefreshWorkspaceService.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRefreshCoordinatorTests.kt
+- research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationTransport.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PublicPropagationSourceAdapters.kt
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/NoaaSwpcGlotecIndexSelector.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PublicPropagationTransportAdapterTests.kt
 - SOFTWARE_TRACK.md
-- CP-0008G finalization workflow run: 37670764894
+- CP-0008H finalization workflow run: 37786722486
 
 ### Evidence boundary
 
-CP-0008G proves deterministic source orchestration over already-normalized evidence and stored snapshots. It does not claim live network access, provider uptime, Android background execution, battery behavior, new provider schemas, or real-world propagation accuracy.
+CP-0008H proves transport-independent endpoint/query/response semantics using deterministic fake transport plus pinned provider fixtures. It does not claim a concrete HTTP client, TLS/runtime networking, Android background execution, provider uptime, battery behavior, or real-world propagation accuracy.
 
 ### Inherited verified ancestry
 
-CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION, CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
+CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR, CP-0008F-PROPAGATION_OPERATING_PICTURE_PROJECTION, CP-0008E-PROPAGATION_AGGREGATION_OFFLINE_CACHE, CP-0008D-PSK_REPORTER_HEARD_PATH_ADAPTER, CP-0008C-NOAA_SWPC_GLOTEC_IONOSPHERIC_ADAPTER, CP-0008B-NOAA_SWPC_PROPAGATION_ADAPTER, CP-0008A-PROPAGATION_INTELLIGENCE_FOUNDATION and all earlier verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -128,7 +129,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008H — public propagation transport adapters
+**Active software track:** CP-0008I — concrete public HTTPS transport implementation
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -353,7 +354,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
+- Current Git source baseline: CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -366,16 +367,14 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008H — public propagation transport adapters.**
+**CP-0008I — concrete public HTTPS transport implementation.**
 
-1. Add a platform-neutral request/response transport boundary that can feed the existing NOAA SWPC, GloTEC, and PSK Reporter parsers without putting a concrete HTTP client in core propagation logic.
-2. Build source factories/adapters that translate successful public responses into CP-0008G PropagationRefreshSourceDefinition fetch results.
-3. Preserve the pinned exact NOAA planetary-Kp, Kp forecast, F10.7, GloTEC index/artifact, and PSK Reporter HTTPS endpoint rules already established by the adapter checkpoints.
-4. Implement deterministic GloTEC index-to-latest-artifact selection and fail closed on malformed or non-official artifact URLs.
-5. Preserve PSK Reporter query/provenance restrictions and do not persist appcontact or other contact identifiers.
-6. Prove response status/body/size/error handling with deterministic fake transport CI; optional live public schema smoke may verify structure but must not make deterministic tests depend on network availability.
-7. Keep Android WorkManager, concrete Android networking, credentials/accounts, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, phone/radio/RF/manual validation outside CP-0008H.
-8. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
+1. Implement a concrete JVM/Android-compatible HTTPS GET transport behind the CP-0008H PublicPropagationTransport interface.
+2. Enforce connect/read timeouts, bounded streaming reads using request.maxResponseBytes, HTTPS-only requests, redirect refusal, deterministic UTF-8 decoding, status/content-type/effective-URL reporting, and safe connection cleanup.
+3. Prove the implementation with a deterministic local HTTP/HTTPS-compatible test harness or injectable connection factory; required CI must not depend on external provider uptime.
+4. Integrate the concrete transport with the existing CP-0008H source definitions without changing provider parser semantics or CP-0008G refresh/cache behavior.
+5. Keep WorkManager/background scheduling, WSPRnet/WSPR.live, GIRO, HFcast/VOACAP, real credentials/accounts, phone/radio/RF/manual validation outside CP-0008I.
+6. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C.
 
 ## README maintenance contract
 

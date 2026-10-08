@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR
+CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,19 +25,21 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008H-PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS
+CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT
 
 Required scope:
 
-- platform-neutral public request/response transport boundary
-- source adapters/factories feeding existing NOAA SWPC, GloTEC and PSK Reporter parsers into CP-0008G refresh source definitions
-- exact established official HTTPS endpoint restrictions
-- deterministic GloTEC index-to-latest-artifact selection
-- bounded response/status/body/error handling
-- PSK Reporter provenance/contact-identifier restrictions retained
-- deterministic fake-transport host/CI tests
-- live schema smoke optional and non-authoritative for deterministic completion
-- no Android WorkManager/concrete Android networking
+- concrete JVM/Android-compatible HTTPS GET transport behind PublicPropagationTransport
+- explicit connect/read timeouts
+- bounded streaming reads using request.maxResponseBytes
+- HTTPS-only request enforcement
+- redirect refusal
+- deterministic UTF-8 decoding
+- response status/content-type/effective-URL reporting
+- safe stream/connection cleanup
+- deterministic CI without external-provider dependency
+- integrate with existing CP-0008H source definitions without parser-policy changes
+- no WorkManager/background scheduling
 - no WSPRnet/WSPR.live/GIRO/HFcast/VOACAP integration
 - no credentials/accounts
 - no phone/radio/RF/manual hardware work

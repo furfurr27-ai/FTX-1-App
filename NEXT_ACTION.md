@@ -8,6 +8,6 @@ Skip any checkpoint that requires the phone, radio, real credentials/certificate
 
 ## Next software checkpoint
 
-**CP-0008H — public propagation transport adapters**
+**CP-0008I — concrete public HTTPS transport implementation**
 
-Add a platform-neutral request/response transport boundary and source adapters that feed the existing NOAA SWPC, GloTEC, and PSK Reporter parsers into the CP-0008G refresh coordinator. Prove exact endpoint handling, GloTEC latest-artifact selection, response/error/size handling, and PSK Reporter provenance restrictions with deterministic fake transport CI. Keep concrete Android networking/scheduling and new providers outside this checkpoint.
+Implement a concrete JVM/Android-compatible HTTPS GET transport behind the CP-0008H PublicPropagationTransport interface. Enforce timeouts, bounded streaming reads, redirect refusal, exact response metadata, UTF-8 decoding, and cleanup with deterministic CI. Keep WorkManager/background scheduling and new propagation providers outside this checkpoint.

@@ -387,3 +387,21 @@ Finalization workflow run: 37670764894.
 CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
 
 Evidence: research/propagation/CP-0008G_PROPAGATION_REFRESH_COORDINATOR.md, PropagationRefreshModels.kt, PropagationRefreshCoordinator.kt, PropagationRefreshWorkspaceService.kt, and PropagationRefreshCoordinatorTests.kt.
+
+## CP-0008H — Public propagation transport adapters
+
+Parent durable checkpoint: CP-0008G-PROPAGATION_SOURCE_REFRESH_COORDINATOR.
+
+FieldOps now has a platform-neutral public request/response boundary connecting the existing NOAA SWPC, GloTEC and PSK Reporter parsers to the refresh coordinator. Requests are HTTPS-only, bounded by declared response size and media type, and responses retain request/effective URL, status, media type and body.
+
+GloTEC uses deterministic two-stage index/artifact retrieval. The index selector requires valid JSON and only accepts canonical official NOAA artifact references. PSK Reporter queries are deterministic, enforce the documented five-minute minimum retrieval cadence, and never add appcontact or callback parameters.
+
+Deterministic fake-transport integration proves all five public source definitions feed CP-0008G while canonical observed-Kp selection remains intact.
+
+Host/CI gate: public transport 98; refresh coordinator 112; projection 79; aggregation/offline cache 101; PSK Reporter 168; GloTEC 87; NOAA 53; propagation foundation 154; production state pack 363; geometry providers 102; award-area map projection 96; extended awards 96; Awards service 64; persistence 92; Awards projection 114; target 77; catalog 115; award evaluator 67; queue 47; logger 78; LoTW transaction 53; core 42,062, all PASS.
+
+Finalization workflow run: 37786722486.
+
+CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete hardware checkpoints.
+
+Evidence: research/propagation/CP-0008H_PUBLIC_PROPAGATION_TRANSPORT_ADAPTERS.md, PublicPropagationTransport.kt, PublicPropagationSourceAdapters.kt, NoaaSwpcGlotecIndexSelector.kt, and PublicPropagationTransportAdapterTests.kt.
