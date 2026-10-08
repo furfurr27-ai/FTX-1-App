@@ -96,6 +96,11 @@ class PropagationRuntime internal constructor(
     fun sourceStates(): List<PropagationRefreshSourceState> =
         refreshStateStore.all()
 
+    /** Read-only source readiness and cached-evidence freshness; explicit UTC. */
+    fun sourceStatus(nowUtcMillis: Long): PropagationSourcesStatusProjection =
+        PropagationSourceStatusService(refreshStateStore, snapshotStore)
+            .project(nowUtcMillis)
+
     fun refreshAndProject(
         query: PropagationProjectionQuery,
     ): PropagationRefreshWorkspaceResult =
