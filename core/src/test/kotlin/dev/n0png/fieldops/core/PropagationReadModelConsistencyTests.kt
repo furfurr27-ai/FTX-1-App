@@ -163,7 +163,7 @@ object PropagationReadModelConsistencyTests {
                 retrieved = NOW - 8 * 60 * 60_000),
             evidence("future-observed", observed = NOW + 9000,
                 retrieved = NOW + 3000))
-        val state = state(success = NOW - 20_000)
+        val state = state(success = NOW - 20_000, attempt = NOW - 20_000)
         val picture = PropagationOperatingPictureService(
             cache(input), sources(state)
         ).read(NOW)
