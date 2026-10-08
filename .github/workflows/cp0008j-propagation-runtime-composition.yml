@@ -1,0 +1,62 @@
+name: CP-0008J Propagation Runtime Composition
+
+on:
+  push:
+    branches: [cp-0008j-propagation-runtime-composition]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationRuntimeTests.kt'
+      - 'research/propagation/CP-0008J_PROPAGATION_RUNTIME_COMPOSITION.md'
+      - 'scripts/test_propagation_runtime_composition.sh'
+      - '.github/workflows/cp0008j-propagation-runtime-composition.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_propagation_runtime_composition.sh
+
+  inherited:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: concrete-https, script: scripts/test_concrete_public_https_transport.sh}
+          - {label: public-transport, script: scripts/test_public_propagation_transport_adapters.sh}
+          - {label: refresh, script: scripts/test_propagation_refresh_coordinator.sh}
+          - {label: projection, script: scripts/test_propagation_projection.sh}
+          - {label: aggregation, script: scripts/test_propagation_aggregation_offline_cache.sh}
+          - {label: psk-reporter, script: scripts/test_psk_reporter_heard_path_adapter.sh}
+          - {label: glotec, script: scripts/test_glotec_ionospheric_adapter.sh}
+          - {label: noaa-swpc, script: scripts/test_noaa_swpc_propagation_adapter.sh}
+          - {label: propagation, script: scripts/test_propagation_foundation.sh}
+          - {label: map, script: scripts/test_award_area_map_projection.sh}
+          - {label: logger, script: scripts/test_universal_qso_logger.sh}
+          - {label: lotw, script: scripts/test_lotw_transaction.sh}
+          - {label: core, script: scripts/test_core_regression.sh}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash "${{ matrix.script }}"
