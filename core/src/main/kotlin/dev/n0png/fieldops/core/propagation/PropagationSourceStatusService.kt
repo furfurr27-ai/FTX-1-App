@@ -69,13 +69,28 @@ class PropagationSourceStatusService(
     private val stateStore: PropagationRefreshStateStore,
     private val snapshotStore: PropagationSnapshotStore,
 ) {
-    fun project(nowUtcMillis: Long): PropagationSourcesStatusProjection {
+    fun project(nowUtcMillis: Long): PropagationSourcesStatusProjection =
+        projectFrom(
+            nowUtcMillis = nowUtcMillis,
+            states = stateStore.all(),
+            snapshot = snapshotStore.latest(),
+        )
+
+    /**
+     * Project an already captured source-state list and snapshot. Intended for
+     * operating-picture composition, where both read models must reference the
+     * SAME cached snapshot without separately querying latest().
+     * This is not a cross-store transactional read or lock.
+     */
+    fun projectFrom(
+        nowUtcMillis: Long,
+        states: List<PropagationRefreshSourceState>,
+        snapshot: PropagationSnapshot?,
+    ): PropagationSourcesStatusProjection {
         require(nowUtcMillis >= 0) { "Propagation source-status UTC must be non-negative" }
-        val states = stateStore.all()
         require(states.map { it.sourceKey }.distinct().size == states.size) {
             "Propagation source-status records must have unique keys"
         }
-        val snapshot = snapshotStore.latest()
         val evidence = snapshot?.allEvidence().orEmpty()
 
         val rows = states.sortedBy { it.sourceKey }.map { state ->

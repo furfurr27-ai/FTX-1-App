@@ -1,8 +1,19 @@
-name: Finalize CP-0008L checkpoint
+name: Finalize CP-0008M checkpoint
 
-# CP-0008L is verified. Finalization is manual-only after CP-0008M.
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOperatingPictureService.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationSourceStatusService.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOperatingPictureTests.kt'
+      - 'research/propagation/CP-0008M_OPERATING_PICTURE_READ_MODEL.md'
+      - 'scripts/test_propagation_operating_picture.sh'
+      - 'scripts/finalize_cp0008m.py'
+      - '.github/workflows/cp0008m-propagation-operating-picture.yml'
+      - '.github/workflows/finalize-cp0008m.yml'
+      - '.github/workflows/finalize-cp0008l.yml'
 
 permissions:
   contents: write
@@ -11,7 +22,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  source-status:
+  operating-picture:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,7 +34,7 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_source_status_presentation.sh
+      - run: bash scripts/test_propagation_operating_picture.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -33,6 +44,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: source-status, script: scripts/test_propagation_source_status_presentation.sh}
           - {label: state-persistence, script: scripts/test_propagation_refresh_state_persistence.sh}
           - {label: runtime, script: scripts/test_propagation_runtime_composition.sh}
           - {label: concrete-https, script: scripts/test_concrete_public_https_transport.sh}
@@ -70,7 +82,7 @@ jobs:
       - run: bash "${{ matrix.script }}"
 
   checkpoint:
-    needs: [source-status, inherited]
+    needs: [operating-picture, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +90,7 @@ jobs:
       - name: Update durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008l.py
+        run: python3 scripts/finalize_cp0008m.py
       - name: Create and verify immutable checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -86,24 +98,24 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION \
-            --parent CP-0008K-PROPAGATION_REFRESH_STATE_PERSISTENCE \
-            --summary "Read-only propagation source-status projection over persisted refresh state and last-good evidence freshness" \
-            --phase "Propagation source-status presentation host-verified; operating-picture composition next; hardware/account deferred" \
-            --test-status "GREEN host/CI: source_status=PASS state_persistence=PASS runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
-            --completed "Explicit-UTC read-only source-status service reporting READY, CADENCE_WAIT, RETRY_BACKOFF and FAILURE_COOLDOWN" \
-            --completed "Last-attempt outcome, failure details, eligibility timestamps, remaining time and future-dated success exposed independently" \
-            --completed "Role-based last-good evidence mapping and per-observation source-aware freshness counts with observed/retrieved UTC provenance" \
-            --completed "No evidence invented for successful refreshes or absent snapshots; stable ordering and duplicate source row rejection" \
-            --completed "PropagationRuntime.sourceStatus uses existing store injection without altering provider refresh or projection semantics" \
-            --completed "Persisted store and snapshot recreation yields deterministic identical status and bit-identical read-only files" \
-            --completed "Superseded CP-0008K finalizer set manual-only and full inherited host/CI matrix green" \
+            --id CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL \
+            --parent CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION \
+            --summary "Explicit-UTC read-only propagation operating-picture composition with single captured source and cached snapshot read" \
+            --phase "Propagation operating-picture composition host-verified; read-model consistency diagnostics next; hardware/account deferred" \
+            --test-status "GREEN host/CI: operating_picture=PASS source_status=67 state_persistence=PASS runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Single snapshot and source-state capture used for both existing read projections at same explicit UTC" \
+            --completed "Avoided inconsistent second latest() snapshot reads while retaining original workspace projection and source status semantics" \
+            --completed "Composite validates snapshot identity, capture timestamp and future-dated markers across both projections" \
+            --completed "Workspace evidence filters do not hide source failure/backoff or last-good provenance" \
+            --completed "Runtime operatingPicture API uses already injected stores without refresh, scheduling, fetch or mutation" \
+            --completed "Offline synthetic proof of deterministic source/store reads, historical evidence, cache persistence and runtime recreation" \
+            --completed "Superseded CP-0008L finalizer changed to manual-only; inherited host/CI matrix green" \
             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
             --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "Android lifecycle/WorkManager, live-provider availability, phone/radio/RF and actual UI not verified" \
-            --next "CP-0008M: read-only propagation operating-picture composition combining existing workspace projection and source-status model" \
-            --next "Preserve all source/provider, cadence, cache and evidence semantics, prove deterministic CI" \
-            --next "Keep hardware/account and Android background work outside; CP-0003C remains DEFERRED"
+            --blocker "Sequential state/snapshot reads are not cross-store atomic; Android UI/lifecycle and phone/radio/RF not verified" \
+            --next "CP-0008N: read-only propagation read-model consistency and timestamp provenance diagnostics" \
+            --next "Preserve operating-picture, provider/cache/refresh semantics; prove deterministic CI" \
+            --next "Keep hardware/account and Android work outside; CP-0003C remains DEFERRED"
           python3 scripts/verify_checkpoint.py --root . --latest
 
       - name: Commit checkpoint
@@ -113,7 +125,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION.json
-          git add -f checkpoints/snapshots/CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION.tar.gz
-          git commit -m "Checkpoint CP-0008L propagation source-status presentation"
+          git add checkpoints/manifests/CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.json
+          git add -f checkpoints/snapshots/CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.tar.gz
+          git commit -m "Checkpoint CP-0008M propagation operating-picture read model"
           git push

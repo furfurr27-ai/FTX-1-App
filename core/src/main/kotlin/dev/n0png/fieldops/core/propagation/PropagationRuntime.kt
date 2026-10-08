@@ -101,6 +101,17 @@ class PropagationRuntime internal constructor(
         PropagationSourceStatusService(refreshStateStore, snapshotStore)
             .project(nowUtcMillis)
 
+    /** One captured cached snapshot for both lossless operating-picture views. */
+    fun operatingPicture(query: PropagationProjectionQuery): PropagationOperatingPicture =
+        PropagationOperatingPictureService(snapshotStore, refreshStateStore).read(query)
+
+    fun operatingPicture(
+        nowUtcMillis: Long,
+        filter: PropagationProjectionFilter = PropagationProjectionFilter(),
+        selectedPath: PropagationAssessmentQuery? = null,
+    ): PropagationOperatingPicture =
+        operatingPicture(PropagationProjectionQuery(nowUtcMillis, filter, selectedPath))
+
     fun refreshAndProject(
         query: PropagationProjectionQuery,
     ): PropagationRefreshWorkspaceResult =
