@@ -1,8 +1,18 @@
-name: Finalize CP-0008M checkpoint
+name: Finalize CP-0008N checkpoint
 
-# Verified CP-0008M, superseded automatic finalizer
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationReadModelConsistencyService.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationReadModelConsistencyTests.kt'
+      - 'research/propagation/CP-0008N_READ_MODEL_CONSISTENCY_DIAGNOSTICS.md'
+      - 'scripts/test_propagation_read_model_consistency.sh'
+      - 'scripts/finalize_cp0008n.py'
+      - '.github/workflows/cp0008n-propagation-read-model-consistency.yml'
+      - '.github/workflows/finalize-cp0008n.yml'
+      - '.github/workflows/finalize-cp0008m.yml'
 
 permissions:
   contents: write
@@ -11,7 +21,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  operating-picture:
+  diagnostics:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -23,7 +33,7 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_operating_picture.sh
+      - run: bash scripts/test_propagation_read_model_consistency.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -33,6 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: operating-picture, script: scripts/test_propagation_operating_picture.sh}
           - {label: source-status, script: scripts/test_propagation_source_status_presentation.sh}
           - {label: state-persistence, script: scripts/test_propagation_refresh_state_persistence.sh}
           - {label: runtime, script: scripts/test_propagation_runtime_composition.sh}
@@ -71,7 +82,7 @@ jobs:
       - run: bash "${{ matrix.script }}"
 
   checkpoint:
-    needs: [operating-picture, inherited]
+    needs: [diagnostics, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -79,7 +90,7 @@ jobs:
       - name: Update durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008m.py
+        run: python3 scripts/finalize_cp0008n.py
       - name: Create and verify immutable checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -87,23 +98,23 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL \
-            --parent CP-0008L-PROPAGATION_SOURCE_STATUS_PRESENTATION \
-            --summary "Explicit-UTC read-only propagation operating-picture composition with single captured source and cached snapshot read" \
-            --phase "Propagation operating-picture composition host-verified; read-model consistency diagnostics next; hardware/account deferred" \
-            --test-status "GREEN host/CI: operating_picture=PASS source_status=67 state_persistence=PASS runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
-            --completed "Single snapshot and source-state capture used for both existing read projections at same explicit UTC" \
-            --completed "Avoided inconsistent second latest() snapshot reads while retaining original workspace projection and source status semantics" \
-            --completed "Composite validates snapshot identity, capture timestamp and future-dated markers across both projections" \
-            --completed "Workspace evidence filters do not hide source failure/backoff or last-good provenance" \
-            --completed "Runtime operatingPicture API uses already injected stores without refresh, scheduling, fetch or mutation" \
-            --completed "Offline synthetic proof of deterministic source/store reads, historical evidence, cache persistence and runtime recreation" \
-            --completed "Superseded CP-0008L finalizer changed to manual-only; inherited host/CI matrix green" \
+            --id CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS \
+            --parent CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL \
+            --summary "Read-only propagation provenance and source/snapshot timing consistency diagnostics" \
+            --phase "Propagation consistency diagnostics host-verified; offline report payload next; hardware/account deferred" \
+            --test-status "GREEN host/CI: read_model_diagnostics=PASS operating_picture=PASS source_status=67 state_persistence=PASS runtime=67 concrete_https=70 public_transport=98 refresh=112 projection=79 aggregation=101 pskr=168 glotec=87 noaa=53 propagation=154 production_pack=363 geometry=102 map=96 extended=96 service=64 persistence=92 awards_projection=114 target=77 catalog=115 award=67 queue=47 logger=78 LoTW_transaction=53 core=42062; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Pure source/cache timeline diagnostics derived from already captured operating picture with no additional store/provider reads" \
+            --completed "BEFORE EQUAL AFTER UNKNOWN comparisons with signed source-success versus cache and retrieval-versus-success timestamp deltas" \
+            --completed "Explicit future-dated source attempts, provider retrievals, cache capture timestamps and nullable future snapshot age" \
+            --completed "Preserved source-aware fresh aging stale future observation counts and workspace-filter independence" \
+            --completed "Aggregate source timing-skew counts derived consistently and no cross-store transaction guarantee claimed" \
+            --completed "Runtime diagnostics overloads tested with file-backed state/snapshot runtime recreation and no network" \
+            --completed "Superseded CP-0008M finalizer set manual-only; full inherited CI matrix green" \
             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
             --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "Sequential state/snapshot reads are not cross-store atomic; Android UI/lifecycle and phone/radio/RF not verified" \
-            --next "CP-0008N: read-only propagation read-model consistency and timestamp provenance diagnostics" \
-            --next "Preserve operating-picture, provider/cache/refresh semantics; prove deterministic CI" \
+            --blocker "Cross-store read atomicity unverified; no live provider, Android UI/lifecycle or phone/radio/RF proof" \
+            --next "CP-0008O: deterministic propagation offline diagnostic report payload based on existing read-model output" \
+            --next "Preserve provider/cache/refresh/assessment semantics; deterministic CI and source provenance" \
             --next "Keep hardware/account and Android work outside; CP-0003C remains DEFERRED"
           python3 scripts/verify_checkpoint.py --root . --latest
 
@@ -114,7 +125,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.json
-          git add -f checkpoints/snapshots/CP-0008M-PROPAGATION_OPERATING_PICTURE_READ_MODEL.tar.gz
-          git commit -m "Checkpoint CP-0008M propagation operating-picture read model"
+          git add checkpoints/manifests/CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.json
+          git add -f checkpoints/snapshots/CP-0008N-PROPAGATION_READ_MODEL_CONSISTENCY_DIAGNOSTICS.tar.gz
+          git commit -m "Checkpoint CP-0008N propagation read-model consistency diagnostics"
           git push

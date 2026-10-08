@@ -112,6 +112,21 @@ class PropagationRuntime internal constructor(
     ): PropagationOperatingPicture =
         operatingPicture(PropagationProjectionQuery(nowUtcMillis, filter, selectedPath))
 
+    /** Read-only UTC/last-good provenance diagnostics from the same captured view. */
+    fun operatingPictureWithDiagnostics(
+        query: PropagationProjectionQuery,
+    ): PropagationOperatingPictureWithDiagnostics =
+        PropagationReadModelConsistencyService.withDiagnostics(operatingPicture(query))
+
+    fun operatingPictureWithDiagnostics(
+        nowUtcMillis: Long,
+        filter: PropagationProjectionFilter = PropagationProjectionFilter(),
+        selectedPath: PropagationAssessmentQuery? = null,
+    ): PropagationOperatingPictureWithDiagnostics =
+        operatingPictureWithDiagnostics(
+            PropagationProjectionQuery(nowUtcMillis, filter, selectedPath)
+        )
+
     fun refreshAndProject(
         query: PropagationProjectionQuery,
     ): PropagationRefreshWorkspaceResult =
