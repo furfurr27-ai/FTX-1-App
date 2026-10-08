@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BUILD="$(mktemp -d)"
+trap 'rm -rf "$BUILD"' EXIT
+MAIN="$BUILD/fieldops-main.jar"
+TEST="$BUILD/cp0008m-operating-picture-tests.jar"
+SOURCE="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOperatingPictureService.kt"
+STATUS="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationSourceStatusService.kt"
+RUNTIME="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt"
+EVIDENCE="$ROOT/research/propagation/CP-0008M_OPERATING_PICTURE_READ_MODEL.md"
+mapfile -t MAIN_FILES < <(find "$ROOT/core/src/main/kotlin" -name '*.kt' | sort)
+echo "[1/5] Compile all platform-neutral core sources"
+kotlinc "${MAIN_FILES[@]}" -d "$MAIN"
+echo "[2/5] Compile and run deterministic operating-picture tests"
+kotlinc "$ROOT/core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOperatingPictureTests.kt" -cp "$MAIN" -include-runtime -d "$TEST"
+java -cp "$TEST:$MAIN" dev.n0png.fieldops.core.PropagationOperatingPictureTests
+echo "[3/5] Verify single captured snapshot/state and existing projection reuse"
+grep -Fq 'val snapshot = snapshotStore.latest()' "$SOURCE"
+grep -Fq 'val states = refreshStateStore.all()' "$SOURCE"
+grep -Fq 'projectionService.project(it, query)' "$SOURCE"
+grep -Fq 'sourceStatusService.projectFrom(' "$SOURCE"
+grep -Fq 'fun projectFrom(' "$STATUS"
+grep -Fq 'fun operatingPicture(query: PropagationProjectionQuery)' "$RUNTIME"
+echo "[4/5] Enforce pure read model and no device/account behaviors"
+! grep -Eq 'refreshAndProject\(|\.save\(|\.fetch\(|System.currentTimeMillis|Instant.now|Clock.systemUTC|WorkManager|android\.|androidx\.|RadioSession|UsbManager' "$SOURCE"
+echo "[5/5] Verify evidence boundary and owner override"
+grep -Fq 'single snapshot' "$EVIDENCE"
+grep -Fq 'CP-0003C remains **DEFERRED**' "$EVIDENCE"
+echo "CP-0008M propagation operating-picture host gate: PASS"
