@@ -10,7 +10,10 @@ on:
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/HttpsUrlConnectionPublicPropagationTransportTests.kt'
       - 'research/propagation/CP-0008I_CONCRETE_PUBLIC_HTTPS_TRANSPORT.md'
       - 'scripts/test_concrete_public_https_transport.sh'
+      - 'scripts/finalize_cp0008i.py'
       - '.github/workflows/cp0008i-concrete-public-https-transport.yml'
+      - '.github/workflows/finalize-cp0008h.yml'
+      - '.github/workflows/finalize-cp0008i.yml'
 
 permissions:
   contents: read
@@ -29,6 +32,20 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_concrete_public_https_transport.sh
+      - name: Dry-run CP-0008I durable handoff
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008i.py
+          python3 scripts/finalize_cp0008i.py
+          grep -Fq 'CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT' README.md
+          grep -Fq 'CP-0008J — propagation runtime composition' NEXT_ACTION.md
+          grep -Fq 'CP-0008J-PROPAGATION_RUNTIME_COMPOSITION' SOFTWARE_TRACK.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008h.yml
+          grep -Fq 'CP-0008I-CONCRETE_PUBLIC_HTTPS_TRANSPORT' .github/workflows/finalize-cp0008i.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
