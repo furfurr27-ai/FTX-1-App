@@ -1,18 +1,7 @@
 name: Finalize CP-0008Q checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt'
-      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md'
-      - 'scripts/test_propagation_offline_report_decoder.sh'
-      - 'scripts/finalize_cp0008q.py'
-      - '.github/workflows/cp0008q-propagation-offline-report-decode-validation.yml'
-      - '.github/workflows/finalize-cp0008q.yml'
-      - '.github/workflows/finalize-cp0008p.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
