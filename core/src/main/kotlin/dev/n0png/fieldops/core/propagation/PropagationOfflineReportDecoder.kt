@@ -52,6 +52,30 @@ object PropagationOfflineReportDecoder {
         return report
     }
 
+
+    /**
+     * Shared strict V1 JSON scanner and typed DTO constructor for a separately
+     * versioned comparison envelope. The caller MUST run comparison-specific
+     * semantic validation and canonical byte-for-byte reserialization before
+     * trusting this structurally decoded value. No origin authentication.
+     */
+    internal fun decodeComparisonPayloadCanonical(json: String): PropagationOfflineReportComparison {
+        checkedBytes(json)
+        val envelope = obj(Reader(json).read())
+        require(envelope.keys == setOf("format", "payload", "wireVersion")) {
+            "Incompatible comparison envelope"
+        }
+        require(envelope["format"] == PropagationOfflineReportComparisonSerialization.FORMAT) {
+            "Incompatible comparison format"
+        }
+        require(envelope["wireVersion"] ==
+            Num(PropagationOfflineReportComparisonSerialization.WIRE_VERSION.toString())) {
+            "Incompatible comparison wire version"
+        }
+        return typed(envelope["payload"], PropagationOfflineReportComparison::class.java, 0)
+            as PropagationOfflineReportComparison
+    }
+
     private fun checkedBytes(json: String): ByteArray {
         require(json.length <= PropagationOfflineReportSerialization.MAX_UTF8_BYTES) {
             "Character size limit exceeded"
