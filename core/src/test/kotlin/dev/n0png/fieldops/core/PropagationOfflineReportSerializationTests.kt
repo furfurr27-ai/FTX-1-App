@@ -108,6 +108,8 @@ object PropagationOfflineReportSerializationTests {
             "repeat deterministic empty report")
         checkThat(PropagationOfflineReportSerialization.verify(report, ser),
             "canonical artifact verification")
+        eq("d333296023c2c9e640fe35c349a04ea361d8760d593ccf102ac32801c14ea384",
+            ser.sha256Hex, "pinned canonical JSON V1 golden output fingerprint")
         println("CP-0008P golden empty-report SHA256: " + ser.sha256Hex)
     }
     private fun fullNestedProvenanceAndEscapes() {
