@@ -1,16 +1,33 @@
-name: Finalize CP-0008Q checkpoint
+name: CP-0008R Propagation Offline Report Import Boundary
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [cp-0008r-propagation-offline-report-import-boundary]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportImportService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportImportTests.kt'
+      - 'research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md'
+      - 'scripts/test_propagation_offline_report_import.sh'
+      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md'
+      - 'scripts/test_propagation_offline_report_decoder.sh'
+      - 'scripts/finalize_cp0008r.py'
+      - '.github/workflows/cp0008r-propagation-offline-report-import-boundary.yml'
+      - '.github/workflows/finalize-cp0008r.yml'
+      - '.github/workflows/finalize-cp0008q.yml'
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  decode:
+  import:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +39,27 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_report_decoder.sh
+      - run: bash scripts/test_propagation_offline_report_import.sh
+      - name: Dry-run CP-0008R handoff and immutable checkpoint
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008r.py
+          python3 scripts/finalize_cp0008r.py
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY \
+            --parent CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION \
+            --summary "Premerge dry-run only" \
+            --phase "Premerge dry-run only" \
+            --test-status "PREMERGE_DRY_RUN"
+          python3 scripts/verify_checkpoint.py --root . --latest
+          grep -Fq 'CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY' README.md
+          grep -Fq 'CP-0008S' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008q.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +69,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: decoder, script: scripts/test_propagation_offline_report_decoder.sh}
           - {label: serialization, script: scripts/test_propagation_offline_report_serialization.sh}
           - {label: offline-report, script: scripts/test_propagation_offline_diagnostic_report.sh}
           - {label: diagnostics, script: scripts/test_propagation_read_model_consistency.sh}
@@ -72,50 +110,3 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash "${{ matrix.script }}"
-
-  checkpoint:
-    needs: [decode, inherited]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Update durable handoff
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008q.py
-      - name: Create and verify immutable checkpoint
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          python3 scripts/create_checkpoint.py \
-            --root . \
-            --id CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION \
-            --parent CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT \
-            --summary "Strict offline V1 JSON report decoding, provenance validation and canonical round trips" \
-            --phase "Propagation offline report decode/validation CI-verified; import boundary next; hardware deferred" \
-            --test-status "GREEN host/CI: decoder=PASS serialization=PASS inherited=PASS (31 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Strict 16MiB/48-level/100000-items bounded offline JSON parser rejects malformed, duplicate, truncated and incompatible V1 data" \
-            --completed "Full typed source/evidence projection reconstruction preserves nullable timestamps, enum-keyed maps, nested geographic coverage and canonical JSON" \
-            --completed "Source-status readiness, freshness counts, timestamp relations, snapshot and evidence-index consistency are validated" \
-            --completed "SHA-256 and exact UTF-8 byte count checked without false authenticity or cross-store atomicity claims" \
-            --completed "Synthetic decoder, prior serializer and full inherited core regressions all pass in GitHub CI" \
-            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
-            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No authenticated report signature, cross-store atomicity, Android device or phone/radio/RF proof" \
-            --next "CP-0008R: GitHub/CI-only propagation offline report import boundary" \
-            --next "Preserve CP-0008P/Q canonical tests, nested data and source provenance" \
-            --next "CP-0003C remains DEFERRED; skip any manual account/hardware work"
-          python3 scripts/verify_checkpoint.py --root . --latest
-
-      - name: Commit checkpoint
-        run: |
-          set -euo pipefail
-          git config user.name "fieldops-checkpoint-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
-          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.json
-          git add -f checkpoints/snapshots/CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.tar.gz
-          git commit -m "Checkpoint CP-0008Q propagation offline report decode and validation"
-          git push

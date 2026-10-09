@@ -35,6 +35,10 @@ Required scope:
 - cross-store atomicity and authenticity remain unverified
 - CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
 
+## In-flight CP-0008R work (unverified)
+
+Branch: `cp-0008r-propagation-offline-report-import-boundary`. Pure offline import service and tests, inherited host CI, and gated finalizer are staged. PR and exact-tip CI must pass before promotion. CP-0008Q remains latest verified parent.
+
 ## Resume rule
 
 On interruption or a new chat:
