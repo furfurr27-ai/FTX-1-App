@@ -572,3 +572,14 @@ Versioned and bounded strict canonical comparison JSON V1 decoder with exact SHA
 Integrity is not authenticated origin. No cross-store atomicity, live provider/RF, phone/radio/accounts/certificates or hardware assertions. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008U_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.md and PropagationOfflineReportComparisonDecoderTests.kt.
+
+
+## CP-0008V — Offline comparison import and inspection
+
+Parent: CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.
+
+Validated versioned canonical CP-0008T/U comparison import boundary with explicit unkeyed integrity receipt and both original report receipts. Read-only historical selection lookups, filter and change-count APIs. Optional strict original V1 report recomputation detects forged derivative change flags when both original reports are present. Full host focused and inherited CI PASS; finalizer run: 37969324294.
+
+No signature/authenticated origin, cross-store atomicity, live provider/RF proof, phone/radio, real accounts or hardware tests. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008V_OFFLINE_COMPARISON_IMPORT_INSPECTION.md and PropagationOfflineReportComparisonImportTests.kt.

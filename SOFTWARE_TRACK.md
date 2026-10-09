@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION
+CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,13 +25,13 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008V — offline comparison import and inspection boundary
+CP-0008W — next GitHub/CI-only propagation software checkpoint
 
 Required scope:
 
-- GitHub/CI-only bounded import of validated CP-0008U canonical comparison exports
-- Preserve full original CP-0008P/Q/R/S/T/U contracts and inherited regression gates
-- No authenticated origin, cross-store atomicity, live provider/RF, real-device or account claim
+- Define next unblocked host-only item from current propagation roadmap
+- Preserve CP-0008P/Q/R/S/T/U/V contracts and inherited regression suite
+- No authenticated origin, cross-store atomicity, live provider/RF or device/account claim
 - CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
 ## Resume rule

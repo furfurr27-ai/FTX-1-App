@@ -39,25 +39,26 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION
+**Latest verified checkpoint:** CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION
 
-Parent durable checkpoint: CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT.
+Parent durable checkpoint: CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.
 
 CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints, not part of this CI-only verification.
 
-CP-0008U is a GREEN host-only strict, typed CP-0008T canonical offline comparison export V1 decoder and validator.
+CP-0008V is a GREEN host-only import and read-only historical inspection boundary for canonical CP-0008T/U comparison exports.
 
-CP-0008U proves:
+CP-0008V proves:
 
-- Full export metadata enforcement: separate media type, version 1, bounded canonical UTF-8, exact length and unkeyed SHA-256 integrity.
-- Strict bounded JSON scanner and typed DTO reconstruction shared with the existing CP-0008Q report decoder without altering original CP-0008P report V1 bytes.
-- Original before/after import receipts, query times, source/evidence identity and nested status/timing, selected-view classifications and distinct metadata/full-projection flags survive byte-for-byte round trips.
-- Rejection of malformed, truncated, incompatible, noncanonical, misclassified, receipt-inconsistent or tampered artifact metadata, including recomputed-but-inconsistent SHA-256.
-- Original CP-0008P/Q/R/S/T contracts and the inherited host-only GitHub Actions matrix remain GREEN.
-- Integrity is not a signature: original full V1 reports are required for independent projection-content verification, no provider authentication or live RF state is asserted.
+- Complete versioned CP-0008U canonical strict typed decode is required; no bare JSON import or unsupported trust assertions.
+- Detached typed source/evidence comparison rows, both original receipts, query order, source attribution and selected-view classifications are retained for read-only inspection.
+- Source/evidence lookup, kind and classification filters, historical change counts and unmodifiable outer list snapshots.
+- Optional verification against both complete CP-0008P original report artifacts detects independently falsified derivative comparison flags even when SHA-256 is recomputed.
+- CP-0008P/Q/R/S/T/U interfaces and full inherited host regression matrix remain GREEN.
+- The derivative remains unauthenticated, cannot independently recheck full projection evidence without original reports and is never live RF/provider status.
 
 Host/CI gates:
 
+- CP-0008V offline comparison import and inspection boundary: **PASS**.
 - CP-0008U offline comparison export decode validation: **PASS**.
 - CP-0008T offline comparison canonical export: **PASS**.
 - CP-0008S offline imported report inspection and comparison: **PASS**.
@@ -96,19 +97,19 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008U_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonDecoder.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonDecoderTests.kt
-- scripts/test_propagation_offline_comparison_decoder.sh
-- CP-0008U finalization workflow run: 37965956956
+- research/propagation/CP-0008V_OFFLINE_COMPARISON_IMPORT_INSPECTION.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonImportService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonImportTests.kt
+- scripts/test_propagation_offline_comparison_import.sh
+- CP-0008V finalization workflow run: 37969324294
 
 ### Evidence boundary
 
-A removed selected-view item is not provider deletion. SHA-256 cannot authenticate provenance. This derivative does not include both original projection payloads. Cross-store atomicity, phone/radio/RF, live provider status and real accounts/certificates remain unverified.
+SHA-256 is not authenticated origin or a signature. ADDED_TO_VIEW and REMOVED_FROM_VIEW express selected report view membership only. Kotlin DTOs are not deep immutable under unsafe casts. Comparison is a derivative without full projections; no cross-store atomicity, real phone/radio/RF proof, live provider status or real account validation.
 
 ### Inherited verified ancestry
 
-CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT and previous verified checkpoints remain verified ancestry.
+CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION and previous verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -132,7 +133,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008V — offline comparison import and inspection boundary
+**Active software track:** CP-0008W — next GitHub/CI-only propagation software checkpoint
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -357,7 +358,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION
+- Current Git source baseline: CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -370,11 +371,11 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008V — offline comparison import and inspection boundary.**
+**CP-0008W — next GitHub/CI-only propagation software checkpoint.**
 
-1. Add a bounded GitHub/CI-only offline comparison import and read-only inspection boundary above CP-0008U.
-2. Preserve CP-0008P/Q/R/S/T/U canonical receipts, report V1 bytes, selected-view semantics and all inherited CI.
-3. Never treat SHA-256 as authenticated provenance, claims of cross-store atomicity or evidence of live propagation.
+1. Inspect the GitHub/CI-only propagation roadmap and select the next independent software checkpoint following CP-0008V.
+2. Preserve canonical CP-0008P/Q/R/S/T/U/V, detached imported views and historic source/evidence semantics.
+3. Continue without inventing signatures, authenticated provenance, cross-store atomicity or live RF status.
 4. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 ## README maintenance contract
 

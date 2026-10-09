@@ -8,6 +8,6 @@ Skip any checkpoint requiring phone, radio, real credentials/certificates, real 
 
 ## Next software checkpoint
 
-**CP-0008V — offline comparison import and inspection boundary**
+**CP-0008W — next GitHub/CI-only propagation software checkpoint**
 
-Build a strict GitHub/CI-only import and inspection boundary around validated CP-0008U comparison exports, preserving original receipts and historical selected-view semantics, without claiming authenticated provenance, cross-store atomicity, live RF or hardware validation.
+Inspect the current propagation software roadmap and select the next fully GitHub/CI-only task after the completed CP-0008V import/inspection boundary. Preserve all prior host verified CP-0008P/Q/R/S/T/U/V interfaces and do not claim live or authenticated RF status.
