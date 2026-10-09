@@ -18,7 +18,7 @@ on:
       - 'scripts/finalize_cp0008r.py'
       - '.github/workflows/cp0008r-propagation-offline-report-import-boundary.yml'
       - '.github/workflows/finalize-cp0008r.yml'
-      - '.github/workflows/finalize-cp0008p.yml'
+      - '.github/workflows/finalize-cp0008q.yml'
 
 permissions:
   contents: read
