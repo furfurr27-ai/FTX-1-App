@@ -1,18 +1,7 @@
 name: Finalize CP-0008P checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportSerializationTests.kt'
-      - 'research/propagation/CP-0008P_OFFLINE_REPORT_SERIALIZATION_CONTRACT.md'
-      - 'scripts/test_propagation_offline_report_serialization.sh'
-      - 'scripts/finalize_cp0008p.py'
-      - '.github/workflows/cp0008p-propagation-offline-report-serialization.yml'
-      - '.github/workflows/finalize-cp0008p.yml'
-      - '.github/workflows/finalize-cp0008o.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
