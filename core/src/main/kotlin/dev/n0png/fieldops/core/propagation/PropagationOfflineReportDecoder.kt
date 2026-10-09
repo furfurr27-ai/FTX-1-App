@@ -293,7 +293,29 @@ object PropagationOfflineReportDecoder {
                 workspace.ionosphericProducts.map { it.metadata } +
                 workspace.solarGeomagnetic.map { it.metadata } +
                 workspace.modeledPaths.map { it.metadata }
+            require(metas.map { it.evidenceId }.distinct().size == metas.size) {
+                "Duplicate selected evidence identity"
+            }
+            val visibleSourceIds = metas.map { it.source.sourceId }.toSet()
+            require(report.snapshot.sourceCount != null &&
+                report.snapshot.sourceCount >= visibleSourceIds.size) {
+                "Snapshot cannot contain fewer sources than selected evidence"
+            }
+            val capture = requireNotNull(report.snapshot.capturedAtUtcMillis)
             metas.forEach { meta ->
+                require(meta.source.retrievedAtUtcMillis <= capture) {
+                    "Selected evidence retrieval follows cache capture"
+                }
+                report.snapshot.oldestRetrievalUtcMillis?.let {
+                    require(meta.source.retrievedAtUtcMillis >= it) {
+                        "Selected retrieval before snapshot minimum"
+                    }
+                }
+                report.snapshot.newestRetrievalUtcMillis?.let {
+                    require(meta.source.retrievedAtUtcMillis <= it) {
+                        "Selected retrieval after snapshot maximum"
+                    }
+                }
                 require(meta.observedAtUtcMillis >= 0L &&
                     meta.freshness == PropagationFreshnessClassifier.classify(
                         meta.observedAtUtcMillis, now,
