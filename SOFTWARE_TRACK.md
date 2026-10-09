@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD
+CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,16 +25,16 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT
+CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
 
 Required scope:
 
-- offline deterministic versioned serialization contract for CP-0008O typed report
-- preserve source/evidence provenance and unknown/future timestamps without invented values
-- validation of output consistency and stable canonical ordering; deterministic synthetic host CI
-- preserve CP-0008O/N/M interfaces, cache, refresh, source provider/cadence and assessment behavior
-- immutable main checkpoint after full inherited CI
-- no phone, radio, RF testing, real accounts/credentials, Android lifecycle/UI/WorkManager or new provider
+- strict offline deterministic JSON decoding and validation of CP-0008P canonical wire version 1
+- bounded parser and strong source/evidence provenance and version validation
+- round-trip equality and tampering/corruption rejection using deterministic CI-only fixtures
+- preserve CP-0008M/N/O/P semantics and existing source/cache/assessment/refresh contracts
+- immutable main checkpoint after full inherited CI regression
+- no Android UI, lifecycle, WorkManager, credentials, real accounts, new providers or phone/radio/RF tests
 - CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
 
 ## Resume rule

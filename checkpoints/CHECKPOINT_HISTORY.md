@@ -502,3 +502,16 @@ Focused offline report CI PASS, full inherited host regressions PASS. Immutable 
 CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 
 Evidence: research/propagation/CP-0008O_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.md and PropagationOfflineDiagnosticReportTests.kt.
+
+
+## CP-0008P — Propagation offline report serialization contract
+
+Parent: CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.
+
+A pure offline canonical JSON UTF-8 serializer now exports the complete platform-neutral CP-0008O report DTO, including all nested source status and evidence projection details. Stable field/map/set ordering, exact nullable UTC integer timestamps, finite number checks, Unicode escaping and size bounds support deterministic transfer. Explicit wire version, media type, SHA-256 and byte count provide integrity validation without claiming provenance authenticity. No source or cache stores are accessed by the serializer, and no cross-store atomicity is claimed.
+
+Focused host CI, checkpoint dry-run and all inherited host tests PASS. Finalizer run: 37882589879. Full decode/deserialization, UI and device integration remain future work.
+
+CP-0003C DEFERRED until explicitly resumed; CP-0004A/B/C remain incomplete.
+
+Evidence: research/propagation/CP-0008P_OFFLINE_REPORT_SERIALIZATION_CONTRACT.md and PropagationOfflineReportSerializationTests.kt.
