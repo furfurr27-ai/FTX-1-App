@@ -370,6 +370,9 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
+**In-flight implementation (not verified):** CP-0008Q is staged on `cp-0008q-propagation-offline-report-decode-validation`, [PR #40](https://github.com/furfurr27-ai/FTX-1-App/pull/40). The branch contains decoder, synthetic tests, CI, and main finalizer. Do not merge before its exact-tip focused and inherited CI passes; do not mark complete before the main finalizer creates and verifies the immutable CP-0008Q manifest/snapshot. Until then CP-0008P remains the latest verified baseline.
+
+
 **CP-0008Q — propagation offline report decode and validation.**
 
 1. Add a bounded, deterministic, strict JSON decode/validation path for the canonical CP-0008P offline report wire format. Reject unknown incompatible wire versions, unsafe field types and corrupted source/evidence provenance.

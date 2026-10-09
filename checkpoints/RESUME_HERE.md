@@ -32,3 +32,11 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## In-flight CP-0008Q handoff (not verified)
+
+PR: https://github.com/furfurr27-ai/FTX-1-App/pull/40
+Branch: `cp-0008q-propagation-offline-report-decode-validation`
+Parent: `CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT`, main `52453fad9e4c18504394f469fcb8302b5b8f8a49`.
+
+Decoder/tests/scripts/evidence note and full inherited + main finalizer workflows are staged. GitHub Actions jobs were queued at last inspection; do not infer passing tests from successful commits. Next: inspect exact PR head, run status, focused test and all inherited results; fix failures on this branch. Merge PR only after exact-tip green CI. Then verify the automatic main finalizer, `checkpoints/LATEST.json`, manifest file hashes, snapshot SHA-256 and resulting main commit. Until verification CP-0008P is latest durable state. CP-0003C is DEFERRED; CP-0004A/B/C incomplete.

@@ -37,6 +37,9 @@ Required scope:
 - no Android UI, lifecycle, WorkManager, credentials, real accounts, new providers or phone/radio/RF tests
 - CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
 
+
+Implementation status: **staged / not checkpointed** in PR #40, branch `cp-0008q-propagation-offline-report-decode-validation`. The strict decoder and adversarial Kotlin tests have been committed. Awaiting exact-tip CI completion; no successful run or verified finalizer has been established. Do not merge on pending or red CI. Keep the parent CP-0008P durable checkpoint intact.
+
 ## Resume rule
 
 On interruption or a new chat:
