@@ -215,6 +215,7 @@ object PropagationOfflineReportDecoder {
             val s = source.status
             val d = source.timing
             require(s.evidenceCount >= 0 &&
+                s.evidenceFreshnessCounts.keys == PropagationFreshness.entries.toSet() &&
                 s.evidenceFreshnessCounts.values.all { it >= 0 } &&
                 s.evidenceFreshnessCounts.values.sumOf { it.toLong() } == s.evidenceCount.toLong()) {
                 "Source freshness sum mismatch"
@@ -249,6 +250,23 @@ object PropagationOfflineReportDecoder {
                 diff(s.newestEvidenceRetrievedUtcMillis, s.lastSuccessUtcMillis)) {
                 "Source diagnostic timestamp mismatch"
             }
+            val attempt = when {
+                s.consecutiveFailures > 0 -> PropagationSourceLastAttempt.FAILED
+                s.lastAttemptUtcMillis != null -> PropagationSourceLastAttempt.SUCCEEDED
+                else -> PropagationSourceLastAttempt.NEVER_ATTEMPTED
+            }
+            require(s.lastAttempt == attempt &&
+                s.nextEligibleRefreshUtcMillis >= 0 &&
+                (s.lastAttemptUtcMillis == null || s.lastAttemptUtcMillis >= 0) &&
+                (s.lastSuccessUtcMillis == null || s.lastSuccessUtcMillis >= 0) &&
+                (s.lastSuccessUtcMillis == null || (s.lastAttemptUtcMillis != null &&
+                    s.lastSuccessUtcMillis <= s.lastAttemptUtcMillis)) &&
+                (s.consecutiveFailures != 0 ||
+                    (s.lastFailureMessage == null && s.lastFailureRetryable == null)) &&
+                (s.consecutiveFailures == 0 ||
+                    (!s.lastFailureMessage.isNullOrBlank() && s.lastFailureRetryable != null))) {
+                "Source attempt status provenance mismatch"
+            }
             require(s.consecutiveFailures >= 0 && s.remainingWaitMillis >= 0 &&
                 s.remainingWaitMillis == (if (s.nextEligibleRefreshUtcMillis > now)
                     Math.subtractExact(s.nextEligibleRefreshUtcMillis, now) else 0L)) {
@@ -269,6 +287,11 @@ object PropagationOfflineReportDecoder {
                 workspace.solarGeomagnetic.map { it.metadata } +
                 workspace.modeledPaths.map { it.metadata }
             metas.forEach { meta ->
+                require(meta.observedAtUtcMillis >= 0L &&
+                    meta.freshness == PropagationFreshnessClassifier.classify(
+                        meta.observedAtUtcMillis, now,
+                        PropagationSourceFreshnessDefaults.policyForSourceId(meta.source.sourceId)
+                    )) { "Evidence freshness provenance mismatch" }
                 require(meta.retrievalIsFutureDated == (meta.source.retrievedAtUtcMillis > now) &&
                     meta.retrievalAgeMillis == meta.source.retrievedAtUtcMillis
                         .takeIf { it <= now }?.let { Math.subtractExact(now, it) }) {
