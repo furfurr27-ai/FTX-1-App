@@ -30,3 +30,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## In-flight implementation (not yet verified)
+
+CP-0008S branch: `cp-0008s-propagation-offline-import-inspection-comparison`. Validate PR exact-tip CI; merge only after the full matrix passes; then confirm main finalizer run SUCCESS and committed verified snapshot/manifest. Keep CP-0008R in LATEST until finalizer confirmation.
