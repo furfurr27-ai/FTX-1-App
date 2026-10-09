@@ -1,7 +1,20 @@
-name: Finalize CP-0008V checkpoint
+name: Finalize CP-0008W checkpoint
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonPresentationService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonPresentationTests.kt'
+      - 'scripts/test_propagation_offline_comparison_presentation.sh'
+      - 'research/propagation/CP-0008W_OFFLINE_COMPARISON_PRESENTATION.md'
+      - 'scripts/finalize_cp0008w.py'
+      - '.github/workflows/cp0008w-propagation-offline-comparison-presentation.yml'
+      - '.github/workflows/finalize-cp0008w.yml'
+      - '.github/workflows/finalize-cp0008v.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
 
 permissions:
   contents: write
@@ -10,7 +23,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  import:
+  presentation:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +35,7 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_comparison_import.sh
+      - run: bash scripts/test_propagation_offline_comparison_presentation.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: comparison-import, script: scripts/test_propagation_offline_comparison_import.sh}
           - {label: comparison-decode, script: scripts/test_propagation_offline_comparison_decoder.sh}
           - {label: export-v1, script: scripts/test_propagation_offline_comparison_serialization.sh}
           - {label: comparison, script: scripts/test_propagation_offline_report_comparison.sh}
@@ -79,8 +93,9 @@ jobs:
       - run: bash "${{ matrix.script }}"
 
 
+
   checkpoint:
-    needs: [import, inherited]
+    needs: [presentation, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -88,7 +103,7 @@ jobs:
       - name: Update durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008v.py
+        run: python3 scripts/finalize_cp0008w.py
       - name: Create and verify immutable checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -96,21 +111,21 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION \
-            --parent CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION \
-            --summary "Strict historical offline comparison import and inspection boundary" \
-            --phase "Offline comparison import and historical inspection CI-verified; next software-only checkpoint TBD; hardware deferred" \
-            --test-status "GREEN host/CI: comparison-import=PASS comparison-decode=PASS comparison-export=PASS inherited=PASS (36 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Detached CP-0008T/U canonical offline comparison import with explicit unkeyed integrity receipt" \
-            --completed "Read-only historical source/evidence selection inspection, by identity, kind and change classification" \
-            --completed "Optional comparison recomputation from both original CP-0008P V1 reports detects independently falsified derivative fields" \
-            --completed "Rejects invalid media types, versions, byte counts, checksums, noncanonical JSON and corrupt metadata" \
-            --completed "CP-0008P/Q/R/S/T/U inherited regression suite green; no live or authenticated RF claim" \
+            --id CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION \
+            --parent CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION \
+            --summary "Deterministic platform-neutral offline comparison presentation projection" \
+            --phase "Offline comparison presentation CI-verified; next filtering/pagination software checkpoint; hardware deferred" \
+            --test-status "GREEN host/CI: comparison-presentation=PASS comparison-import=PASS inherited=PASS (37 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
+            --completed "Validated historical comparison V1 presentation projection with original receipts and query order" \
+            --completed "Sorted source/selected-evidence rows, identity/kind/change filters, separate evidence metadata and projection flags" \
+            --completed "Explicit four-category source/evidence change counts and standalone versus optional original-report reconciliation" \
+            --completed "Rejects corrupt, incompatible or incomplete artifacts without inventing live provider or RF state" \
+            --completed "Preserves CP-0008P/Q/R/S/T/U/V and inherited GitHub/CI regression matrix" \
             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
             --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
             --blocker "No authenticated provenance, cross-store atomicity, Android device or phone/radio/RF proof" \
-            --next "CP-0008W: GitHub/CI-only next software checkpoint; define from current propagation roadmap" \
-            --next "Preserve CP-0008P/Q/R/S/T/U/V canonical report, comparison and inspection contracts" \
+            --next "CP-0008X: GitHub/CI-only bounded historical comparison presentation filtering/pagination" \
+            --next "Preserve CP-0008P/Q/R/S/T/U/V/W canonical and historical presentation semantics" \
             --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
           python3 scripts/verify_checkpoint.py --root . --latest
 
@@ -121,7 +136,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION.json
-          git add -f checkpoints/snapshots/CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION.tar.gz
-          git commit -m "Checkpoint CP-0008V offline comparison import and inspection"
+          git add checkpoints/manifests/CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.json
+          git add -f checkpoints/snapshots/CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.tar.gz
+          git commit -m "Checkpoint CP-0008W offline comparison presentation read model"
           git push
