@@ -515,3 +515,16 @@ Focused host CI, checkpoint dry-run and all inherited host tests PASS. Finalizer
 CP-0003C DEFERRED until explicitly resumed; CP-0004A/B/C remain incomplete.
 
 Evidence: research/propagation/CP-0008P_OFFLINE_REPORT_SERIALIZATION_CONTRACT.md and PropagationOfflineReportSerializationTests.kt.
+
+
+## CP-0008Q — Propagation offline report decode and validation
+
+Parent: CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT.
+
+A strict standalone bounded JSON V1 decoder reconstructs the full original report's typed model, rejects incompatible envelope/unknown fields/invalid strings or numbers and validates source-status, diagnostic, snapshot and visible-evidence provenance. Canonical V1 round trips remain byte-identical. Deterministic synthetic focused plus inherited host/CI tests PASS. Finalizer run: 37911878871.
+
+A recomputed SHA-256 cannot establish origin/authenticity; hardware and independently stored views are not proven atomic.
+
+CP-0003C remains DEFERRED until explicitly resumed. CP-0004A/B/C remain incomplete.
+
+Evidence: research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md and PropagationOfflineReportDecoderTests.kt.

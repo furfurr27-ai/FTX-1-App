@@ -39,29 +39,26 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT
+**Latest verified checkpoint:** CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
 
-Parent durable checkpoint: CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD.
+Parent durable checkpoint: CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT.
 
-CP-0003C and CP-0004A/B/C remain deferred hardware/account checkpoints and are not implied complete by this software checkpoint.
+CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints, not part of this CI-only verification.
 
-CP-0008P is a GREEN platform-neutral, deterministic canonical JSON offline serialization checkpoint.
+CP-0008Q is a GREEN platform-neutral offline report V1 strict decoder/validator.
 
-CP-0008P proves:
+CP-0008Q proves:
 
-- The entire CP-0008O report including original nested selected workspace projections, source status, timing diagnostics and evidence index can be serialized in-memory to a versioned canonical UTF-8 JSON format without another store read or provider request.
-- Root format and wire version are explicitly pinned to schema V1 and an application-specific JSON media type; nullable timestamps stay null and signed integers/millisecond UTCs stay exact.
-- Domain fields and map keys order lexically, unordered sets canonicalize and ordered lists remain ordered. Enum names, full nested metrics and metadata are preserved.
-- JSON Unicode and metacharacter escaping, finite-number validation and size/depth/collection bounds prevent malformed or unexpectedly large output.
-- Canonical serialized output includes exact UTF-8 byte count and SHA-256 integrity checksum, and re-serialization verifies content/metadata equality without claiming authenticity.
-- Source summary counts, indexed evidence provenance and cache-future timestamp markers are validated against the original DTO; cross-store atomicity remains explicitly unverified.
-- Runtime serializedOfflineDiagnosticReport overloads compose CP-0008O first, with no new lifecycle, fetch, background scheduler or source/cache writes.
-- Synthetic tests demonstrate missing cache, future/unknown dates, filters, stale and full rich source/evidence projections, tamper/Unicode/numeric rejection and identical file-backed runtime restoration.
-- This checkpoint does not provide arbitrary JSON parsing or report reconstruction; decode/validation is the next planned software checkpoint.
-- Superseded CP-0008O automatic finalizer changed to manual-only.
+- Strict bounded V1 JSON parsing, exact format/media-type/wire/schema checks, complete typed DTO reconstruction and byte-for-byte canonical re-encoding.
+- CP-0008P canonical JSON layout, nulls, source attribution, nested projections, assessments, freshness metadata, timestamp provenance, ordered lists, maps and sets survive round trips.
+- Corrupt, oversized, truncated, malformed and incompatible reports fail closed, including altered evidence references, source-count mismatches, inconsistent timestamps, invalid Unicode and numeric overflow.
+- Coverage of geographic projections and global coverage singleton that were valid nested DTOs but previously rejected by the canonical serializer.
+- Embedded SHA-256 and UTF-8 length detect accidental corruption. They are not an authenticity proof when the digest can be recomputed.
+- No source store, provider calls, Android lifecycle, hardware access or new application dependencies.
 
 Host/CI gates:
 
+- CP-0008Q propagation offline report decode and validation: **PASS**.
 - CP-0008P propagation offline report serialization: **PASS**.
 - CP-0008O propagation offline report payload: **PASS**.
 - CP-0008N propagation read-model consistency diagnostics: **PASS**.
@@ -95,20 +92,20 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008P_OFFLINE_REPORT_SERIALIZATION_CONTRACT.md
+- research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt
 - core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportSerializationTests.kt
-- SOFTWARE_TRACK.md
-- CP-0008P finalization workflow run: 37882589879
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt
+- scripts/test_propagation_offline_report_decoder.sh
+- CP-0008Q finalization workflow run: 37911878871
 
 ### Evidence boundary
 
-This is one-way canonical JSON serialization and deterministic verification against an original CP-0008O report, not JSON decoding, a digital signature, completed UI, filesystem exporter, live provider monitor or radio conditions prediction. Different source/state stores are not an atomic transaction. No real credentials, accounts, Android device or RF proof.
+The decoder validates structural and internally consistent provenance assertions; untrusted reports can be forged with a newly computed checksum. This is not a digital signature, authenticated transport, proof of original provider observation or transactional cache consistency. No real phone/radio/RF validation.
 
 ### Inherited verified ancestry
 
-CP-0008O-PROPAGATION_OFFLINE_DIAGNOSTIC_REPORT_PAYLOAD and earlier verified checkpoints remain verified ancestry.
+CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT and previous verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -132,7 +129,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008Q — propagation offline report decode and validation
+**Active software track:** CP-0008R — propagation offline report import boundary
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -357,7 +354,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT
+- Current Git source baseline: CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -370,15 +367,12 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**In-flight implementation (not verified):** CP-0008Q is staged on `cp-0008q-propagation-offline-report-decode-validation`, [PR #40](https://github.com/furfurr27-ai/FTX-1-App/pull/40). The branch contains decoder, synthetic tests, CI, and main finalizer. Do not merge before its exact-tip focused and inherited CI passes; do not mark complete before the main finalizer creates and verifies the immutable CP-0008Q manifest/snapshot. Until then CP-0008P remains the latest verified baseline.
+**CP-0008R — propagation offline report import boundary.**
 
-
-**CP-0008Q — propagation offline report decode and validation.**
-
-1. Add a bounded, deterministic, strict JSON decode/validation path for the canonical CP-0008P offline report wire format. Reject unknown incompatible wire versions, unsafe field types and corrupted source/evidence provenance.
-2. Preserve the original source/cache/status/assessment semantics and every nullable/future timestamp; prove encoding/decoding consistency using offline host fixtures.
-3. Keep provider/cadence/refresh and Android lifecycle/UI/WorkManager unchanged, with no new accounts, credentials, provider calls or phone/radio/RF work.
-4. CP-0003C remains DEFERRED until owner explicitly says resume CP-0003C.
+1. Identify a GitHub/CI-only offline report import boundary using the canonical decoder, without new filesystem, Android UI, network or credential dependencies.
+2. Preserve the byte-identical CP-0008P serializer and CP-0008Q decoder gates, and all existing provider/cache/assessment behavior.
+3. Do not claim authenticity for bare SHA-256 or cross-store atomicity.
+4. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C. CP-0004A/B/C remain incomplete.
 
 ## README maintenance contract
 

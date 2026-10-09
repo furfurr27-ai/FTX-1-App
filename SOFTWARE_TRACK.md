@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT
+CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,20 +25,15 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
+CP-0008R — propagation offline report import boundary
 
 Required scope:
 
-- strict offline deterministic JSON decoding and validation of CP-0008P canonical wire version 1
-- bounded parser and strong source/evidence provenance and version validation
-- round-trip equality and tampering/corruption rejection using deterministic CI-only fixtures
-- preserve CP-0008M/N/O/P semantics and existing source/cache/assessment/refresh contracts
-- immutable main checkpoint after full inherited CI regression
-- no Android UI, lifecycle, WorkManager, credentials, real accounts, new providers or phone/radio/RF tests
+- validated import boundary consuming CP-0008Q decoded canonical report DTO
+- no credential/account/Android UI/radio/real RF tests
+- maintain all inherited CP-0008P/Q host and CI regression gates
+- cross-store atomicity and authenticity remain unverified
 - CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
-
-
-Implementation status: **staged / not checkpointed** in PR #40, branch `cp-0008q-propagation-offline-report-decode-validation`. The strict decoder and adversarial Kotlin tests have been committed. Awaiting exact-tip CI completion; no successful run or verified finalizer has been established. Do not merge on pending or red CI. Keep the parent CP-0008P durable checkpoint intact.
 
 ## Resume rule
 
