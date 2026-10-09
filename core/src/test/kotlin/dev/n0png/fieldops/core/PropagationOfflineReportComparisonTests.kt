@@ -137,7 +137,7 @@ object PropagationOfflineReportComparisonTests {
         equal(originalAfter.sha256Hex, comparison.afterReceipt.sha256Hex,
             "after artifact identity retained")
         yes(comparison.canonicalArtifactChanged, "changed canonical bytes")
-        yes(!comparison.snapshotChanged, "same header still equal")
+        yes(comparison.snapshotChanged, "snapshot source-count metadata changed")
         yes(comparison.summaryChanged, "source/evidence summary difference")
         equal(listOf("NOAA_SWPC_PLANETARY_KP", "OTHER", "PSK_REPORTER_PUBLIC_QUERY"),
             comparison.sourceChanges.map { it.sourceKey },
@@ -253,7 +253,7 @@ object PropagationOfflineReportComparisonTests {
         }
         denied("tampered original JSON after import") {
             val dirty = PropagationOfflineReportImportService.importReport(originalBefore)
-            val evidence = dirty.report.visibleEvidenceIndex as MutableList
+            val evidence = dirty.report.visibleEvidenceIndex as MutableList<PropagationOfflineEvidenceIndexItem>
             evidence.clear()
             PropagationOfflineReportComparisonService.compareImported(dirty, afterImported)
         }
