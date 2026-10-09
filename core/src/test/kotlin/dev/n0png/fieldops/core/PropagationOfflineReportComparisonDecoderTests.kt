@@ -193,21 +193,21 @@ object PropagationOfflineReportComparisonDecoderTests {
         }
         denied("embedded wrong wire version with corrected checksum") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"wireVersion\\":1}", "\\"wireVersion\\":2}"))
+                "\"wireVersion\":1}", "\"wireVersion\":2}"))
         }
         denied("missing root payload") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"payload\\":", "\\"extra\\":"))
+                "\"payload\":", "\"extra\":"))
         }
         denied("duplicate JSON object key") {
             PropagationOfflineReportComparisonDecoder.decode(rewrap(wire,
-                wire.json.replaceFirst("\\"payload\\":",
-                    "\\"format\\":\\"duplicate\\",\\"payload\\":")))
+                wire.json.replaceFirst("\"payload\":",
+                    "\"format\":\"duplicate\",\"payload\":")))
         }
         denied("unknown change enum") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"change\\":\\"ADDED_TO_VIEW\\"",
-                "\\"change\\":\\"NOT_A_CHANGE\\""))
+                "\"change\":\"ADDED_TO_VIEW\"",
+                "\"change\":\"NOT_A_CHANGE\""))
         }
         denied("invalid original receipt digest, recomputed outer digest") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
@@ -220,37 +220,41 @@ object PropagationOfflineReportComparisonDecoderTests {
         }
         denied("nested receipt origin authentication claim") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"originAuthenticated\\":false",
-                "\\"originAuthenticated\\":true"))
+                "\"originAuthenticated\":false",
+                "\"originAuthenticated\":true"))
         }
         denied("nested receipt cross-store atomicity claim") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"crossStoreAtomicityVerified\\":false",
-                "\\"crossStoreAtomicityVerified\\":true"))
+                "\"crossStoreAtomicityVerified\":false",
+                "\"crossStoreAtomicityVerified\":true"))
         }
         denied("receipt source count inconsistent with selected view") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"sourceCount\\":1", "\\"sourceCount\\":999"))
+                "\"sourceCount\":1", "\"sourceCount\":999"))
         }
         denied("original receipt query time negative") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"reportQueryUtcMillis\\":2400000000",
-                "\\"reportQueryUtcMillis\\":-1"))
+                "\"reportQueryUtcMillis\":2400000000",
+                "\"reportQueryUtcMillis\":-1"))
         }
         denied("changed-view enum inconsistent with row") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"change\\":\\"ADDED_TO_VIEW\\"",
-                "\\"change\\":\\"UNCHANGED\\""))
+                "\"change\":\"ADDED_TO_VIEW\"",
+                "\"change\":\"UNCHANGED\""))
         }
         denied("evidence metadata-change flag mismatch") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"selectedIndexChanged\\":false",
-                "\\"selectedIndexChanged\\":true"))
+                "\"selectedIndexChanged\":false",
+                "\"selectedIndexChanged\":true"))
         }
+        val topAuthKey = "\"originAuthenticated\":false"
+        val topAuthPosition = wire.json.lastIndexOf(topAuthKey)
+        check(topAuthPosition >= 0)
         denied("top-level flag claims authenticated") {
-            PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\"originAuthenticated\":false,\"selectedAssessmentChanged\"",
-                "\"originAuthenticated\":true,\"selectedAssessmentChanged\""))
+            PropagationOfflineReportComparisonDecoder.decode(rewrap(wire,
+                wire.json.replaceRange(topAuthPosition,
+                    topAuthPosition + topAuthKey.length,
+                    "\"originAuthenticated\":true")))
         }
         denied("noncanonical wire line endings") {
             PropagationOfflineReportComparisonDecoder.decode(rewrap(wire,
@@ -258,7 +262,7 @@ object PropagationOfflineReportComparisonDecoderTests {
         }
         denied("unknown nested comparison DTO key") {
             PropagationOfflineReportComparisonDecoder.decode(changed(wire,
-                "\\"snapshotChanged\\":", "\\"unrecognizedChanged\\":"))
+                "\"snapshotChanged\":", "\"unrecognizedChanged\":"))
         }
         denied("invalid Unicode escape") {
             PropagationOfflineReportComparisonDecoder.decode(rewrap(wire,
