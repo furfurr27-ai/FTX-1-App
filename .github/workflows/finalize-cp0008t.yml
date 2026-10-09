@@ -1,0 +1,147 @@
+name: Finalize CP-0008T checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportImportService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportImportTests.kt'
+      - 'research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md'
+      - 'scripts/test_propagation_offline_report_import.sh'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonTests.kt'
+      - 'research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md'
+      - 'scripts/test_propagation_offline_report_comparison.sh'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonSerialization.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonSerializationTests.kt'
+      - 'research/propagation/CP-0008T_OFFLINE_COMPARISON_EXPORT_CONTRACT.md'
+      - 'scripts/test_propagation_offline_comparison_serialization.sh'
+      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md'
+      - 'scripts/test_propagation_offline_report_decoder.sh'
+      - 'scripts/finalize_cp0008t.py'
+      - '.github/workflows/cp0008t-propagation-offline-comparison-export-contract.yml'
+      - '.github/workflows/finalize-cp0008t.yml'
+      - '.github/workflows/finalize-cp0008s.yml'
+
+permissions:
+  contents: write
+
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash scripts/test_propagation_offline_comparison_serialization.sh
+
+  inherited:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: comparison, script: scripts/test_propagation_offline_report_comparison.sh}
+          - {label: import, script: scripts/test_propagation_offline_report_import.sh}
+          - {label: decoder, script: scripts/test_propagation_offline_report_decoder.sh}
+          - {label: serialization, script: scripts/test_propagation_offline_report_serialization.sh}
+          - {label: offline-report, script: scripts/test_propagation_offline_diagnostic_report.sh}
+          - {label: diagnostics, script: scripts/test_propagation_read_model_consistency.sh}
+          - {label: operating-picture, script: scripts/test_propagation_operating_picture.sh}
+          - {label: source-status, script: scripts/test_propagation_source_status_presentation.sh}
+          - {label: state-persistence, script: scripts/test_propagation_refresh_state_persistence.sh}
+          - {label: runtime, script: scripts/test_propagation_runtime_composition.sh}
+          - {label: concrete-https, script: scripts/test_concrete_public_https_transport.sh}
+          - {label: public-transport, script: scripts/test_public_propagation_transport_adapters.sh}
+          - {label: refresh, script: scripts/test_propagation_refresh_coordinator.sh}
+          - {label: projection, script: scripts/test_propagation_projection.sh}
+          - {label: aggregation, script: scripts/test_propagation_aggregation_offline_cache.sh}
+          - {label: psk-reporter, script: scripts/test_psk_reporter_heard_path_adapter.sh}
+          - {label: glotec, script: scripts/test_glotec_ionospheric_adapter.sh}
+          - {label: noaa-swpc, script: scripts/test_noaa_swpc_propagation_adapter.sh}
+          - {label: propagation, script: scripts/test_propagation_foundation.sh}
+          - {label: production-pack, script: scripts/test_production_us_state_geometry_pack.sh}
+          - {label: geometry, script: scripts/test_award_geometry_providers.sh}
+          - {label: map, script: scripts/test_award_area_map_projection.sh}
+          - {label: extended, script: scripts/test_extended_award_catalog.sh}
+          - {label: service, script: scripts/test_awards_center_application_service.sh}
+          - {label: persistence, script: scripts/test_award_evidence_persistence.sh}
+          - {label: awards-projection, script: scripts/test_awards_center_projection.sh}
+          - {label: target, script: scripts/test_award_target_enrichment.sh}
+          - {label: catalog, script: scripts/test_official_award_catalog.sh}
+          - {label: award, script: scripts/test_award_evaluation.sh}
+          - {label: queue, script: scripts/test_manual_qso_lotw_queue.sh}
+          - {label: logger, script: scripts/test_universal_qso_logger.sh}
+          - {label: lotw, script: scripts/test_lotw_transaction.sh}
+          - {label: core, script: scripts/test_core_regression.sh}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash "${{ matrix.script }}"
+
+  checkpoint:
+    needs: [export, inherited]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Update durable handoff
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0008t.py
+      - name: Create and verify immutable checkpoint
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT \
+            --parent CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON \
+            --summary "Versioned bounded canonical V1 export of offline propagation report comparisons" \
+            --phase "Offline comparison export V1 CI-verified; strict decoder next; hardware deferred" \
+            --test-status "GREEN host/CI: export=PASS compare=PASS import=PASS decoder=PASS serialization=PASS inherited=PASS (34 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
+            --completed "Versioned bounded canonical V1 comparison JSON export with distinct media type and integrity metadata" \
+            --completed "Preserves original report receipts, UTC order and source/evidence selected-view diff flags" \
+            --completed "Reuses canonical value encoder with unchanged CP-0008P report wire and golden fixtures" \
+            --completed "Rejects inconsistent source/evidence counts, flags, ordering and false authenticated/atomic claims" \
+            --completed "Pure export plus CP-0008S/R/Q/P and inherited host CI regressions all pass" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
+            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
+            --blocker "No authenticated report signature, cross-store atomicity, Android device or phone/radio/RF proof" \
+            --next "CP-0008U: GitHub/CI-only canonical offline comparison export decoder and validator" \
+            --next "Preserve CP-0008P/Q/R/S/T canonical serialization, import, comparison and provenance tests" \
+            --next "CP-0003C remains DEFERRED; skip any manual account/hardware work"
+          python3 scripts/verify_checkpoint.py --root . --latest
+
+      - name: Commit checkpoint
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT.json
+          git add -f checkpoints/snapshots/CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT.tar.gz
+          git commit -m "Checkpoint CP-0008T offline comparison canonical export contract"
+          git push
