@@ -39,25 +39,26 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
+**Latest verified checkpoint:** CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY
 
-Parent durable checkpoint: CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT.
+Parent durable checkpoint: CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.
 
 CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints, not part of this CI-only verification.
 
-CP-0008Q is a GREEN platform-neutral offline report V1 strict decoder/validator.
+CP-0008R is a GREEN, offline-only, report import/read boundary. It does not import into live propagation stores.
 
-CP-0008Q proves:
+CP-0008R proves:
 
-- Strict bounded V1 JSON parsing, exact format/media-type/wire/schema checks, complete typed DTO reconstruction and byte-for-byte canonical re-encoding.
-- CP-0008P canonical JSON layout, nulls, source attribution, nested projections, assessments, freshness metadata, timestamp provenance, ordered lists, maps and sets survive round trips.
-- Corrupt, oversized, truncated, malformed and incompatible reports fail closed, including altered evidence references, source-count mismatches, inconsistent timestamps, invalid Unicode and numeric overflow.
-- Coverage of geographic projections and global coverage singleton that were valid nested DTOs but previously rejected by the canonical serializer.
-- Embedded SHA-256 and UTF-8 length detect accidental corruption. They are not an authenticity proof when the digest can be recomputed.
-- No source store, provider calls, Android lifecycle, hardware access or new application dependencies.
+- A complete V1 serialized artifact is decoded and fully validated before a detached typed import view is returned.
+- Exact CP-0008P canonical bytes, CP-0008Q decoder provenance/status checks, original report timestamps, source attribution and selected evidence are preserved.
+- Imported-only source/evidence ID/kind lookups never fetch providers, update caches, recompute freshness or invent absent evidence.
+- An explicit integrity receipt retains media type, wire version, SHA-256, byte count, snapshot and count metadata without claiming authenticated origin or cross-store atomicity.
+- Recomputed-checksum forgery remains explicitly unauthenticated; corruption, format mismatches, invalid JSON and missing evidence fail closed.
+- No Android UI, filesystem/network/store mutation, real accounts/credentials, or phone/radio/RF testing.
 
 Host/CI gates:
 
+- CP-0008R propagation offline report import boundary: **PASS**.
 - CP-0008Q propagation offline report decode and validation: **PASS**.
 - CP-0008P propagation offline report serialization: **PASS**.
 - CP-0008O propagation offline report payload: **PASS**.
@@ -92,20 +93,19 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt
-- scripts/test_propagation_offline_report_decoder.sh
-- CP-0008Q finalization workflow run: 37911878871
+- research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportImportService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportImportTests.kt
+- scripts/test_propagation_offline_report_import.sh
+- CP-0008R finalization workflow run: 37915118080
 
 ### Evidence boundary
 
-The decoder validates structural and internally consistent provenance assertions; untrusted reports can be forged with a newly computed checksum. This is not a digital signature, authenticated transport, proof of original provider observation or transactional cache consistency. No real phone/radio/RF validation.
+Imported diagnostic data is an offline artifact, not fresh live state. A SHA-256 checksum with no trusted key or signature cannot authenticate the source; a caller can recompute it. No authenticated provenance, cross-store transaction, provider health or device/RF assurance is claimed.
 
 ### Inherited verified ancestry
 
-CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT and previous verified checkpoints remain verified ancestry.
+CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION and previous verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -129,7 +129,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008R — propagation offline report import boundary
+**Active software track:** CP-0008S — propagation offline report import inspection and comparison
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -354,7 +354,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
+- Current Git source baseline: CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -367,11 +367,11 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008R — propagation offline report import boundary.**
+**CP-0008S — propagation offline report import inspection and comparison.**
 
-1. Identify a GitHub/CI-only offline report import boundary using the canonical decoder, without new filesystem, Android UI, network or credential dependencies.
-2. Preserve the byte-identical CP-0008P serializer and CP-0008Q decoder gates, and all existing provider/cache/assessment behavior.
-3. Do not claim authenticity for bare SHA-256 or cross-store atomicity.
+1. Design a GitHub/CI-only, deterministic read-only comparison of two CP-0008R imported report artifacts, including clear missing/stale provenance and evidence identity.
+2. Retain original captured/query times; do not equate an imported view with live propagation state, authenticated origin or cache atomicity.
+3. Preserve the CP-0008P/Q/R strict V1/roundtrip/tamper gates and all inherited regressions.
 4. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C. CP-0004A/B/C remain incomplete.
 
 ## README maintenance contract

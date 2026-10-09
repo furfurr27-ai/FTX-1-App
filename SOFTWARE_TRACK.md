@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION
+CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,19 +25,15 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008R — propagation offline report import boundary
+CP-0008S — propagation offline report import inspection and comparison
 
 Required scope:
 
-- validated import boundary consuming CP-0008Q decoded canonical report DTO
+- deterministic read-only comparison of two validated imported reports
 - no credential/account/Android UI/radio/real RF tests
-- maintain all inherited CP-0008P/Q host and CI regression gates
-- cross-store atomicity and authenticity remain unverified
-- CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete
-
-## In-flight CP-0008R work (unverified)
-
-Branch: `cp-0008r-propagation-offline-report-import-boundary`. Pure offline import service and tests, inherited host CI, and gated finalizer are staged. PR and exact-tip CI must pass before promotion. CP-0008Q remains latest verified parent.
+- preserve CP-0008P/Q/R and all inherited regression gates
+- imported views are not live state; authenticity and atomicity unverified
+- CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
 ## Resume rule
 

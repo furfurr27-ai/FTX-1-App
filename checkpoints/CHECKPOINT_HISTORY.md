@@ -528,3 +528,14 @@ A recomputed SHA-256 cannot establish origin/authenticity; hardware and independ
 CP-0003C remains DEFERRED until explicitly resumed. CP-0004A/B/C remain incomplete.
 
 Evidence: research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md and PropagationOfflineReportDecoderTests.kt.
+
+
+## CP-0008R — Propagation offline report import boundary
+
+Parent: CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.
+
+A pure Kotlin import service consumes a complete CP-0008P V1 canonical report artifact, invokes CP-0008Q's strict decoder, and returns a detached typed read view with snapshot and source-attributed selected evidence lookups. The receipt explicitly marks integrity-checked data as unauthenticated, without claims of cross-store atomicity or current provider health. Absent reports and corrupted or tampered artifacts fail as specified. Deterministic synthetic focused and all inherited host/CI tests PASS. Finalizer run: 37915118080.
+
+No live store writes, file/network calls, Android lifecycle, phone/radio/real credentials, or RF work was performed. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md and PropagationOfflineReportImportTests.kt.
