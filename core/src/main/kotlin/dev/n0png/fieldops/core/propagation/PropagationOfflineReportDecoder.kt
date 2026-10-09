@@ -5,6 +5,7 @@ import dev.n0png.fieldops.core.map.GeoCoordinate
 import java.lang.reflect.Modifier
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
+import java.lang.reflect.WildcardType
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 
@@ -86,6 +87,12 @@ object PropagationOfflineReportDecoder {
         if (v == null) {
             if (type is Class<*>) require(!type.isPrimitive) { "Null primitive" }
             return null
+        }
+        if (type is WildcardType) {
+            require(type.lowerBounds.isEmpty() && type.upperBounds.size == 1) {
+                "Unsupported wildcard report type"
+            }
+            return typed(v, type.upperBounds.single(), depth)
         }
         if (type is ParameterizedType) {
             val raw = type.rawType as? Class<*>
