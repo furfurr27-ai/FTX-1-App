@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON",
-  "created_utc": "2026-10-09T14:32:05+00:00",
-  "manifest": "checkpoints/manifests/CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.json",
-  "snapshot": "checkpoints/snapshots/CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.tar.gz",
-  "snapshot_sha256": "0412af88da141abe7fbb3992f6b97b50ef1138efca9d269475a8e4c1f63cc531"
+  "checkpoint_id": "CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT",
+  "created_utc": "2026-10-09T16:44:27+00:00",
+  "manifest": "checkpoints/manifests/CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT.json",
+  "snapshot": "checkpoints/snapshots/CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT.tar.gz",
+  "snapshot_sha256": "0be5105556c0c8a0bc492a3a9d62b1eeff094ed0e91f2bf08601f71149030e32"
 }

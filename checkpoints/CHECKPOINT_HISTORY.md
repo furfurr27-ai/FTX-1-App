@@ -550,3 +550,14 @@ A pure Kotlin service compares two separately validated CP-0008R imported canoni
 No authenticated origin, cross-store atomicity, live store I/O, Android/radio/real credentials, or RF tests. CP-0003C remains DEFERRED, CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md and PropagationOfflineReportComparisonTests.kt.
+
+
+## CP-0008T — Offline comparison canonical export contract
+
+Parent: CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.
+
+Canonical, separately versioned and bounded V1 JSON export of deterministic CP-0008S offline comparisons, preserving selected source/evidence changes, both import receipts and original UTC order. Strict structural validation and exact UTF-8/SHA-256 integrity metadata; original report serialization remains unchanged. Full projection provenance requires original reports. Host-focused and inherited CI regressions PASS. Finalizer run: 37961006893.
+
+No signature/authenticated origin, cross-store atomicity, live state, device/radio/credentials, or RF test. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
+
+Evidence: research/propagation/CP-0008T_OFFLINE_COMPARISON_EXPORT_CONTRACT.md and PropagationOfflineReportComparisonSerializationTests.kt.
