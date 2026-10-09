@@ -223,7 +223,10 @@ object PropagationOfflineReportComparisonTests {
             selectedPathAssessment = PropagationPathAssessment(
                 usability = PropagationUsability.UNKNOWN,
                 confidence = null,
-                reasons = emptyList(),
+                reasons = listOf(PropagationAssessmentReason(
+                    code = PropagationAssessmentReasonCode.INSUFFICIENT_PATH_EVIDENCE,
+                    explanation = "synthetic comparison-only assessment"
+                )),
                 evidenceIds = emptyList()
             )
         ))
