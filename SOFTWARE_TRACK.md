@@ -35,6 +35,10 @@ Required scope:
 - imported views are not live state; authenticity and atomicity unverified
 - CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
+## In-flight CP-0008S implementation (unverified)
+
+Branch: `cp-0008s-propagation-offline-import-inspection-comparison`. Compare two fully validated imported V1 reports with source/evidence selected-view changes and original provenance; synthetic tests and inherited CI pending exact-tip green. Preserve current durable CP-0008R until main finalizer succeeds. CP-0003C remains DEFERRED.
+
 ## Resume rule
 
 On interruption or a new chat:

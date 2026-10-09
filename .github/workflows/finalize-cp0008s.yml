@@ -1,7 +1,26 @@
-name: Finalize CP-0008R checkpoint
+name: Finalize CP-0008S checkpoint
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportImportService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportImportTests.kt'
+      - 'research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md'
+      - 'scripts/test_propagation_offline_report_import.sh'
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonTests.kt'
+      - 'research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md'
+      - 'scripts/test_propagation_offline_report_comparison.sh'
+      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md'
+      - 'scripts/test_propagation_offline_report_decoder.sh'
+      - 'scripts/finalize_cp0008s.py'
+      - '.github/workflows/cp0008s-propagation-offline-import-inspection-comparison.yml'
+      - '.github/workflows/finalize-cp0008s.yml'
+      - '.github/workflows/finalize-cp0008r.yml'
 
 permissions:
   contents: write
@@ -10,7 +29,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  import:
+  comparison:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +41,7 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_report_import.sh
+      - run: bash scripts/test_propagation_offline_report_comparison.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +51,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: import, script: scripts/test_propagation_offline_report_import.sh}
           - {label: decoder, script: scripts/test_propagation_offline_report_decoder.sh}
           - {label: serialization, script: scripts/test_propagation_offline_report_serialization.sh}
           - {label: offline-report, script: scripts/test_propagation_offline_diagnostic_report.sh}
@@ -75,7 +95,7 @@ jobs:
       - run: bash "${{ matrix.script }}"
 
   checkpoint:
-    needs: [import, inherited]
+    needs: [comparison, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -83,7 +103,7 @@ jobs:
       - name: Update durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008r.py
+        run: python3 scripts/finalize_cp0008s.py
       - name: Create and verify immutable checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -91,21 +111,21 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY \
-            --parent CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION \
-            --summary "Canonical V1 report import boundary with offline read view and explicit unauthenticated receipt" \
-            --phase "Offline report import boundary CI-verified; deterministic comparison next; hardware deferred" \
-            --test-status "GREEN host/CI: import=PASS decoder=PASS serialization=PASS inherited=PASS (32 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Validation-first offline V1 artifact import with strict typed reconstruction and byte-identical canonical reserialization" \
-            --completed "Detached read-only source/selected-evidence lookup without store writes or clock/provider/RF access" \
-            --completed "Explicit integrity receipt retains original query/capture times, evidence/source counts and content-type/byte/digest metadata" \
-            --completed "Forgery with recomputed SHA-256 remains unauthenticated; corrupt/incompatible reports fail closed" \
-            --completed "Synthetic import plus CP-0008Q decoder, CP-0008P serialization and inherited core CI suites all pass" \
+            --id CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON \
+            --parent CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY \
+            --summary "Deterministic offline imported report comparison with full projection diffs and provenance" \
+            --phase "Offline comparison CI-verified; canonical comparison export next; hardware deferred" \
+            --test-status "GREEN host/CI: compare=PASS import=PASS decoder=PASS serialization=PASS inherited=PASS (33 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
+            --completed "Compare two fully validated imported canonical V1 reports without live reads, clocks or mutation" \
+            --completed "Track sorted selected-view source/evidence changes, including complete projection value drift when index keys match" \
+            --completed "Preserve before/after receipt hashes, source provenance and original query timestamp ordering" \
+            --completed "Distinguish missing selected-view evidence from claims of source deletion, authenticated origin or live RF worsening" \
+            --completed "Focused comparison plus CP-0008R/Q/P and all inherited CI regressions pass" \
             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
             --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
             --blocker "No authenticated report signature, cross-store atomicity, Android device or phone/radio/RF proof" \
-            --next "CP-0008S: GitHub/CI-only offline imported report inspection and comparison" \
-            --next "Preserve CP-0008P/Q/R canonical import, nested data and provenance tests" \
+            --next "CP-0008T: GitHub/CI-only canonical offline comparison export contract" \
+            --next "Preserve CP-0008P/Q/R/S canonical import, comparison and provenance tests" \
             --next "CP-0003C remains DEFERRED; skip any manual account/hardware work"
           python3 scripts/verify_checkpoint.py --root . --latest
 
@@ -116,7 +136,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY.json
-          git add -f checkpoints/snapshots/CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY.tar.gz
-          git commit -m "Checkpoint CP-0008R propagation offline report import boundary"
+          git add checkpoints/manifests/CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.json
+          git add -f checkpoints/snapshots/CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.tar.gz
+          git commit -m "Checkpoint CP-0008S offline imported report inspection and comparison"
           git push

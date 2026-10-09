@@ -107,6 +107,10 @@ Imported diagnostic data is an offline artifact, not fresh live state. A SHA-256
 
 CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION and previous verified checkpoints remain verified ancestry.
 
+### CP-0008S implementation in flight — not a verified checkpoint
+
+Branch: `cp-0008s-propagation-offline-import-inspection-comparison`. Deterministic comparison of fully validated CP-0008R imported artifacts, selected source/evidence changes and full projection value changes, original report query-time ordering and explicit unauthenticated receipts. Pure host-focused test, full inherited premerge CI and main-gated checkpoint finalizer are staged. Do not promote to verified until exact-tip CI passes, PR merges, full main CI succeeds and immutable snapshot is verified. Parent CP-0008R stays the latest durable baseline in the meantime.
+
 ## Execution tracks and hardware-gated deferrals
 
 FieldOps has two practical execution lanes:
