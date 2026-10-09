@@ -121,7 +121,7 @@ object PropagationOfflineReportComparisonPresentationTests {
         eq(expected.changedEvidence().size, view.selectedEvidenceCounts.changed,
             "changed evidence tally")
         eq(1, view.sourceCounts.addedToView, "new source")
-        eq(1, view.sourceCounts.unchanged, "same source")
+        eq(1, view.sourceCounts.changedInView, "query-time source diagnostic changed")
         eq(1, view.selectedEvidenceCounts.changedInView, "changed selected evidence")
         eq(1, view.selectedEvidenceCounts.addedToView, "new selected evidence")
         yes(view.evidence("solar-é🌍")?.projectionContentChanged == true,
