@@ -182,7 +182,7 @@ object PropagationOfflineReportDecoderTests {
         rejected("noncanonical whitespace") { PropagationOfflineReportDecoder.decode(encoded(
             wire.json.replaceFirst("{", "{ "))) }
         rejected("duplicated evidence id") { PropagationOfflineReportDecoder.decode(encoded(
-            wire.json.replace("\"evidenceId\":\"a-é-🌍\"", "\"evidenceId\":\"tampered\""))) }
+            wire.json.replaceFirst("\"evidenceId\":\"a-é-🌍\"", "\"evidenceId\":\"tampered\""))) }
         rejected("source summary drift") { PropagationOfflineReportDecoder.decode(encoded(
             wire.json.replace("\"failedSourceCount\":1", "\"failedSourceCount\":0"))) }
         rejected("status provenance drift") { PropagationOfflineReportDecoder.decode(encoded(
