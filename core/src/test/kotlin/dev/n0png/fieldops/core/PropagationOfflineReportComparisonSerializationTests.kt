@@ -68,7 +68,7 @@ object PropagationOfflineReportComparisonSerializationTests {
     @JvmStatic fun main(args: Array<String>) {
         val none = artifact(report())
         val a = artifact(report(
-            PropagationSnapshot("snapshot-a", NOW - 300,
+            PropagationSnapshot("snapshot-a", NOW - 20,
                 solarGeomagnetic = listOf(observation("solar-é🌍", 2.0))),
             listOf(state("offline-solar"))
         ))
