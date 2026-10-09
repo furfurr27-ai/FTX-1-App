@@ -30,3 +30,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## In-flight CP-0008T — not a verified checkpoint
+
+Branch: `cp-0008t-propagation-offline-comparison-export-contract`. Full versioned comparison export and focused test plus inherited CI and finalizer are staged. Check exact-tip CI and PR before merge; check successful main finalizer and immutable snapshot afterward. CP-0008S remains latest verified until that completion.
