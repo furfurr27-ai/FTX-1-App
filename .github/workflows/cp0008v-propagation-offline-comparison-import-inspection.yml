@@ -1,16 +1,30 @@
-name: Finalize CP-0008U checkpoint
+name: CP-0008V Offline Comparison Import and Inspection
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [cp-0008v-propagation-offline-comparison-import-inspection]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonImportService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonImportTests.kt'
+      - 'scripts/test_propagation_offline_comparison_import.sh'
+      - 'research/propagation/CP-0008V_OFFLINE_COMPARISON_IMPORT_INSPECTION.md'
+      - 'scripts/finalize_cp0008v.py'
+      - '.github/workflows/cp0008v-propagation-offline-comparison-import-inspection.yml'
+      - '.github/workflows/finalize-cp0008v.yml'
+      - '.github/workflows/finalize-cp0008u.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  decoder:
+  import:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +36,27 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_comparison_decoder.sh
+      - run: bash scripts/test_propagation_offline_comparison_import.sh
+      - name: Dry-run CP-0008V handoff and immutable checkpoint
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008v.py
+          python3 scripts/finalize_cp0008v.py
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION \
+            --parent CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION \
+            --summary "Premerge dry-run only" \
+            --phase "Premerge dry-run only" \
+            --test-status "PREMERGE_DRY_RUN"
+          python3 scripts/verify_checkpoint.py --root . --latest
+          grep -Fq 'CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION' README.md
+          grep -Fq 'CP-0008W' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008u.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +66,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: comparison-decode, script: scripts/test_propagation_offline_comparison_decoder.sh}
           - {label: export-v1, script: scripts/test_propagation_offline_comparison_serialization.sh}
           - {label: comparison, script: scripts/test_propagation_offline_report_comparison.sh}
           - {label: import, script: scripts/test_propagation_offline_report_import.sh}
@@ -76,50 +111,3 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash "${{ matrix.script }}"
-
-  checkpoint:
-    needs: [decoder, inherited]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Update durable handoff
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008u.py
-      - name: Create and verify immutable checkpoint
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          python3 scripts/create_checkpoint.py \
-            --root . \
-            --id CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION \
-            --parent CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT \
-            --summary "Strict versioned and bounded canonical V1 offline comparison export decode validation" \
-            --phase "Offline comparison decode V1 CI-verified; import boundary next; hardware deferred" \
-            --test-status "GREEN host/CI: comparison-decode=PASS comparison-export=PASS inherited=PASS (35 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Canonical V1 comparison export strict typed decoder with original receipt, source and evidence changes preserved" \
-            --completed "Checks format, media type, wire version, bounded UTF-8 byte count and SHA-256 integrity" \
-            --completed "Rejects noncanonical wire, missing or corrupt nested DTOs, classifications and inconsistent metadata" \
-            --completed "Preserves CP-0008P/Q/R/S/T interfaces, original report V1 bytes and inherited CI regression matrix" \
-            --completed "Host-only pure decoder; no false origin authentication, cross-store atomicity or live RF claims" \
-            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
-            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No authenticated origin, cross-store atomicity, Android device or phone/radio/RF proof" \
-            --next "CP-0008V: GitHub/CI-only offline comparison import and read-only inspection boundary" \
-            --next "Preserve CP-0008P/Q/R/S/T/U canonical report, comparison and provenance contracts" \
-            --next "CP-0003C remains DEFERRED; skip any manual account/hardware work"
-          python3 scripts/verify_checkpoint.py --root . --latest
-
-      - name: Commit checkpoint
-        run: |
-          set -euo pipefail
-          git config user.name "fieldops-checkpoint-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
-          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.json
-          git add -f checkpoints/snapshots/CP-0008U-PROPAGATION_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.tar.gz
-          git commit -m "Checkpoint CP-0008U offline comparison strict decode validation"
-          git push
