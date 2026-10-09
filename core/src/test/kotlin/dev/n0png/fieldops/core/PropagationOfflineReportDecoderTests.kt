@@ -208,6 +208,24 @@ object PropagationOfflineReportDecoderTests {
             "future UTC never becomes a false age")
         yes(future.visibleEvidenceIndex.single().retrievalIsFutureDated,
             "future evidence remains labeled")
+        val duplicateWorkspace = requireNotNull(rich.workspace).copy(
+            heardPaths = rich.workspace!!.heardPaths +
+                rich.workspace!!.heardPaths.single()
+        )
+        val duplicate = rich.copy(
+            workspace = duplicateWorkspace,
+            visibleEvidenceIndex = rich.visibleEvidenceIndex.toMutableList().apply {
+                add(0, first())
+            },
+            summary = rich.summary.copy(
+                visibleEvidenceCount = rich.summary.visibleEvidenceCount + 1
+            )
+        )
+        rejected("duplicate selected evidence with recomputed digest") {
+            PropagationOfflineReportDecoder.decode(
+                PropagationOfflineReportSerialization.serialize(duplicate)
+            )
+        }
         val wire = PropagationOfflineReportSerialization.serialize(good)
         rejected("media type") { PropagationOfflineReportDecoder.decode(
             wire.copy(contentType = "application/json")) }
