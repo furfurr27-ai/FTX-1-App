@@ -128,5 +128,5 @@ jobs:
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
           git add checkpoints/manifests/CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.json
           git add -f checkpoints/snapshots/CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.tar.gz
-          git commit -m "Checkpoint CP-0008P propagation offline report decode and validation"
+          git commit -m "Checkpoint CP-0008Q propagation offline report decode and validation"
           git push
