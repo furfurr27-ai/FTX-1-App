@@ -9,12 +9,12 @@ on:
       - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
       - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt'
       - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt'
-      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_SERIALIZATION_CONTRACT.md'
+      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md'
       - 'scripts/test_propagation_offline_report_decoder.sh'
       - 'scripts/finalize_cp0008q.py'
-      - '.github/workflows/cp0008q-propagation-offline-report-serialization.yml'
+      - '.github/workflows/cp0008q-propagation-offline-report-decode-validation.yml'
       - '.github/workflows/finalize-cp0008q.yml'
-      - '.github/workflows/finalize-cp0008o.yml'
+      - '.github/workflows/finalize-cp0008p.yml'
 
 permissions:
   contents: read
@@ -23,7 +23,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  serialization:
+  decode:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -45,13 +45,13 @@ jobs:
           python3 scripts/finalize_cp0008q.py
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0008Q-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT \
+            --id CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION \
             --parent CP-0008P-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT \
             --summary "Premerge dry-run only" \
             --phase "Premerge dry-run only" \
             --test-status "PREMERGE_DRY_RUN"
           python3 scripts/verify_checkpoint.py --root . --latest
-          grep -Fq 'CP-0008Q-PROPAGATION_OFFLINE_REPORT_SERIALIZATION_CONTRACT' README.md
+          grep -Fq 'CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION' README.md
           grep -Fq 'CP-0008R' NEXT_ACTION.md
           grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
           grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008p.yml
