@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+BUILD="$(mktemp -d)"
+trap 'rm -rf "$BUILD"' EXIT
+echo "[1/5] Compile all core production Kotlin"
+find "$ROOT/core/src/main/kotlin" -name '*.kt' -print0 | sort -z | xargs -0 kotlinc -d "$BUILD/core.jar"
+echo "[2/5] Compile and run CP-0008P serialization tests"
+kotlinc "$ROOT/core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportSerializationTests.kt" -cp "$BUILD/core.jar" -include-runtime -d "$BUILD/test.jar"
+java -cp "$BUILD/test.jar:$BUILD/core.jar" dev.n0png.fieldops.core.PropagationOfflineReportSerializationTests
+echo "[3/5] Verify format, digest and provenance checks"
+SRC="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt"
+RUNTIME="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationRuntime.kt"
+grep -Fq 'const val WIRE_VERSION = 1' "$SRC"
+grep -Fq 'MessageDigest.getInstance("SHA-256")' "$SRC"
+grep -Fq 'visibleEvidenceIndex == index' "$SRC"
+grep -Fq 'crossStoreAtomicityVerified' "$SRC"
+grep -Fq 'serializedOfflineDiagnosticReport(' "$RUNTIME"
+echo "[4/5] No store/provider/device access in canonical encoder"
+! grep -Eq 'snapshotStore|refreshStateStore|\.latest\(|\.all\(|\.save\(|\.fetch\(|refreshAndProject\(|System.currentTimeMillis|Instant.now|android\.|androidx\.|UsbManager|WorkManager|URL\.open' "$SRC"
+echo "[5/5] Verify documentation and deferral"
+NOTE="$ROOT/research/propagation/CP-0008P_OFFLINE_REPORT_SERIALIZATION_CONTRACT.md"
+grep -Fq 'canonical JSON' "$NOTE"
+grep -Fq 'CP-0003C remains **DEFERRED**' "$NOTE"
+echo "CP-0008P serialization host gate: PASS"
