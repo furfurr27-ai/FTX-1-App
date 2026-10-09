@@ -202,13 +202,23 @@ object PropagationOfflineReportSerialization {
             }
             else -> tracking(value, active) {
                 val type = value.javaClass
-                require(type.name.startsWith(PRODUCTION_PACKAGE) &&
+                require((type.name.startsWith(PRODUCTION_PACKAGE) ||
+                    type.name == "dev.n0png.fieldops.core.map.GeoBounds" ||
+                    type.name == "dev.n0png.fieldops.core.map.GeoCoordinate") &&
                     !type.isAnonymousClass && !type.isSynthetic) {
                     "Unsupported report field type: " + type.name
                 }
                 val fields = type.declaredFields.filter {
                     !Modifier.isStatic(it.modifiers) && !it.isSynthetic
                 }.sortedBy { it.name }
+                // A global coverage singleton has a stable zero-field V1 shape.
+                // It was previously rejected despite being a valid nested
+                // IonosphericProjection coverage variant.
+                if (type == GlobalPropagationCoverage::class.java) {
+                    require(fields.isEmpty()) { "Unexpected global coverage fields" }
+                    out.append("{}")
+                    return@tracking
+                }
                 require(fields.isNotEmpty() && fields.size <= 128) {
                     "Unsupported/oversized report object: " + type.name
                 }
