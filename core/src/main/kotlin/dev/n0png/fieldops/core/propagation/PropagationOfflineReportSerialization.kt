@@ -54,6 +54,17 @@ object PropagationOfflineReportSerialization {
         )
     }
 
+    /**
+     * Shared V1 JSON value encoding for a *separate* versioned comparison
+     * envelope. Keeps CP-0008P report bytes and golden fixtures unchanged.
+     * Only supported propagation-domain objects can be encoded.
+     */
+    internal fun canonicalValue(value: Any?): String {
+        val out = StringBuilder()
+        jsonValue(value, out, IdentityHashMap(), 0)
+        return out.toString()
+    }
+
     /** Checks the full byte-for-byte canonical output, not a digital signature. */
     fun verify(report: PropagationOfflineDiagnosticReport,
         encoded: PropagationOfflineSerializedReport): Boolean =

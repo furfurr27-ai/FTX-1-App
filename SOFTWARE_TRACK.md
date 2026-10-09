@@ -35,6 +35,10 @@ Required scope:
 - imported views are not live state; authenticity and atomicity unverified
 - CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
+## In-flight CP-0008T implementation (unverified)
+
+Branch: `cp-0008t-propagation-offline-comparison-export-contract`. Bounded canonical V1 offline comparison export implementation and synthetic tests committed; verify exact head PR CI, then main finalizer and immutable checkpoint. CP-0008S remains latest verified durable state until completion. CP-0003C remains DEFERRED.
+
 ## Resume rule
 
 On interruption or a new chat:
