@@ -144,6 +144,21 @@ class PropagationRuntime internal constructor(
             PropagationProjectionQuery(nowUtcMillis, filter, selectedPath)
         )
 
+    /** Deterministic in-memory canonical UTF-8 export, never a provider refresh. */
+    fun serializedOfflineDiagnosticReport(
+        query: PropagationProjectionQuery,
+    ): PropagationOfflineSerializedReport =
+        PropagationOfflineReportSerialization.serialize(offlineDiagnosticReport(query))
+
+    fun serializedOfflineDiagnosticReport(
+        nowUtcMillis: Long,
+        filter: PropagationProjectionFilter = PropagationProjectionFilter(),
+        selectedPath: PropagationAssessmentQuery? = null,
+    ): PropagationOfflineSerializedReport =
+        serializedOfflineDiagnosticReport(
+            PropagationProjectionQuery(nowUtcMillis, filter, selectedPath)
+        )
+
     fun refreshAndProject(
         query: PropagationProjectionQuery,
     ): PropagationRefreshWorkspaceResult =
