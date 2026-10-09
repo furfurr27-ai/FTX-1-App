@@ -177,6 +177,21 @@ object PropagationOfflineReportDecoderTests {
             )
         ))
         roundTrip(withAssessment)
+        roundTrip(report(null, listOf(
+            sourceState("NOAA_SWPC_PLANETARY_KP",
+                PropagationRefreshSourceRole.NOAA_KP_OBSERVED)
+                .copy(nextEligibleRefreshUtcMillis = Long.MAX_VALUE)
+        )))
+        roundTrip(report(PropagationSnapshot(
+            "float-extremes", NOW,
+            heardPaths = listOf(heard().copy(snrDb = Double.MIN_VALUE))
+        ), listOf(sourceState("PSK_REPORTER_PUBLIC_QUERY",
+            PropagationRefreshSourceRole.PSK_REPORTER))))
+        roundTrip(report(PropagationSnapshot(
+            "signed-zero", NOW,
+            heardPaths = listOf(heard().copy(snrDb = -0.0))
+        ), listOf(sourceState("PSK_REPORTER_PUBLIC_QUERY",
+            PropagationRefreshSourceRole.PSK_REPORTER))))
         yes(PropagationOfflineReportSerialization.serialize(rich).json.contains(
             "\"coordinate\":{\"latitude\":50.0,\"longitude\":8.2}"),
             "nested geometry preserved")
