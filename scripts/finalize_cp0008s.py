@@ -7,7 +7,7 @@ import re
 root = pathlib.Path(".")
 run_id = os.environ["FINALIZE_RUN_ID"]
 checkpoint = "CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON"
-parent = "CP-0008S-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY"
+parent = "CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY"
 next_checkpoint = "CP-0008T — offline propagation report comparison export contract"
 
 
@@ -52,7 +52,7 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008S_OFFLINE_REPORT_IMPORT_BOUNDARY.md
+- research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md
 - core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonService.kt
 - core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonTests.kt
 - scripts/test_propagation_offline_report_comparison.sh
@@ -101,7 +101,7 @@ Skip any checkpoint requiring phone, radio, real credentials/certificates, real 
 
 **{next_checkpoint}**
 
-Create a platform-neutral, GitHub/CI-only comparison/read-only inspection path across fully validated CP-0008S offline artifacts. Keep V1 canonical contracts and provenance, don't claim authenticated origin or cache atomicity, and preserve all prior tests.
+Build a platform-neutral, versioned canonical export contract for CP-0008S offline comparison results. Preserve both report receipts, selected-view caveats, original timestamps, source provenance and all inherited regression tests.
 """)
 
 track_path = root / "SOFTWARE_TRACK.md"
