@@ -539,3 +539,14 @@ A pure Kotlin import service consumes a complete CP-0008P V1 canonical report ar
 No live store writes, file/network calls, Android lifecycle, phone/radio/real credentials, or RF work was performed. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md and PropagationOfflineReportImportTests.kt.
+
+
+## CP-0008S — Offline imported report inspection and comparison
+
+Parent: CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY.
+
+A pure Kotlin service compares two separately validated CP-0008R imported canonical reports, retaining original receipt and query-time provenance, source-status and selected-evidence identity. Full projection values are compared independently of evidence indices. Missing selected evidence means absent from a report view, not deleted from the live provider. Synthetic focused and inherited host/CI tests PASS. Finalizer run: 37944630941.
+
+No authenticated origin, cross-store atomicity, live store I/O, Android/radio/real credentials, or RF tests. CP-0003C remains DEFERRED, CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md and PropagationOfflineReportComparisonTests.kt.

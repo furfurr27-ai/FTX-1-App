@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY",
-  "created_utc": "2026-10-09T10:07:06+00:00",
-  "manifest": "checkpoints/manifests/CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY.json",
-  "snapshot": "checkpoints/snapshots/CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY.tar.gz",
-  "snapshot_sha256": "384cf9e38c651c01931708d02cf808dce67ef80c65678fc8b5cabacacdc96ff1"
+  "checkpoint_id": "CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON",
+  "created_utc": "2026-10-09T14:32:05+00:00",
+  "manifest": "checkpoints/manifests/CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.json",
+  "snapshot": "checkpoints/snapshots/CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON.tar.gz",
+  "snapshot_sha256": "0412af88da141abe7fbb3992f6b97b50ef1138efca9d269475a8e4c1f63cc531"
 }

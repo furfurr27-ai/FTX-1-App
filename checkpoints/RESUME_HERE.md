@@ -1,16 +1,16 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY**
-Project version: `v43-propagation-offline-report-import-boundary`
-Phase: **Offline report import boundary CI-verified; deterministic comparison next; hardware deferred**
-Test status: **GREEN host/CI: import=PASS decoder=PASS serialization=PASS inherited=PASS (32 CI test jobs); finalizer run 37915118080**
+Latest verified checkpoint: **CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON**
+Project version: `v44-propagation-offline-report-inspection-comparison`
+Phase: **Offline comparison CI-verified; canonical comparison export next; hardware deferred**
+Test status: **GREEN host/CI: compare=PASS import=PASS decoder=PASS serialization=PASS inherited=PASS (33 CI test jobs); finalizer run 37944630941**
 
 ## What is complete in this checkpoint
-- Validation-first offline V1 artifact import with strict typed reconstruction and byte-identical canonical reserialization
-- Detached read-only source/selected-evidence lookup without store writes or clock/provider/RF access
-- Explicit integrity receipt retains original query/capture times, evidence/source counts and content-type/byte/digest metadata
-- Forgery with recomputed SHA-256 remains unauthenticated; corrupt/incompatible reports fail closed
-- Synthetic import plus CP-0008Q decoder, CP-0008P serialization and inherited core CI suites all pass
+- Compare two fully validated imported canonical V1 reports without live reads, clocks or mutation
+- Track sorted selected-view source/evidence changes, including complete projection value drift when index keys match
+- Preserve before/after receipt hashes, source provenance and original query timestamp ordering
+- Distinguish missing selected-view evidence from claims of source deletion, authenticated origin or live RF worsening
+- Focused comparison plus CP-0008R/Q/P and all inherited CI regressions pass
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'
@@ -18,8 +18,8 @@ Test status: **GREEN host/CI: import=PASS decoder=PASS serialization=PASS inheri
 - No authenticated report signature, cross-store atomicity, Android device or phone/radio/RF proof
 
 ## Continue with these exact actions
-1. CP-0008S: GitHub/CI-only offline imported report inspection and comparison
-2. Preserve CP-0008P/Q/R canonical import, nested data and provenance tests
+1. CP-0008T: GitHub/CI-only canonical offline comparison export contract
+2. Preserve CP-0008P/Q/R/S canonical import, comparison and provenance tests
 3. CP-0003C remains DEFERRED; skip any manual account/hardware work
 
 ## Verification before continuing
@@ -30,7 +30,3 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
-
-## In-flight implementation (not yet verified)
-
-CP-0008S branch: `cp-0008s-propagation-offline-import-inspection-comparison`. Validate PR exact-tip CI; merge only after the full matrix passes; then confirm main finalizer run SUCCESS and committed verified snapshot/manifest. Keep CP-0008R in LATEST until finalizer confirmation.

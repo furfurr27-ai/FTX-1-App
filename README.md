@@ -39,25 +39,26 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY
+**Latest verified checkpoint:** CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON
 
-Parent durable checkpoint: CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION.
+Parent durable checkpoint: CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY.
 
 CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints, not part of this CI-only verification.
 
-CP-0008R is a GREEN, offline-only, report import/read boundary. It does not import into live propagation stores.
+CP-0008S is a GREEN offline-only, deterministic inspection/comparison of two fully validated imported reports.
 
-CP-0008R proves:
+CP-0008S proves:
 
-- A complete V1 serialized artifact is decoded and fully validated before a detached typed import view is returned.
-- Exact CP-0008P canonical bytes, CP-0008Q decoder provenance/status checks, original report timestamps, source attribution and selected evidence are preserved.
-- Imported-only source/evidence ID/kind lookups never fetch providers, update caches, recompute freshness or invent absent evidence.
-- An explicit integrity receipt retains media type, wire version, SHA-256, byte count, snapshot and count metadata without claiming authenticated origin or cross-store atomicity.
-- Recomputed-checksum forgery remains explicitly unauthenticated; corruption, format mismatches, invalid JSON and missing evidence fail closed.
-- No Android UI, filesystem/network/store mutation, real accounts/credentials, or phone/radio/RF testing.
+- Both complete canonical V1 artifacts are validated before comparison, with mutated previously imported DTOs rejected against their receipts.
+- Sorted source/evidence identity changes distinguish added/removed/changed/unchanged in *selected views*, without inferring provider deletion or worsening RF.
+- Complete selected projection payloads and provenance indices are compared, preserving changes that share unchanged evidence IDs.
+- Original query times, snapshot/summary and selected assessment change flags are preserved without reinterpreting freshness or consulting clocks/providers.
+- Integrity receipts remain explicitly unauthenticated and cannot assert atomicity or RF/device proof.
+- Focused Kotlin host/CI and inherited regression tests prove a pure offline read path.
 
 Host/CI gates:
 
+- CP-0008S offline imported report inspection and comparison: **PASS**.
 - CP-0008R propagation offline report import boundary: **PASS**.
 - CP-0008Q propagation offline report decode and validation: **PASS**.
 - CP-0008P propagation offline report serialization: **PASS**.
@@ -93,23 +94,19 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportImportService.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportImportTests.kt
-- scripts/test_propagation_offline_report_import.sh
-- CP-0008R finalization workflow run: 37915118080
+- research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonTests.kt
+- scripts/test_propagation_offline_report_comparison.sh
+- CP-0008S finalization workflow run: 37944630941
 
 ### Evidence boundary
 
-Imported diagnostic data is an offline artifact, not fresh live state. A SHA-256 checksum with no trusted key or signature cannot authenticate the source; a caller can recompute it. No authenticated provenance, cross-store transaction, provider health or device/RF assurance is claimed.
+A selected-view removal may be caused by different filters; it does not prove provider deletion or changed RF conditions. Checksums are not authenticated signatures. No source-origin assurance, live store atomicity, real device, or RF proof is claimed.
 
 ### Inherited verified ancestry
 
-CP-0008Q-PROPAGATION_OFFLINE_REPORT_DECODE_VALIDATION and previous verified checkpoints remain verified ancestry.
-
-### CP-0008S implementation in flight — not a verified checkpoint
-
-Branch: `cp-0008s-propagation-offline-import-inspection-comparison`. Deterministic comparison of fully validated CP-0008R imported artifacts, selected source/evidence changes and full projection value changes, original report query-time ordering and explicit unauthenticated receipts. Pure host-focused test, full inherited premerge CI and main-gated checkpoint finalizer are staged. Do not promote to verified until exact-tip CI passes, PR merges, full main CI succeeds and immutable snapshot is verified. Parent CP-0008R stays the latest durable baseline in the meantime.
+CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY and previous verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -133,7 +130,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008S — propagation offline report import inspection and comparison
+**Active software track:** CP-0008T — offline propagation report comparison export contract
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -358,7 +355,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY
+- Current Git source baseline: CP-0008S-PROPAGATION_OFFLINE_REPORT_INSPECTION_COMPARISON
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -371,13 +368,12 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008S — propagation offline report import inspection and comparison.**
+**CP-0008T — offline propagation report comparison export contract.**
 
-1. Design a GitHub/CI-only, deterministic read-only comparison of two CP-0008R imported report artifacts, including clear missing/stale provenance and evidence identity.
-2. Retain original captured/query times; do not equate an imported view with live propagation state, authenticated origin or cache atomicity.
-3. Preserve the CP-0008P/Q/R strict V1/roundtrip/tamper gates and all inherited regressions.
-4. CP-0003C remains DEFERRED until the owner explicitly says resume CP-0003C. CP-0004A/B/C remain incomplete.
-
+1. Design a GitHub/CI-only canonical serialization/export contract for CP-0008S comparison results.
+2. Preserve original V1 report receipts, missing-view caveats and change metadata; never imply live RF, authentic origin, or atomicity.
+3. Retain CP-0008P/Q/R/S strict gates and inherited regressions.
+4. CP-0003C remains DEFERRED until owner resume; CP-0004A/B/C incomplete.
 ## README maintenance contract
 
 This file is the human-readable project handoff.
