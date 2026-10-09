@@ -1,26 +1,7 @@
 name: Finalize CP-0008S checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportDecoder.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportSerialization.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportDecoderTests.kt'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportImportService.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportImportTests.kt'
-      - 'research/propagation/CP-0008R_OFFLINE_REPORT_IMPORT_BOUNDARY.md'
-      - 'scripts/test_propagation_offline_report_import.sh'
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonService.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonTests.kt'
-      - 'research/propagation/CP-0008S_OFFLINE_REPORT_INSPECTION_COMPARISON.md'
-      - 'scripts/test_propagation_offline_report_comparison.sh'
-      - 'research/propagation/CP-0008Q_OFFLINE_REPORT_DECODE_VALIDATION.md'
-      - 'scripts/test_propagation_offline_report_decoder.sh'
-      - 'scripts/finalize_cp0008s.py'
-      - '.github/workflows/cp0008s-propagation-offline-import-inspection-comparison.yml'
-      - '.github/workflows/finalize-cp0008s.yml'
-      - '.github/workflows/finalize-cp0008r.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write
