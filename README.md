@@ -108,6 +108,10 @@ A selected-view removal may be caused by different filters; it does not prove pr
 
 CP-0008R-PROPAGATION_OFFLINE_REPORT_IMPORT_BOUNDARY and previous verified checkpoints remain verified ancestry.
 
+### CP-0008T implementation in flight — not verified
+
+Branch: `cp-0008t-propagation-offline-comparison-export-contract`. A separate bounded, versioned, canonical V1 export of deterministic offline comparisons, retaining both original report receipts and selected-view provenance/change flags. This reuses the canonical value encoder without altering CP-0008P report JSON. The export does **not** embed original complete reports or authenticate source provenance. Focused and full inherited GitHub CI gates and a postmerge immutable checkpoint finalizer are staged. CP-0008S remains the verified durable baseline until the latest exact-tip CI, main-branch finalizer and snapshot verification succeed.
+
 ## Execution tracks and hardware-gated deferrals
 
 FieldOps has two practical execution lanes:
