@@ -8,6 +8,6 @@ Skip any checkpoint requiring phone, radio, real credentials/certificates, real 
 
 ## Next software checkpoint
 
-**CP-0008U — offline comparison export decode validation**
+**CP-0008V — offline comparison import and inspection boundary**
 
-Implement a strict platform-neutral decoder for versioned canonical CP-0008T comparison export artifacts, preserving original receipts and source/evidence change semantics; require full inherited tests and no authenticated provenance claims.
+Build a strict GitHub/CI-only import and inspection boundary around validated CP-0008U comparison exports, preserving original receipts and historical selected-view semantics, without claiming authenticated provenance, cross-store atomicity, live RF or hardware validation.

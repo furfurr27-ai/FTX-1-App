@@ -561,3 +561,14 @@ Canonical, separately versioned and bounded V1 JSON export of deterministic CP-0
 No signature/authenticated origin, cross-store atomicity, live state, device/radio/credentials, or RF test. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 
 Evidence: research/propagation/CP-0008T_OFFLINE_COMPARISON_EXPORT_CONTRACT.md and PropagationOfflineReportComparisonSerializationTests.kt.
+
+
+## CP-0008U — Offline comparison export strict decode validation
+
+Parent: CP-0008T-PROPAGATION_OFFLINE_COMPARISON_EXPORT_CONTRACT.
+
+Versioned and bounded strict canonical comparison JSON V1 decoder with exact SHA-256/UTF-8 metadata validation, typed DTO reconstruction via shared CP-0008Q parser, nested receipts and selected evidence/source changes. Noncanonical and inconsistent artifacts rejected, and byte-for-byte round trips proved. Original report CP-0008P bytes are unchanged. Focused tests plus full inherited host CI matrix PASS. Finalizer run: 37965956956.
+
+Integrity is not authenticated origin. No cross-store atomicity, live provider/RF, phone/radio/accounts/certificates or hardware assertions. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008U_OFFLINE_COMPARISON_EXPORT_DECODE_VALIDATION.md and PropagationOfflineReportComparisonDecoderTests.kt.
