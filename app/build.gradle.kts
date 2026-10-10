@@ -1,5 +1,6 @@
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
 }
 
 android {
@@ -10,9 +11,11 @@ android {
         applicationId = "dev.n0png.fieldops"
         minSdk = 29
         targetSdk = 35
-        versionCode = 55
-        versionName = "0.55.0-cp0009d"
+        versionCode = 56
+        versionName = "0.56.0-cp0009e"
     }
+
+    sourceSets.getByName("main").java.srcDir(rootProject.file("core/src/main/kotlin"))
 
     buildTypes {
         getByName("release") {

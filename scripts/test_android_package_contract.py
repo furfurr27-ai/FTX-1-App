@@ -15,7 +15,13 @@ if app.findall("uses-permission"):
     raise SystemExit("CP-0009D shell must declare NO runtime permissions")
 if app.findall("uses-feature"):
     raise SystemExit("CP-0009D shell must not depend on radio hardware")
-activity = app.find("application/activity")
+activities = app.findall("application/activity")
+activity = next((a for a in activities if a.get(android + "name") ==
+                 "dev.n0png.fieldops.app.MainActivity"), None)
+archive = next((a for a in activities if a.get(android + "name") ==
+                "dev.n0png.fieldops.app.ArchiveHistoryActivity"), None)
+if archive is None or archive.get(android + "exported") != "false":
+    raise SystemExit("Synthetic archive must be private to the app")
 if activity is None or activity.get(android + "exported") != "true":
     raise SystemExit("Missing explicit launcher Activity export")
 if not any(a.get(android + "name") == "android.intent.action.MAIN"
@@ -31,7 +37,24 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 55"):
+              "targetSdk = 35", "versionCode = 56"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
+
+archive_src = root / "app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt"
+if not archive_src.is_file():
+    raise SystemExit("Missing CP-0009E Android archive Activity")
+source_text = archive_src.read_text()
+for required in ("PropagationArchiveWorkspaceService", "PropagationArchiveWorkspaceAction.Select(",
+                 "PropagationArchiveWorkspaceAction.Compare(", "PropagationArchiveWorkspaceAction.Delete(",
+                 "PropagationArchiveWorkspaceAction.NextPage", "PropagationArchiveWorkspaceAction.PreviousPage",
+                 "screen.provenanceNotices", "InMemoryPropagationSnapshotStore",
+                 "NOT LIVE", "contentDescription"):
+    if required not in source_text:
+        raise SystemExit("Archive UI must use canonical model with history warning: " + required)
+for disallowed in ("UsbManager", "AudioRecord", "startService(", "requestPermissions(",
+                   "HttpURLConnection", "DatagramSocket", "FileOutputStream"):
+    if disallowed in source_text:
+        raise SystemExit("CP-0009E history demonstration requests real hardware I/O: " + disallowed)
+print("CP-0009E Android synthetic archive navigation contract: PASS")

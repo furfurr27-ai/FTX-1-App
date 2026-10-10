@@ -1,6 +1,8 @@
 package dev.n0png.fieldops.app;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.widget.Button;
 import android.os.Bundle;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
@@ -44,13 +46,17 @@ public final class MainActivity extends Activity {
         panel(root, "OFFLINE / HARDWARE DISCONNECTED",
             "This installable developer shell does not connect to a radio, capture audio, transmit, or send any data.");
         panel(root, "PROPAGATION ARCHIVE",
-            "Canonical offline-history contracts are host-tested. Android storage, archive selection screens, and live-source wiring are not yet implemented.");
+            "Canonical offline-history contracts are host-tested. Android archive screen uses synthetic in-memory reports. No storage or live-source wiring.");
+        Button archived = new Button(this);
+        archived.setText("OPEN SYNTHETIC OFFLINE ARCHIVE HISTORY");
+        archived.setOnClickListener(v -> startActivity(new Intent(this, ArchiveHistoryActivity.class)));
+        root.addView(archived);
         panel(root, "DIGITAL MODES / LOGBOOK",
             "The host-side engines and research are separate workstreams. This APK does not operate FT8, FT4, JS8, WSPR, CW, SSB, or LoTW.");
         panel(root, "NEXT INTEGRATION",
             "Attach the verified host modules to Android UI and services only after compile, data, privacy, and physical-radio checks.");
         root.addView(spacer(8));
-        root.addView(text("BUILD: CP-0009D • DEBUG / CI VERIFICATION ONLY", 11, MUTED, false));
+        root.addView(text("BUILD: CP-0009E • SYNTHETIC ARCHIVE UI / CI ONLY", 11, MUTED, false));
 
         setContentView(scroll);
     }
