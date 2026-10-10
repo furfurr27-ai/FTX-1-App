@@ -605,3 +605,14 @@ Strict independent bounded 1..100-row historical source/evidence pagination with
 Unkeyed integrity only; no authenticated provider origin, cross-store atomicity, live source/RF, Android phone/radio/accounts/certificate/hardware evidence. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008X_OFFLINE_COMPARISON_PAGINATION.md and PropagationOfflineReportComparisonPaginationTests.kt.
+
+
+## CP-0008Y — Offline comparison paged display integration
+
+Parent: CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION.
+
+Typed pure Kotlin host display contract wrapping validated CP-0008X canonical comparison pagination: two independent bounded sections with stable historical source/evidence before/after rows, selected-view-only change labels, typed previous/next requests preserving filters, original receipts/global tallies, and mandatory safety notices that never imply live RF, provider deletion, authenticated origin or atomicity. Optional original report consistency is explicit and remains unauthenticated. Focused and inherited host CI PASS; finalizer run: 38033030020.
+
+No live Android UI, radio/phone/USB, RF, certificate or account testing. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008Y_OFFLINE_COMPARISON_DISPLAY_CONTRACT.md and PropagationOfflineReportComparisonDisplayTests.kt.

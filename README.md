@@ -39,25 +39,26 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION
+**Latest verified checkpoint:** CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT
 
-Parent durable checkpoint: CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.
+Parent durable checkpoint: CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION.
 
 CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints, not part of this GitHub/CI-only verification.
 
-CP-0008X is a GREEN host-only historical offline comparison filtering and pagination read model.
+CP-0008Y is a GREEN host-only historical paged comparison display integration contract.
 
-CP-0008X proves:
+CP-0008Y proves:
 
-- Canonical CP-0008W presentation import/validation precedes filtering and pagination, preserving original receipts and UTC query order.
-- Independent source and selected-evidence pages with limits 1..100, zero-based Long offsets, stable deterministic order and nullable continuation.
-- Exact case-sensitive ID prefixes, selected change classifications and before/after evidence-kind filters, no locale or live source dependencies.
-- Global unfiltered classification tallies stay separate from filtered matched totals; no unbounded original row arrays are exposed from paged views.
-- Invalid bounds, corrupt artifacts and incomplete optional original-report pairs are rejected; a standalone derivative remains unauthenticated.
-- CP-0008P/Q/R/S/T/U/V/W contracts and inherited host-only regression suites remain GREEN.
+- Strict CP-0008X canonical artifact pagination feeds a deterministic platform-neutral historical display model, not a live Android screen.
+- Separate bounded source and evidence sections, selected-view-only change labels, original report/comparison receipts, query UTC order and unfiltered global change tallies.
+- Typed previous/next page queries preserve page sizes and exact case-sensitive source/evidence change, kind and prefix filters.
+- Four fixed mandatory warnings about historical (not live) data, selected-view-only changes, unkeyed checksum origin limits and unverified cross-store/hardware claims.
+- Optional paired original-report consistency labels never assert authenticated provider origin, source-store atomicity or observed RF state.
+- CP-0008P/Q/R/S/T/U/V/W/X APIs and the full inherited Kotlin host-only regression suite remain GREEN.
 
 Host/CI gates:
 
+- CP-0008Y offline comparison display integration: **PASS**.
 - CP-0008X bounded offline comparison presentation paging: **PASS**.
 - CP-0008W offline comparison presentation read model: **PASS**.
 - CP-0008V offline comparison import and inspection boundary: **PASS**.
@@ -99,19 +100,19 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0008X_OFFLINE_COMPARISON_PAGINATION.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonPaginationService.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonPaginationTests.kt
-- scripts/test_propagation_offline_comparison_pagination.sh
-- CP-0008X finalization workflow run: 38016346728
+- research/propagation/CP-0008Y_OFFLINE_COMPARISON_DISPLAY_CONTRACT.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonDisplayService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonDisplayTests.kt
+- scripts/test_propagation_offline_comparison_display.sh
+- CP-0008Y finalization workflow run: 38033030020
 
 ### Evidence boundary
 
-An unkeyed SHA-256 cannot authenticate origin. ADDED_TO_VIEW or REMOVED_FROM_VIEW never proves provider deletion or live RF propagation changes. No cross-store atomicity, real Android device/FTX-1 radio, live provider, account or RF proof.
+A historical selected-view change is not a provider deletion. Unkeyed SHA-256 is not authentication. Full reports are themselves unauthenticated. UI hosts must escape untrusted IDs and provenance text; the DTO layer does not render HTML, connect to real Android views, control radio, access live providers, authenticate sources or verify atomicity.
 
 ### Inherited verified ancestry
 
-CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION and previous verified checkpoints remain verified ancestry.
+CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION and older verified checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -135,7 +136,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0008Y — offline comparison paged display integration contract
+**Active software track:** CP-0008Z — offline comparison accessibility and host interaction state contract
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -360,7 +361,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION
+- Current Git source baseline: CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -373,11 +374,11 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0008Y — offline comparison paged display integration contract.**
+**CP-0008Z — offline comparison accessibility and host interaction state contract.**
 
-1. Define a GitHub/CI-only offline comparison paged display adapter contract above CP-0008X, preserving the historical view's provenance warnings.
-2. Preserve CP-0008P/Q/R/S/T/U/V/W/X canonical artifact receipts, selected-view semantics and full regression suite.
-3. Do not claim live propagation, authenticated provider origin, cross-store atomicity or real Android radio/device proof.
+1. Add a GitHub/CI-only host interaction and accessibility state contract for CP-0008Y historical comparison display views.
+2. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y canonical receipts, historical selected-view warnings and bounded page controls.
+3. Do not claim Android installation, real UI/device tests, live provider status, authenticated source attribution or live RF.
 4. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 
 ## README maintenance contract
