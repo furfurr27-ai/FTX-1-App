@@ -1,17 +1,7 @@
 name: Finalize CP-0009B checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportArchiveService.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportArchiveTests.kt'
-      - 'scripts/test_propagation_offline_archive.sh'
-      - 'research/propagation/CP-0009B_OFFLINE_ARCHIVE_CONTRACT.md'
-      - 'scripts/finalize_cp0009b.py'
-      - '.github/workflows/cp0009b-propagation-offline-archive.yml'
-      - '.github/workflows/finalize-cp0009b.yml'
-      - '.github/workflows/finalize-cp0009b.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

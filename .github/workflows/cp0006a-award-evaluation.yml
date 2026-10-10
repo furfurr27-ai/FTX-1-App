@@ -45,6 +45,7 @@ jobs:
         run: bash scripts/test_award_evaluation.sh
 
       - name: Dry-run CP-0006A checkpoint handoff generator
+        if: github.ref_name == 'cp-0006a-award-evaluation-engine' || github.head_ref == 'cp-0006a-award-evaluation-engine'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run
