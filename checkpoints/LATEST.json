@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION",
-  "created_utc": "2026-10-10T00:52:02+00:00",
-  "manifest": "checkpoints/manifests/CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.json",
-  "snapshot": "checkpoints/snapshots/CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.tar.gz",
-  "snapshot_sha256": "ef16f8701abf4f67359f6359a6d4b7a8497669434456b665bd8d29212c55a898"
+  "checkpoint_id": "CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION",
+  "created_utc": "2026-10-10T02:18:12+00:00",
+  "manifest": "checkpoints/manifests/CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION.json",
+  "snapshot": "checkpoints/snapshots/CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION.tar.gz",
+  "snapshot_sha256": "ebe215b2457ecf1d47286cd84cef280dda511550f0a3efbc3f9f9d0b27210818"
 }

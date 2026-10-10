@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION
+CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,13 +25,13 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008X — bounded historical offline comparison presentation filters and pagination
+CP-0008Y — offline comparison paged display integration contract
 
 Required scope:
 
-- deterministic GitHub/CI-only filter/pagination over validated CP-0008W projection
-- preserve all CP-0008P/Q/R/S/T/U/V/W receipt and classification interfaces
-- no authenticated provenance, cross-store atomicity, live source/RF, phone or account claims
+- deterministic GitHub/CI-only paged historical display adapter over CP-0008X
+- preserve CP-0008P/Q/R/S/T/U/V/W/X artifact and selected-view contracts
+- no authenticated origin, cross-store atomicity, live provider/RF, phone or account claim
 - CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
 ## Resume rule

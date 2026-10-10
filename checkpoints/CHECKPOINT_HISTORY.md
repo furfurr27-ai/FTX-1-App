@@ -594,3 +594,14 @@ Platform-neutral deterministic historical presentation over validated CP-0008V i
 No authenticated provider origin, cross-store atomicity, live status, Android device/RF/account validation. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008W_OFFLINE_COMPARISON_PRESENTATION.md and PropagationOfflineReportComparisonPresentationTests.kt.
+
+
+## CP-0008X — Offline comparison pagination and filtering
+
+Parent: CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.
+
+Strict independent bounded 1..100-row historical source/evidence pagination with nonnegative Long offsets and overflow-safe end behavior. Exact-case prefix, change and evidence-kind filters preserve canonical stable source/evidence selection ordering, all receipts, original UTC query order, unfiltered global classification tallies and optional complete original report consistency. Focused and complete inherited GitHub/CI regressions passed; finalizer run: 38016346728.
+
+Unkeyed integrity only; no authenticated provider origin, cross-store atomicity, live source/RF, Android phone/radio/accounts/certificate/hardware evidence. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008X_OFFLINE_COMPARISON_PAGINATION.md and PropagationOfflineReportComparisonPaginationTests.kt.
