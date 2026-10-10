@@ -8,6 +8,6 @@ Skip checkpoints requiring phone, radio, real accounts, credentials/certificates
 
 ## Next software checkpoint
 
-**CP-0009A — next GitHub/CI-only propagation workspace integration checkpoint**
+**CP-0009B — bounded offline propagation report history archive/store contract**
 
-Inspect the current propagation workspace roadmap and choose the next fully GitHub/CI-only integration task after CP-0008Z. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z canonical report, selected historical views and accessibility state, and full inherited regression suite. No live/authenticated RF or real Android UI claims.
+Implement a bounded, deterministic, GitHub/CI-only offline report history archive/store contract above CP-0009A. Do not claim real Android filesystem/DB persistence, provider authentication, live RF state or source-store atomicity. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and CP-0009A APIs and full inherited regression CI.

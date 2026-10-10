@@ -1,25 +1,25 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE**
-Project version: `v51-propagation-offline-comparison-accessibility-state`
-Phase: **Offline comparison host accessibility/interaction state CI-verified; next software-only checkpoint; hardware deferred**
-Test status: **GREEN host/CI: interaction=PASS display=PASS inherited=PASS (40 CI test jobs); finalizer run 38036887275**
+Latest verified checkpoint: **CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION**
+Project version: `v52-propagation-workspace-history-integration`
+Phase: **Workspace-to-offline-history integration host CI-verified; next archive management software checkpoint; hardware deferred**
+Test status: **GREEN host/CI: workspace-history=PASS comparison-interaction=PASS inherited=PASS (41 CI test jobs); finalizer run 38059922845**
 
 ## What is complete in this checkpoint
-- Immutable host interaction state bound to a strictly validated historical comparison artifact
-- Independent source/evidence pagination and typed filter intents with focus and accessible narration
-- Archived-only accessible row labels and retained four mandatory CP-0008Y provenance notices
-- Stale artifact rejection, safe end-of-page no-op, original report checks and overflow-safe historical ranges
-- CP-0008P/Q/R/S/T/U/V/W/X/Y contracts and full inherited host regression matrix GREEN
+- Single already-captured operating picture becomes strict canonical offline report and verified import receipt without extra reads
+- Two explicit offline captures compose an original-paired canonical comparison and historical accessible screen
+- Host interaction rechecks both original reports and derivative; preserves independent navigation, provenance and UTC order
+- Synthetic no-snapshot, populated, reverse, tamper and receipt mismatch integration checks
+- CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and complete inherited 40-job regression suite preserved
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'
 - CP-0004A/B/C hardware checkpoints remain incomplete
-- No authenticated origin, cross-store atomicity, Android UI/TalkBack or phone/radio/RF proof
+- No authenticated origin, cross-store atomicity, archive persistence, Android UI or real phone/radio/RF proof
 
 ## Continue with these exact actions
-1. CP-0009A: GitHub/CI-only next propagation workspace integration software checkpoint
-2. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z artifact and historic display/interaction contracts
+1. CP-0009B: GitHub/CI-only bounded offline propagation report history archive/store contract
+2. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and CP-0009A snapshot-to-history bridge
 3. CP-0003C remains DEFERRED; skip manual device, account and RF work
 
 ## Verification before continuing

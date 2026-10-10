@@ -627,3 +627,14 @@ Strict host-only accessibility and independent cursor/filter/focus state machine
 No live Android/TalkBack, radio/phone/USB, RF, account/certificate, source authentication or cross-store atomicity proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008Z_OFFLINE_COMPARISON_ACCESSIBILITY_STATE.md and PropagationOfflineReportComparisonInteractionTests.kt.
+
+
+## CP-0009A — Propagation workspace to historical comparison bridge
+
+Parent: CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE.
+
+An already-captured operating picture is transformed into strict deterministic CP-0008P report and CP-0008R receipt without extra store reads. Two explicit canonical captures form a validated CP-0008T comparison plus CP-0008Z accessible historical screen with paired original report consistency. Host interactions revalidate canonical originals, derivative and retained provenance. Synthetic fixtures cover no-snapshot, populated, later/earlier/same UTC, independent filters, tampered artifacts/receipts and stale comparison state. Focused and complete inherited host CI PASS; finalizer run 38059922845.
+
+No archive persistence, authenticated provider origin, atomic stores, live RF, radio/phone/Android UI or account/certificate proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0009A_WORKSPACE_HISTORY_INTEGRATION.md and PropagationWorkspaceHistoryTests.kt.
