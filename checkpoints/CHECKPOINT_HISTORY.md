@@ -616,3 +616,14 @@ Typed pure Kotlin host display contract wrapping validated CP-0008X canonical co
 No live Android UI, radio/phone/USB, RF, certificate or account testing. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008Y_OFFLINE_COMPARISON_DISPLAY_CONTRACT.md and PropagationOfflineReportComparisonDisplayTests.kt.
+
+
+## CP-0008Z — Historical comparison accessibility and interaction state
+
+Parent: CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT.
+
+Strict host-only accessibility and independent cursor/filter/focus state machine over validated CP-0008Y historical display; controlled page-bound and no-match spoken descriptors, required provenance notice reading order, immutable outer collection read models, stale artifact rejection and optional paired original-report consistency preservation. Focused and inherited Kotlin host CI PASS; finalizer run: 38036887275.
+
+No live Android/TalkBack, radio/phone/USB, RF, account/certificate, source authentication or cross-store atomicity proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008Z_OFFLINE_COMPARISON_ACCESSIBILITY_STATE.md and PropagationOfflineReportComparisonInteractionTests.kt.

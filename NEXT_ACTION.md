@@ -8,6 +8,6 @@ Skip checkpoints requiring phone, radio, real accounts, credentials/certificates
 
 ## Next software checkpoint
 
-**CP-0008Z — offline comparison accessibility and host interaction state contract**
+**CP-0009A — next GitHub/CI-only propagation workspace integration checkpoint**
 
-Define a deterministic, GitHub/CI-only host interaction/accessibility state contract for the historical CP-0008Y paged display model, retaining mandatory provenance warnings, independent page cursors and historical selected-view classifications. Preserve all CP-0008P/Q/R/S/T/U/V/W/X/Y interfaces; no phone/radio/live RF claims.
+Inspect the current propagation workspace roadmap and choose the next fully GitHub/CI-only integration task after CP-0008Z. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z canonical report, selected historical views and accessibility state, and full inherited regression suite. No live/authenticated RF or real Android UI claims.

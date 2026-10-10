@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT
+CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,12 +25,12 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0008Z — offline comparison accessibility and host interaction state contract
+CP-0009A — next GitHub/CI-only propagation workspace integration checkpoint
 
 Required scope:
 
-- deterministic GitHub/CI-only interaction/accessibility state over CP-0008Y historical paged display
-- preserve CP-0008P/Q/R/S/T/U/V/W/X/Y artifact, receipts, warnings and selected-view contracts
+- select next software-only propagation/workspace integration task from the live roadmap
+- preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z report, historical view and accessibility contracts
 - no real Android UI/device, authenticated origin, atomicity, live source/RF or account claim
 - CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
