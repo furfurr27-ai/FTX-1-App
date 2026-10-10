@@ -42,8 +42,9 @@ object PropagationArchiveWorkspaceTests {
         val idB = b.selectedSha256!!
         val compared = service.apply(b, PropagationArchiveWorkspaceAction.Compare(idA, idB))
         val screen = service.screen(compared)
-        eq(idA, screen.comparison!!.before.receipt.sha256Hex, "original first receipt")
-        eq(idB, screen.comparison.after.receipt.sha256Hex, "original second receipt")
+        val history = screen.comparison ?: error("Missing canonical historical comparison")
+        eq(idA, history.before.receipt.sha256Hex, "original first receipt")
+        eq(idB, history.after.receipt.sha256Hex, "original second receipt")
         yes(screen.provenanceNotices.any { it.contains("ARCHIVED DATA ONLY") }, "historical safety label")
         rejects("self comparison") {
             service.apply(b, PropagationArchiveWorkspaceAction.Compare(idA, idA))
