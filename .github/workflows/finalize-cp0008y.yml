@@ -1,7 +1,20 @@
-name: Finalize CP-0008X checkpoint
+name: Finalize CP-0008Y checkpoint
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonDisplayService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonDisplayTests.kt'
+      - 'scripts/test_propagation_offline_comparison_display.sh'
+      - 'research/propagation/CP-0008Y_OFFLINE_COMPARISON_DISPLAY_CONTRACT.md'
+      - 'scripts/finalize_cp0008y.py'
+      - '.github/workflows/cp0008y-propagation-offline-comparison-display.yml'
+      - '.github/workflows/finalize-cp0008y.yml'
+      - '.github/workflows/finalize-cp0008x.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
 
 permissions:
   contents: write
@@ -10,7 +23,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  pagination:
+  display:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +35,7 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_comparison_pagination.sh
+      - run: bash scripts/test_propagation_offline_comparison_display.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +45,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: comparison-pagination, script: scripts/test_propagation_offline_comparison_pagination.sh}
           - {label: comparison-presentation, script: scripts/test_propagation_offline_comparison_presentation.sh}
           - {label: comparison-import, script: scripts/test_propagation_offline_comparison_import.sh}
           - {label: comparison-decode, script: scripts/test_propagation_offline_comparison_decoder.sh}
@@ -83,8 +97,9 @@ jobs:
 
 
 
+
   checkpoint:
-    needs: [pagination, inherited]
+    needs: [display, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +107,7 @@ jobs:
       - name: Update durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008x.py
+        run: python3 scripts/finalize_cp0008y.py
       - name: Create and verify immutable checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -100,21 +115,21 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION \
-            --parent CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION \
-            --summary "Bounded deterministic historical comparison presentation filtering and pagination" \
-            --phase "Offline comparison paging/filtering CI-verified; next software-only checkpoint; hardware deferred" \
-            --test-status "GREEN host/CI: comparison-pagination=PASS comparison-presentation=PASS inherited=PASS (38 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Strict 1..100 bounded independent historical source and selected-evidence paging with Long offsets" \
-            --completed "Deterministic stable sorting, continuation, exact-case prefix, change and kind filters" \
-            --completed "Original canonical comparison and report receipts, global tallies and query order preserved separately from filtered counts" \
-            --completed "Explicit optional original-report reconciliation; malformed and incompatible payloads rejected" \
-            --completed "CP-0008P/Q/R/S/T/U/V/W contracts and complete inherited GitHub CI regression matrix preserved" \
+            --id CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT \
+            --parent CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION \
+            --summary "Platform-neutral bounded paged historical offline comparison display integration contract" \
+            --phase "Offline comparison paged display host CI verified; next GitHub-only checkpoint; hardware deferred" \
+            --test-status "GREEN host/CI: display=PASS pagination=PASS inherited=PASS (39 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
+            --completed "Typed platform-neutral display adapter over strictly validated CP-0008X canonical paged comparisons" \
+            --completed "Source/evidence rows, fixed historical headings, selected-view change labels and non-optional provenance warnings" \
+            --completed "Typed next/previous pagination preserving independent filters and original receipts and global tallies" \
+            --completed "Optional original report consistency labels without source authentication, cross-store atomicity or live provider claims" \
+            --completed "CP-0008P/Q/R/S/T/U/V/W/X original interfaces and full inherited regression matrix remain green" \
             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
             --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No authenticated provider origin, cross-store atomicity, Android device or phone/radio/RF proof" \
-            --next "CP-0008Y: GitHub/CI-only offline comparison paged display integration contract" \
-            --next "Preserve CP-0008P/Q/R/S/T/U/V/W/X canonical and historical selected-view semantics" \
+            --blocker "No authenticated provider origin, cross-store atomicity, Android installation or real phone/radio/RF validation" \
+            --next "CP-0008Z: GitHub/CI-only offline comparison display accessibility and host interaction state contract" \
+            --next "Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y canonical and historical selected-view semantics" \
             --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
           python3 scripts/verify_checkpoint.py --root . --latest
 
@@ -125,7 +140,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION.json
-          git add -f checkpoints/snapshots/CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION.tar.gz
-          git commit -m "Checkpoint CP-0008X offline comparison pagination"
+          git add checkpoints/manifests/CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT.json
+          git add -f checkpoints/snapshots/CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT.tar.gz
+          git commit -m "Checkpoint CP-0008Y offline comparison paged display contract"
           git push
