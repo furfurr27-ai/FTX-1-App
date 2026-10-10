@@ -645,3 +645,18 @@ Evidence: research/propagation/CP-0009A_WORKSPACE_HISTORY_INTEGRATION.md and Pro
 Parent: CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION. Canonical, caller-retained archive values validate every retained report and receipt on access; deterministic count/byte FIFO eviction, idempotent content keys, UTC-based stable history paging, explicit removal and original-paired CP-0009A comparison. Host test and inherited complete CI matrix GREEN; finalizer 38075190464. This is not Android database persistence, provider signature authentication, live RF or physical hardware proof. CP-0003C DEFERRED and CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0009B_OFFLINE_ARCHIVE_CONTRACT.md, PropagationOfflineReportArchiveTests.kt.
+
+
+## CP-0009C — Archive workspace and Android build-readiness gap
+
+Parent: CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE. Host-only archive selection, navigation, deletion,
+capturing a caller-supplied operating picture, original-paired historical
+comparison, eviction reconciliation and typed accessible rows. Kotlin host
+tests and inherited CI GREEN. Repository static Android packaging GAP audit
+honestly reports NOT_READY because Gradle application scaffolding and APK
+workflow are missing. This is NOT a built Android app, Activity or installable
+APK. No Android persistence, RF, hardware or authenticated-origin proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38083056859.
+Evidence: research/propagation/CP-0009C_ARCHIVE_WORKSPACE_BUILD_READINESS.md

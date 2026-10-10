@@ -1,24 +1,24 @@
 {
-  "project_version": "v53-propagation-offline-report-archive",
-  "latest_checkpoint": "CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE",
-  "phase": "Host-only bounded archive verified; next archive workspace/Android CI build integration; hardware deferred",
-  "test_status": "GREEN host/CI: offline-archive=PASS workspace-history=PASS inherited=PASS (42 CI test jobs); finalizer run 38075190464",
+  "project_version": "v54-archive-workspace-build-readiness",
+  "latest_checkpoint": "CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS",
+  "phase": "Host archive navigation verified; Android APK packaging not ready; hardware deferred",
+  "test_status": "GREEN host/CI: archive-workspace=PASS, Android packaging static gap=NOT_READY, inherited=PASS (43 CI test jobs); finalizer run 38083056859",
   "completed": [
-    "Canonical report receipts revalidated on every archive read/write; deterministic SHA content identities and duplicate handling",
-    "Bounded FIFO retention by entry count and UTF-8 size; deterministic UTC-sorted paginated selection",
-    "Explicit delete, historical selection and CP-0009A paired offline comparison by retained IDs",
-    "Synthetic host tests for byte/count eviction, duplicates, forgery, out-of-bounds paging and original immutability",
-    "Full inherited CP-0009A and CP-0008P/Q/R/S/T/U/V/W/X/Y/Z regression matrix preserved"
+    "Caller-picture archive capture, selection, deletion, bounded paging and two-original paired historical comparison",
+    "Eviction reconciles selection/comparison state; stale/tampered receipts and invalid history state rejected",
+    "Accessible plain-text history labels and preserved archived/non-live/authentication/persistence warnings",
+    "Repository static APK readiness audit accurately identifies absent Gradle app/wrapper/manifest and APK CI",
+    "CP-0009B and full inherited host regression gates preserved"
   ],
   "blockers": [
-    "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'",
-    "CP-0004A/B/C hardware checkpoints remain incomplete",
-    "No actual Android archive persistence, signed provider origin, live RF, radio/phone or store atomicity proof"
+    "OWNER OVERRIDE: CP-0003C is DEFERRED; do not resume without explicit command",
+    "CP-0004A/B/C hardware work remains incomplete",
+    "No Android Activity/Gradle APK, Android DB, phone/radio/RF, USB, accounts or origin authentication proof"
   ],
   "next_actions": [
-    "CP-0009C: archive history selection and Android build-readiness integration, GitHub/CI only",
-    "Preserve canonical archive/import/history contracts and inherited full CI matrix",
-    "CP-0003C remains DEFERRED; skip manual device, account and RF work"
+    "CP-0009D Android Gradle application packaging foundation and APK CI, GitHub/CI only",
+    "Preserve bounded archive/history contract and require actual CI build artifact before APK claim",
+    "CP-0003C remains DEFERRED; skip hardware/account validation"
   ],
-  "updated_utc": "2026-10-10T18:19:52+00:00"
+  "updated_utc": "2026-10-10T20:18:19+00:00"
 }

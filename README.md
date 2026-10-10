@@ -39,25 +39,27 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE
+**Latest verified checkpoint:** CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS
 
-Parent durable checkpoint: CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION.
+Parent: CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE (v53).
 
-CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints.
+CP-0009C is GREEN for the platform-neutral archive history host/workspace interface
+and a machine-readable Android packaging GAP audit. It is NOT an installable APK
+or a running Android Activity: Gradle wrapper/settings, application module,
+AndroidManifest and APK-build workflow are still absent. APK readiness remains RED.
 
-CP-0009B is a GREEN host-only bounded archive/store contract above CP-0009A.
+History capture/select/delete, canonical paired historical comparison, safe
+eviction selection reconciliation, accessible plain-text rows and provenance
+warnings are verified with synthetic host tests. CP-0009A/B canonical receipts,
+bounded archive rules and inherited regression gates remain preserved.
+No live CAT/RF, real Android DB/filesystem, authenticated origin or device proof.
 
-CP-0009B proves:
-
-- A deterministic caller-retained canonical offline report history value; FIFO eviction by insertion order, count and UTF-8 byte budget.
-- Idempotent SHA-256 content key duplicates; canonical imported receipts reverified on every archive operation.
-- Explicit removal, stable query UTC-descending paginated selection, and original-paired CP-0009A historical comparison.
-- Rejects tampering, forged receipt/trust, invalid retention/page limits and missing selected captures.
-- CP-0009A and the full inherited CP-0008P/Q/R/S/T/U/V/W/X/Y/Z host regression matrix remain GREEN.
-- No Android filesystem/DB persistence, trusted origin, cross-store atomicity or live RF claims.
+CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 
 Host/CI gates:
 
+- CP-0009C archive selection workspace host tests: **PASS**.
+- CP-0009C static Android APK packaging prerequisite audit: **NOT READY (verified gap)**.
 - CP-0009B offline propagation report archive/store contract: **PASS**.
 - CP-0009A propagation workspace-to-offline-history integration: **PASS**.
 - CP-0008Z offline historical interaction/accessibility contract: **PASS**.
@@ -103,19 +105,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0009B_OFFLINE_ARCHIVE_CONTRACT.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportArchiveService.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportArchiveTests.kt
-- scripts/test_propagation_offline_archive.sh
-- CP-0009B main finalization workflow run: 38075190464
+- research/propagation/CP-0009C_ARCHIVE_WORKSPACE_BUILD_READINESS.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveWorkspaceService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationArchiveWorkspaceTests.kt
+- scripts/test_propagation_archive_workspace.sh
+- scripts/check_android_build_readiness.py
+- CP-0009C main-branch finalizer: 38083056859
 
 ### Evidence boundary
 
-Only host-only, caller-owned in-memory archive behavior is proven. Content SHA-256 is not authenticated provenance; no Android storage, source-store atomicity, phone/radio/USB/RF, real account or certificate verification.
+Host Kotlin model and truthful prerequisite detection only; no gradle build,
+Android Activity, working APK, installation, USB/audio, RF or accounts proof.
 
-### Inherited verified ancestry
+### Verified ancestry
 
-CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION and older verified checkpoints remain ancestry.
+CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE and earlier verified checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -139,7 +143,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009C — archive history selection and Android build-readiness integration
+**Active software track:** CP-0009D — Android Gradle application packaging foundation and APK CI
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -364,7 +368,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE
+- Current Git source baseline: CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -377,12 +381,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009C — archive history selection and Android build-readiness integration.**
+**CP-0009D — Android Gradle application packaging foundation and APK CI.**
 
-1. Wire canonical bounded archive selection and history controls into the application workspace; add GitHub/CI-only Android build-readiness smoke checks.
-2. Preserve CP-0009B canonical receipts, bounded retention, CP-0009A original-paired comparison, warnings and inherited regression gates.
-3. Do not claim Android on-device persistence, authenticated origin, RF operation or hardware/account verification.
-4. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
+1. Create a Gradle wrapper, Android project settings, installable app module,
+   AndroidManifest and deterministic GitHub Actions debug APK build gate.
+2. Integrate the existing host archive workspace into an actual platform host
+   incrementally; preserve safe no-transmit defaults and the canonical history.
+3. Do not claim phone/radio/USB/RF operation, on-device persistence or verified
+   APK install until each is independently proven.
+4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## README maintenance contract
 
@@ -400,6 +407,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-## CP-0009C implementation branch (not checkpointed)
-
-Implementation branch: cp-0009c-archive-workspace-build-readiness. Parent durable checkpoint is CP-0009B/v53, main commit 4bc53600453ccd3e14bcebcbc6bdb00965fff9be. Work in progress: host archive workspace selection/paging/comparison and truthful Android static APK build-readiness gap audit. NO installable APK, Android UI or physical hardware proof. Merge only after exact-head GitHub CI host and full regression matrix; then verify main finalizer and immutable CP-0009C manifest/snapshot before claiming v54. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.

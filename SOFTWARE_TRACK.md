@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE
+CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,14 +25,14 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009C — archive history selection and Android build-readiness integration
+CP-0009D — Android Gradle application packaging foundation and APK CI
 
 Required scope:
 
-- integrate CP-0009B offline archive selection/history UX with accessible workspace and host/Android CI checks
-- preserve canonical report import/receipts and CP-0009A historical comparison fidelity
-- no actual device/DB persistence, authenticated origin or real RF/device/account verification
-- CP-0003C DEFERRED; CP-0004A/B/C incomplete
+- Actual Android application module, manifest, Gradle wrapper and APK CI build
+- Incremental safe host integration with CP-0009C history selection state
+- No on-device database, real RF, CAT/audio or physical device claims
+- CP-0003C DEFERRED; CP-0004A/B/C remain incomplete
 
 ## Resume rule
 
@@ -44,6 +44,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-## CP-0009C implementation branch (not checkpointed)
-
-cp-0009c-archive-workspace-build-readiness originates at verified CP-0009B/v53. CP-0009C adds a software-only archive history presentation contract and tests plus an Android build-readiness audit that MUST report NOT_READY while Gradle project/app/manifest/APK workflow are absent. The actual next eventual Android APK scaffold will be a separate checkpoint. Keep CP-0003C DEFERRED and CP-0004A/B/C incomplete.

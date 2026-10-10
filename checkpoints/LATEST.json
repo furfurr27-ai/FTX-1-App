@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE",
-  "created_utc": "2026-10-10T18:19:52+00:00",
-  "manifest": "checkpoints/manifests/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.json",
-  "snapshot": "checkpoints/snapshots/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.tar.gz",
-  "snapshot_sha256": "0ff21d116ca5fe38e9496d525f0e687e1b64fd44ae4cd63de5f52f3a11780de1"
+  "checkpoint_id": "CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS",
+  "created_utc": "2026-10-10T20:18:19+00:00",
+  "manifest": "checkpoints/manifests/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.json",
+  "snapshot": "checkpoints/snapshots/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.tar.gz",
+  "snapshot_sha256": "48bfc83fde934f629972f8b92a1419044be13d3f9116045a16ba126bed1ff2b2"
 }
