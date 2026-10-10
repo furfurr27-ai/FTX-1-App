@@ -15,6 +15,9 @@ on:
       - 'research/js8/CP-0002B_JS8_TX_INTEGRATION.md'
       - '.github/workflows/cp0002b-js8-tx.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 

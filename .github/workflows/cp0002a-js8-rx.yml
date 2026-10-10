@@ -23,6 +23,9 @@ on:
       - 'research/js8/CP-0002A_JS8_RX_INTEGRATION.md'
       - '.github/workflows/cp0002a-js8-rx.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 

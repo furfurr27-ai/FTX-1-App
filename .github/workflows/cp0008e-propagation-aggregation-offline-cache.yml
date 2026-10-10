@@ -16,6 +16,9 @@ on:
       - '.github/workflows/finalize-cp0008d.yml'
       - '.github/workflows/finalize-cp0008e.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 

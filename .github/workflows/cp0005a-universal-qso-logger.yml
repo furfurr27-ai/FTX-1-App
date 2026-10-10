@@ -18,6 +18,9 @@ on:
       - 'scripts/finalize_cp0005a.py'
       - '.github/workflows/cp0005a-universal-qso-logger.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 

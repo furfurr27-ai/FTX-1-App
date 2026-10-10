@@ -18,6 +18,9 @@ on:
       - 'scripts/finalize_cp0003a.py'
       - '.github/workflows/cp0003a-tqsl-signer.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 

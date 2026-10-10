@@ -19,6 +19,9 @@ on:
       - 'scripts/finalize_cp0005b.py'
       - '.github/workflows/cp0005b-manual-qso-lotw-queue.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 
