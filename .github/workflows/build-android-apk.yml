@@ -2,7 +2,7 @@ name: Build Android Debug APK
 
 on:
   push:
-    branches: [main, cp-0009d-android-apk-build-foundation]
+    branches: [main, cp-0009e-android-offline-archive-ui]
     paths:
       - 'app/**'
       - 'gradle/**'
