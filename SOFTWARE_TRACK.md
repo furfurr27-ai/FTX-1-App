@@ -44,7 +44,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009B implementation branch (not checkpointed)
-
-`cp-0009b-bounded-offline-report-archive` — bounded archive/store contract plus host test and mandatory inherited CI. Do not mark complete before finalizer and snapshot verification.

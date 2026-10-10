@@ -30,7 +30,3 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
-
-## Active unverified CP-0009B branch
-
-`cp-0009b-bounded-offline-report-archive`. Finish its PR and exact-head CI, merge only after success, verify the main CP-0009B finalizer. Until then, this document's latest durable checkpoint is still CP-0009A.

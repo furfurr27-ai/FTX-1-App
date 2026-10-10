@@ -399,7 +399,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## In-progress, not yet durably verified
-
-CP-0009B bounded offline report archive implementation is on `cp-0009b-bounded-offline-report-archive`. CP-0009A remains the verified baseline until CP-0009B's full GitHub CI and main-branch finalizer complete. See `NEXT_ACTION.md` and the active PR.
