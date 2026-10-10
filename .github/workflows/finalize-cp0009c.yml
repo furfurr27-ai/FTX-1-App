@@ -1,17 +1,7 @@
 name: Finalize CP-0009C checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveWorkspaceService.kt'
-      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationArchiveWorkspaceTests.kt'
-      - 'scripts/test_propagation_archive_workspace.sh'
-      - 'scripts/check_android_build_readiness.py'
-      - 'research/propagation/CP-0009C_ARCHIVE_WORKSPACE_BUILD_READINESS.md'
-      - 'scripts/finalize_cp0009c.py'
-      - '.github/workflows/cp0009c-archive-workspace-readiness.yml'
-      - '.github/workflows/finalize-cp0009c.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

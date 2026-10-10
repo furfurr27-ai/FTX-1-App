@@ -407,3 +407,7 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009D implementation branch (not checkpointed)
+
+Branch: cp-0009d-android-apk-build-foundation. Parent immutable baseline CP-0009C/v54 at main 68034463c4b2700faa4105bdf58f2f7fe417a4c8. New Gradle 8.13 Android app packaging, offline-only launcher and Actions debug APK gate are IN PROGRESS. Actual assembled APK must pass CI, package/launcher inspection, snapshot dry-run and full inherited regressions before merge, with a second merged-main finalizer for v55. No phone-install, radio, RF, network, CAT or archive-UI binding is claimed. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.

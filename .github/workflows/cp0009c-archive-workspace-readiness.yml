@@ -40,6 +40,7 @@ jobs:
       - name: Host archive workspace and truthful Android packaging gap
         run: bash scripts/test_propagation_archive_workspace.sh
       - name: Premerge CP-0009C immutable checkpoint dry-run
+        if: github.ref_name == 'cp-0009c-archive-workspace-build-readiness' || github.head_ref == 'cp-0009c-archive-workspace-build-readiness'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

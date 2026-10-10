@@ -15,6 +15,6 @@ SRC="$ROOT/core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationA
 grep -Fq 'PropagationOfflineReportArchiveService.validate(' "$SRC"
 grep -Fq 'PropagationWorkspaceHistoryService.capture(' "$SRC"
 grep -Fq 'ARCHIVED DATA ONLY:' "$SRC"
-echo "[5/5] Explicit Android packaging gap audit, not an APK claim"
-python3 "$ROOT/scripts/check_android_build_readiness.py" --expect-not-ready
-echo "CP-0009C host archive workspace and build-gap gate: PASS"
+echo "[5/5] Static Android APK packaging prerequisite audit, not an APK claim"
+python3 "$ROOT/scripts/check_android_build_readiness.py" --expect-ready
+echo "CP-0009C host archive workspace and static prerequisite gate: PASS"
