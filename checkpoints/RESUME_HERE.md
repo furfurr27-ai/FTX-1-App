@@ -1,26 +1,26 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS**
-Project version: `v54-archive-workspace-build-readiness`
-Phase: **Host archive navigation verified; Android APK packaging not ready; hardware deferred**
-Test status: **GREEN host/CI: archive-workspace=PASS, Android packaging static gap=NOT_READY, inherited=PASS (43 CI test jobs); finalizer run 38083056859**
+Latest verified checkpoint: **CP-0009D-ANDROID_APK_BUILD_FOUNDATION**
+Project version: `v55-android-apk-build-foundation`
+Phase: **Genuine CI debug APK build verified, Android host integration pending, hardware deferred**
+Test status: **GREEN GitHub CI: debug APK compile=PASS, APK manifest/ZIP verification=PASS, Android static safety=PASS, host inherited=PASS (44+ CI jobs); finalizer run 38086248114**
 
 ## What is complete in this checkpoint
-- Caller-picture archive capture, selection, deletion, bounded paging and two-original paired historical comparison
-- Eviction reconciles selection/comparison state; stale/tampered receipts and invalid history state rejected
-- Accessible plain-text history labels and preserved archived/non-live/authentication/persistence warnings
-- Repository static APK readiness audit accurately identifies absent Gradle app/wrapper/manifest and APK CI
-- CP-0009B and full inherited host regression gates preserved
+- Official Gradle 8.13 wrapper pinned by upstream Git blob identity; Android Gradle Plugin 8.13.2
+- Android Java 17 app module, manifest and exported launcher Activity compiled into real debug APK
+- Zero requested permissions, offline-only developer UI, no RF/CAT/audio/PTT/network claim
+- APK ZIP and aapt package/launcher verified, SHA-256 and downloadable Actions artifact uploaded
+- CP-0009C archive workspace and all inherited host regression gates remain green
 
 ## Known blockers / red items
-- OWNER OVERRIDE: CP-0003C is DEFERRED; do not resume without explicit command
-- CP-0004A/B/C hardware work remains incomplete
-- No Android Activity/Gradle APK, Android DB, phone/radio/RF, USB, accounts or origin authentication proof
+- OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit owner instruction
+- CP-0004A/B/C hardware checkpoints remain incomplete
+- APK not physically installed/tested on Galaxy S23 Ultra; host archive not yet wired to Activity; no RF/USB/LoTW proof
 
 ## Continue with these exact actions
-1. CP-0009D Android Gradle application packaging foundation and APK CI, GitHub/CI only
-2. Preserve bounded archive/history contract and require actual CI build artifact before APK claim
-3. CP-0003C remains DEFERRED; skip hardware/account validation
+1. CP-0009E Android archive-history UI integration with synthetic canonical offline fixtures and CI
+2. Preserve Android assembleDebug artifact gate and inherited full host regression suite
+3. CP-0003C remains DEFERRED; do not claim hardware/account validation
 
 ## Verification before continuing
 Run:
@@ -30,7 +30,3 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
-
-## IN PROGRESS, not durable: CP-0009D
-
-Branch: cp-0009d-android-apk-build-foundation. Durable checkpoint above remains CP-0009C/v54. CP-0009D seeks real Android Gradle APK packaging, a no-radio launcher shell, actual CI debug APK ZIP/package inspection and artifact upload, plus full inherited regression verification. Before claiming v55, merge exact-head green PR and verify main finalizer, manifest and snapshot SHA. No physical device install or FTX-1/RF proof. CP-0003C DEFERRED, CP-0004A/B/C incomplete.

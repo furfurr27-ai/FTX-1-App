@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS",
-  "created_utc": "2026-10-10T20:18:19+00:00",
-  "manifest": "checkpoints/manifests/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.json",
-  "snapshot": "checkpoints/snapshots/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.tar.gz",
-  "snapshot_sha256": "48bfc83fde934f629972f8b92a1419044be13d3f9116045a16ba126bed1ff2b2"
+  "checkpoint_id": "CP-0009D-ANDROID_APK_BUILD_FOUNDATION",
+  "created_utc": "2026-10-10T21:07:44+00:00",
+  "manifest": "checkpoints/manifests/CP-0009D-ANDROID_APK_BUILD_FOUNDATION.json",
+  "snapshot": "checkpoints/snapshots/CP-0009D-ANDROID_APK_BUILD_FOUNDATION.tar.gz",
+  "snapshot_sha256": "20e936829c734f601166de1022bbb18a2a98ef37212c433282185d806c1add0f"
 }

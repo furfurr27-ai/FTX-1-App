@@ -660,3 +660,16 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38083056859.
 Evidence: research/propagation/CP-0009C_ARCHIVE_WORKSPACE_BUILD_READINESS.md
+
+
+## CP-0009D — Android debug APK packaging foundation
+
+Parent: CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS. Verified actual Gradle Android debug APK build,
+package/launcher and ZIP structure through GitHub Actions; Gradle wrapper pin,
+offline launcher and zero requested permissions. Uploaded APK artifact and
+SHA-256 in GitHub CI. Host archive still separate and NO phone install,
+radio/USB/RF, source authentication or on-device history storage verified.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38086248114.
+Evidence: research/android/CP-0009D_ANDROID_APK_BUILD_FOUNDATION.md.

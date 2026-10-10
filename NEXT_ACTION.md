@@ -2,15 +2,16 @@
 
 ## Owner execution override
 
-CP-0003C is **DEFERRED**; do not resume until explicitly instructed 'resume CP-0003C'.
-Skip any checkpoint requiring phone/radio, real accounts/credentials/certificates,
-RF or manual hardware validation. CP-0004A/B/C remain incomplete.
+CP-0003C is **DEFERRED**. Do not resume until explicitly instructed
+'resume CP-0003C'. CP-0004A/B/C remain incomplete.
+Skip phone/radio/USB/RF, real accounts/credentials/certificates and all
+manual hardware validation.
 
 ## Next software checkpoint
 
-**CP-0009D — Android Gradle application packaging foundation and APK CI**
+**CP-0009E — Android archive-history screen and offline UI integration**
 
-Build and CI-test an actual Android Gradle application packaging foundation
-without requiring a physical phone, FTX-1 or accounts. Treat CP-0009C as host-only
-archive controls plus honest red Android APK gap audit; keep all prior regression
-contracts. Do not call the APK installable until GitHub CI proves a build artifact.
+CI-built debug APK packaging foundation is complete, but the Activity remains
+a read-only developer shell. Connect CP-0009C canonical archive selection,
+history and paired comparison models to Android UI with CI-testable synthetic
+offline data. Maintain 43+ inherited host regressions and rebuild APK in CI.

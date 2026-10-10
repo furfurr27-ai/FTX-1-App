@@ -1,24 +1,24 @@
 {
-  "project_version": "v54-archive-workspace-build-readiness",
-  "latest_checkpoint": "CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS",
-  "phase": "Host archive navigation verified; Android APK packaging not ready; hardware deferred",
-  "test_status": "GREEN host/CI: archive-workspace=PASS, Android packaging static gap=NOT_READY, inherited=PASS (43 CI test jobs); finalizer run 38083056859",
+  "project_version": "v55-android-apk-build-foundation",
+  "latest_checkpoint": "CP-0009D-ANDROID_APK_BUILD_FOUNDATION",
+  "phase": "Genuine CI debug APK build verified, Android host integration pending, hardware deferred",
+  "test_status": "GREEN GitHub CI: debug APK compile=PASS, APK manifest/ZIP verification=PASS, Android static safety=PASS, host inherited=PASS (44+ CI jobs); finalizer run 38086248114",
   "completed": [
-    "Caller-picture archive capture, selection, deletion, bounded paging and two-original paired historical comparison",
-    "Eviction reconciles selection/comparison state; stale/tampered receipts and invalid history state rejected",
-    "Accessible plain-text history labels and preserved archived/non-live/authentication/persistence warnings",
-    "Repository static APK readiness audit accurately identifies absent Gradle app/wrapper/manifest and APK CI",
-    "CP-0009B and full inherited host regression gates preserved"
+    "Official Gradle 8.13 wrapper pinned by upstream Git blob identity; Android Gradle Plugin 8.13.2",
+    "Android Java 17 app module, manifest and exported launcher Activity compiled into real debug APK",
+    "Zero requested permissions, offline-only developer UI, no RF/CAT/audio/PTT/network claim",
+    "APK ZIP and aapt package/launcher verified, SHA-256 and downloadable Actions artifact uploaded",
+    "CP-0009C archive workspace and all inherited host regression gates remain green"
   ],
   "blockers": [
-    "OWNER OVERRIDE: CP-0003C is DEFERRED; do not resume without explicit command",
-    "CP-0004A/B/C hardware work remains incomplete",
-    "No Android Activity/Gradle APK, Android DB, phone/radio/RF, USB, accounts or origin authentication proof"
+    "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit owner instruction",
+    "CP-0004A/B/C hardware checkpoints remain incomplete",
+    "APK not physically installed/tested on Galaxy S23 Ultra; host archive not yet wired to Activity; no RF/USB/LoTW proof"
   ],
   "next_actions": [
-    "CP-0009D Android Gradle application packaging foundation and APK CI, GitHub/CI only",
-    "Preserve bounded archive/history contract and require actual CI build artifact before APK claim",
-    "CP-0003C remains DEFERRED; skip hardware/account validation"
+    "CP-0009E Android archive-history UI integration with synthetic canonical offline fixtures and CI",
+    "Preserve Android assembleDebug artifact gate and inherited full host regression suite",
+    "CP-0003C remains DEFERRED; do not claim hardware/account validation"
   ],
-  "updated_utc": "2026-10-10T20:18:19+00:00"
+  "updated_utc": "2026-10-10T21:07:44+00:00"
 }
