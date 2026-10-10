@@ -583,3 +583,14 @@ Validated versioned canonical CP-0008T/U comparison import boundary with explici
 No signature/authenticated origin, cross-store atomicity, live provider/RF proof, phone/radio, real accounts or hardware tests. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0008V_OFFLINE_COMPARISON_IMPORT_INSPECTION.md and PropagationOfflineReportComparisonImportTests.kt.
+
+
+## CP-0008W — Offline comparison presentation read model
+
+Parent: CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION.
+
+Platform-neutral deterministic historical presentation over validated CP-0008V imported comparison records, preserving original receipts, time order, source/evidence identities, selected change categories, metadata versus full-projection flags, source/evidence counts and filters. Optional full original report reconciliation remains explicit and unauthenticated. Focused and full inherited GitHub/CI regressions PASS. Finalizer run: 38010726704.
+
+No authenticated provider origin, cross-store atomicity, live status, Android device/RF/account validation. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0008W_OFFLINE_COMPARISON_PRESENTATION.md and PropagationOfflineReportComparisonPresentationTests.kt.

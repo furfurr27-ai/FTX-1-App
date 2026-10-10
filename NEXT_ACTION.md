@@ -4,10 +4,10 @@
 
 CP-0003C is **DEFERRED**. Do not return until the owner explicitly says resume CP-0003C.
 
-Skip any checkpoint requiring phone, radio, real credentials/certificates, real accounts, RF testing or manual hardware validation. Skipped checkpoints remain incomplete.
+Skip checkpoints requiring the phone, radio, real accounts, credentials/certificates, RF or manual hardware validation. Skipped checkpoints remain incomplete.
 
 ## Next software checkpoint
 
-**CP-0008W — next GitHub/CI-only propagation software checkpoint**
+**CP-0008X — bounded historical comparison presentation filters and pagination**
 
-Inspect the current propagation software roadmap and select the next fully GitHub/CI-only task after the completed CP-0008V import/inspection boundary. Preserve all prior host verified CP-0008P/Q/R/S/T/U/V interfaces and do not claim live or authenticated RF status.
+Implement a deterministic, bounded historical comparison presentation pagination/filtering layer. Preserve the original receipts, selected-view semantics, CP-0008P/Q/R/S/T/U/V/W contracts and inherited CI matrix. No authenticated origin or live RF claims.
