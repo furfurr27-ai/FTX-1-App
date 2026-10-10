@@ -38,6 +38,7 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_propagation_offline_comparison_display.sh
       - name: Premerge CP-0008Y handoff and snapshot proof
+        if: github.ref_name == 'cp-0008y-propagation-offline-comparison-display' || github.head_ref == 'cp-0008y-propagation-offline-comparison-display'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

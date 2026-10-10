@@ -1,7 +1,17 @@
-name: Finalize CP-0009B checkpoint
+name: Finalize CP-0009C checkpoint
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveWorkspaceService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationArchiveWorkspaceTests.kt'
+      - 'scripts/test_propagation_archive_workspace.sh'
+      - 'scripts/check_android_build_readiness.py'
+      - 'research/propagation/CP-0009C_ARCHIVE_WORKSPACE_BUILD_READINESS.md'
+      - 'scripts/finalize_cp0009c.py'
+      - '.github/workflows/cp0009c-archive-workspace-readiness.yml'
+      - '.github/workflows/finalize-cp0009c.yml'
 
 permissions:
   contents: write
@@ -10,7 +20,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  offline-archive:
+  archive-workspace:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +32,8 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_archive.sh
+      - name: Host archive workspace and truthful Android packaging gap
+        run: bash scripts/test_propagation_archive_workspace.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +43,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: offline-archive, script: scripts/test_propagation_offline_archive.sh}
           - {label: workspace-history, script: scripts/test_propagation_workspace_history.sh}
           - {label: comparison-interaction, script: scripts/test_propagation_offline_comparison_interaction.sh}
           - {label: comparison-display, script: scripts/test_propagation_offline_comparison_display.sh}
@@ -91,48 +103,48 @@ jobs:
 
 
   checkpoint:
-    needs: [offline-archive, inherited]
+    needs: [archive-workspace, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
-      - name: Update durable handoff
+      - name: Promote durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0009b.py
-      - name: Create and verify immutable checkpoint
+        run: python3 scripts/finalize_cp0009c.py
+      - name: Create and verify immutable CP-0009C checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
         run: |
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE \
-            --parent CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION \
-            --summary "Bounded canonical offline propagation report history archive contract" \
-            --phase "Host-only bounded archive verified; next archive workspace/Android CI build integration; hardware deferred" \
-            --test-status "GREEN host/CI: offline-archive=PASS workspace-history=PASS inherited=PASS (42 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Canonical report receipts revalidated on every archive read/write; deterministic SHA content identities and duplicate handling" \
-            --completed "Bounded FIFO retention by entry count and UTF-8 size; deterministic UTC-sorted paginated selection" \
-            --completed "Explicit delete, historical selection and CP-0009A paired offline comparison by retained IDs" \
-            --completed "Synthetic host tests for byte/count eviction, duplicates, forgery, out-of-bounds paging and original immutability" \
-            --completed "Full inherited CP-0009A and CP-0008P/Q/R/S/T/U/V/W/X/Y/Z regression matrix preserved" \
-            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
-            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No actual Android archive persistence, signed provider origin, live RF, radio/phone or store atomicity proof" \
-            --next "CP-0009C: archive history selection and Android build-readiness integration, GitHub/CI only" \
-            --next "Preserve canonical archive/import/history contracts and inherited full CI matrix" \
-            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
+            --id CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS \
+            --parent CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE \
+            --summary "Accessible host archive history navigation and Android packaging gap audit" \
+            --phase "Host archive navigation verified; Android APK packaging not ready; hardware deferred" \
+            --test-status "GREEN host/CI: archive-workspace=PASS, Android packaging static gap=NOT_READY, inherited=PASS (43 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
+            --completed "Caller-picture archive capture, selection, deletion, bounded paging and two-original paired historical comparison" \
+            --completed "Eviction reconciles selection/comparison state; stale/tampered receipts and invalid history state rejected" \
+            --completed "Accessible plain-text history labels and preserved archived/non-live/authentication/persistence warnings" \
+            --completed "Repository static APK readiness audit accurately identifies absent Gradle app/wrapper/manifest and APK CI" \
+            --completed "CP-0009B and full inherited host regression gates preserved" \
+            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not resume without explicit command" \
+            --blocker "CP-0004A/B/C hardware work remains incomplete" \
+            --blocker "No Android Activity/Gradle APK, Android DB, phone/radio/RF, USB, accounts or origin authentication proof" \
+            --next "CP-0009D Android Gradle application packaging foundation and APK CI, GitHub/CI only" \
+            --next "Preserve bounded archive/history contract and require actual CI build artifact before APK claim" \
+            --next "CP-0003C remains DEFERRED; skip hardware/account validation"
           python3 scripts/verify_checkpoint.py --root . --latest
 
-      - name: Commit checkpoint
+      - name: Commit immutable CP-0009C checkpoint
         run: |
           set -euo pipefail
           git config user.name "fieldops-checkpoint-bot"
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.json
-          git add -f checkpoints/snapshots/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.tar.gz
-          git commit -m "Checkpoint CP-0009B bounded offline report archive"
+          git add checkpoints/manifests/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.json
+          git add -f checkpoints/snapshots/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.tar.gz
+          git commit -m "Checkpoint CP-0009C archive workspace and Android packaging gap"
           git push

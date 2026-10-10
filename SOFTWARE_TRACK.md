@@ -44,3 +44,6 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+## CP-0009C implementation branch (not checkpointed)
+
+cp-0009c-archive-workspace-build-readiness originates at verified CP-0009B/v53. CP-0009C adds a software-only archive history presentation contract and tests plus an Android build-readiness audit that MUST report NOT_READY while Gradle project/app/manifest/APK workflow are absent. The actual next eventual Android APK scaffold will be a separate checkpoint. Keep CP-0003C DEFERRED and CP-0004A/B/C incomplete.

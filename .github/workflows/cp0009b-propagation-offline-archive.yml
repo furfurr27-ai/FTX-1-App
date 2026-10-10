@@ -39,6 +39,7 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_propagation_offline_archive.sh
       - name: Premerge CP-0009B archive checkpoint snapshot proof
+        if: github.ref_name == 'cp-0009b-bounded-offline-report-archive' || github.head_ref == 'cp-0009b-bounded-offline-report-archive'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

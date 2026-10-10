@@ -38,6 +38,7 @@ jobs:
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash scripts/test_propagation_offline_comparison_pagination.sh
       - name: Dry-run CP-0008X handoff and immutable checkpoint
+        if: github.ref_name == 'cp-0008x-propagation-offline-comparison-pagination' || github.head_ref == 'cp-0008x-propagation-offline-comparison-pagination'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |
