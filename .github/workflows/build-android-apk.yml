@@ -66,6 +66,7 @@ jobs:
           APK="app/build/outputs/apk/debug/app-debug.apk"
           python3 scripts/verify_android_apk_artifact.py "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > app/build/apk-badging.txt
+          grep -E "^(package:|launchable-activity:)" app/build/apk-badging.txt
           grep -Fq "package: name='dev.n0png.fieldops'" app/build/apk-badging.txt
           grep -Fq "launchable-activity: name='dev.n0png.fieldops.app.MainActivity'" app/build/apk-badging.txt
           sha256sum "$APK" > app/build/apk-sha256.txt
