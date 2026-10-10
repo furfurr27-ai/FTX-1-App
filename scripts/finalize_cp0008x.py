@@ -112,7 +112,7 @@ track = replace_one(track,
     "## Latest verified durable parent\n\n" + checkpoint +
     "\n\n## Deferred but incomplete hardware/account work", "software parent")
 track = replace_one(track,
-    r"## Active software checkpoint\n\\n.*?\\n## Resume rule",
+    r"## Active software checkpoint\n\n.*?\n## Resume rule",
     """## Active software checkpoint
 
 CP-0008Y — offline comparison paged display integration contract
