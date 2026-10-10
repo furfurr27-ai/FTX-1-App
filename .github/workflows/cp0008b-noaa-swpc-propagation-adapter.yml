@@ -37,6 +37,7 @@ jobs:
       - name: Deterministic CP-0008B gate
         run: bash scripts/test_noaa_swpc_propagation_adapter.sh
       - name: Dry-run CP-0008B checkpoint handoff generator
+        if: github.ref_name == 'cp-0008b-noaa-swpc-propagation-adapter' || github.head_ref == 'cp-0008b-noaa-swpc-propagation-adapter'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

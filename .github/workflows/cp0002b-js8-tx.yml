@@ -47,6 +47,7 @@ jobs:
         run: bash scripts/test_js8_native.sh
 
       - name: Dry-run checkpoint handoff generator
+        if: github.ref_name == 'cp-0002b-js8-tx' || github.head_ref == 'cp-0002b-js8-tx'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run

@@ -51,6 +51,7 @@ jobs:
         run: bash scripts/test_tqsl_signer.sh
 
       - name: Dry-run CP-0003A checkpoint handoff generator
+        if: github.ref_name == 'cp-0003a-trustedqsl-signer' || github.head_ref == 'cp-0003a-trustedqsl-signer'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run

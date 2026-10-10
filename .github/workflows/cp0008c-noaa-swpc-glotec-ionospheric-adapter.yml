@@ -37,6 +37,7 @@ jobs:
       - name: Deterministic CP-0008C gate
         run: bash scripts/test_glotec_ionospheric_adapter.sh
       - name: Dry-run CP-0008C checkpoint handoff generator
+        if: github.ref_name == 'cp-0008c-noaa-swpc-glotec-ionospheric-adapter' || github.head_ref == 'cp-0008c-noaa-swpc-glotec-ionospheric-adapter'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

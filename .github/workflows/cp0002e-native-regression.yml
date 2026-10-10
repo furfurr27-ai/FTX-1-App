@@ -188,6 +188,7 @@ jobs:
         run: bash scripts/test_native_mode_composition.sh
 
       - name: Dry-run CP-0002E checkpoint handoff generator
+        if: github.ref_name == 'cp-0002e-native-regression' || github.head_ref == 'cp-0002e-native-regression'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run

@@ -44,6 +44,7 @@ jobs:
         run: bash scripts/test_universal_qso_logger.sh
 
       - name: Dry-run CP-0005A checkpoint handoff generator
+        if: github.ref_name == 'cp-0005a-universal-qso-logger' || github.head_ref == 'cp-0005a-universal-qso-logger'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run

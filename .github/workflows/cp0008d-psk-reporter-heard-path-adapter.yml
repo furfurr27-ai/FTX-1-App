@@ -37,6 +37,7 @@ jobs:
       - name: Deterministic CP-0008D gate
         run: bash scripts/test_psk_reporter_heard_path_adapter.sh
       - name: Dry-run CP-0008D checkpoint handoff generator
+        if: github.ref_name == 'cp-0008d-psk-reporter-heard-path-adapter' || github.head_ref == 'cp-0008d-psk-reporter-heard-path-adapter'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

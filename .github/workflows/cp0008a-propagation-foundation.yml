@@ -56,6 +56,7 @@ jobs:
       - run: bash scripts/test_propagation_foundation.sh
 
       - name: Dry-run CP-0008A checkpoint handoff generator
+        if: github.ref_name == 'cp-0008a-propagation-foundation' || github.head_ref == 'cp-0008a-propagation-foundation'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run
