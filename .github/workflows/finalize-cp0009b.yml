@@ -132,7 +132,7 @@ jobs:
             --blocker "No actual Android archive persistence, signed provider origin, live RF, radio/phone or store atomicity proof" \
             --next "CP-0009C: archive history selection and Android build-readiness integration, GitHub/CI only" \
             --next "Preserve canonical archive/import/history contracts and inherited full CI matrix" \
-            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work" 
+            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
           python3 scripts/verify_checkpoint.py --root . --latest
 
       - name: Commit checkpoint
