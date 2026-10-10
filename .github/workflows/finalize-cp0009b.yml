@@ -1,7 +1,21 @@
-name: Finalize CP-0009A checkpoint
+name: Finalize CP-0009B checkpoint
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportArchiveService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportArchiveTests.kt'
+      - 'scripts/test_propagation_offline_archive.sh'
+      - 'research/propagation/CP-0009B_OFFLINE_ARCHIVE_CONTRACT.md'
+      - 'scripts/finalize_cp0009b.py'
+      - '.github/workflows/cp0009b-propagation-offline-archive.yml'
+      - '.github/workflows/finalize-cp0009b.yml'
+      - '.github/workflows/finalize-cp0009b.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
+      - 'checkpoints/RESUME_HERE.md'
 
 permissions:
   contents: write
@@ -10,7 +24,7 @@ env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  workspace-history:
+  offline-archive:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +36,7 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_workspace_history.sh
+      - run: bash scripts/test_propagation_offline_archive.sh
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: workspace-history, script: scripts/test_propagation_workspace_history.sh}
           - {label: comparison-interaction, script: scripts/test_propagation_offline_comparison_interaction.sh}
           - {label: comparison-display, script: scripts/test_propagation_offline_comparison_display.sh}
           - {label: comparison-pagination, script: scripts/test_propagation_offline_comparison_pagination.sh}
@@ -98,7 +113,7 @@ jobs:
       - name: Update durable handoff
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0009a.py
+        run: python3 scripts/finalize_cp0009b.py
       - name: Create and verify immutable checkpoint
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
@@ -106,22 +121,22 @@ jobs:
           set -euo pipefail
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION \
-            --parent CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE \
-            --summary "Read-only propagation workspace operating picture to canonical offline history comparison bridge" \
-            --phase "Workspace-to-offline-history integration host CI-verified; next archive management software checkpoint; hardware deferred" \
-            --test-status "GREEN host/CI: workspace-history=PASS comparison-interaction=PASS inherited=PASS (41 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Single already-captured operating picture becomes strict canonical offline report and verified import receipt without extra reads" \
-            --completed "Two explicit offline captures compose an original-paired canonical comparison and historical accessible screen" \
-            --completed "Host interaction rechecks both original reports and derivative; preserves independent navigation, provenance and UTC order" \
-            --completed "Synthetic no-snapshot, populated, reverse, tamper and receipt mismatch integration checks" \
-            --completed "CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and complete inherited 40-job regression suite preserved" \
+            --id CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE \
+            --parent CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION \
+            --summary "Bounded canonical offline propagation report history archive contract" \
+            --phase "Host-only bounded archive verified; next archive workspace/Android CI build integration; hardware deferred" \
+            --test-status "GREEN host/CI: offline-archive=PASS workspace-history=PASS inherited=PASS (42 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
+            --completed "Canonical report receipts revalidated on every archive read/write; deterministic SHA content identities and duplicate handling" \
+            --completed "Bounded FIFO retention by entry count and UTF-8 size; deterministic UTC-sorted paginated selection" \
+            --completed "Explicit delete, historical selection and CP-0009A paired offline comparison by retained IDs" \
+            --completed "Synthetic host tests for byte/count eviction, duplicates, forgery, out-of-bounds paging and original immutability" \
+            --completed "Full inherited CP-0009A and CP-0008P/Q/R/S/T/U/V/W/X/Y/Z regression matrix preserved" \
             --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
             --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No authenticated origin, cross-store atomicity, archive persistence, Android UI or real phone/radio/RF proof" \
-            --next "CP-0009B: GitHub/CI-only bounded offline propagation report history archive/store contract" \
-            --next "Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and CP-0009A snapshot-to-history bridge" \
-            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
+            --blocker "No actual Android archive persistence, signed provider origin, live RF, radio/phone or store atomicity proof" \
+            --next "CP-0009C: archive history selection and Android build-readiness integration, GitHub/CI only" \
+            --next "Preserve canonical archive/import/history contracts and inherited full CI matrix" \
+            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work" 
           python3 scripts/verify_checkpoint.py --root . --latest
 
       - name: Commit checkpoint
@@ -131,7 +146,7 @@ jobs:
           git config user.email "actions@users.noreply.github.com"
           git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION.json
-          git add -f checkpoints/snapshots/CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION.tar.gz
-          git commit -m "Checkpoint CP-0009A propagation workspace history integration"
+          git add checkpoints/manifests/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.json
+          git add -f checkpoints/snapshots/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.tar.gz
+          git commit -m "Checkpoint CP-0009B bounded offline report archive"
           git push
