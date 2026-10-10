@@ -64,6 +64,7 @@ jobs:
         run: |
           set -euo pipefail
           APK="app/build/outputs/apk/debug/app-debug.apk"
+          ls -lah app/build/outputs/apk/debug
           python3 scripts/verify_android_apk_artifact.py "$APK"
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > app/build/apk-badging.txt
           grep -E "^(package:|launchable-activity:)" app/build/apk-badging.txt
