@@ -1,16 +1,30 @@
-name: Finalize CP-0008Z checkpoint
+name: CP-0009A Workspace History Integration
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [cp-0009a-propagation-workspace-history-integration]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationWorkspaceHistoryService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationWorkspaceHistoryTests.kt'
+      - 'scripts/test_propagation_workspace_history.sh'
+      - 'research/propagation/CP-0009A_WORKSPACE_HISTORY_INTEGRATION.md'
+      - 'scripts/finalize_cp0009a.py'
+      - '.github/workflows/cp0009a-propagation-workspace-history.yml'
+      - '.github/workflows/finalize-cp0009a.yml'
+      - '.github/workflows/finalize-cp0008z.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  interaction:
+  workspace-history:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +36,27 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_comparison_interaction.sh
+      - run: bash scripts/test_propagation_workspace_history.sh
+      - name: Premerge CP-0009A durable handoff and snapshot proof
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0009a.py
+          python3 scripts/finalize_cp0009a.py
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION \
+            --parent CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE \
+            --summary "Premerge dry-run only" \
+            --phase "Premerge dry-run only" \
+            --test-status "PREMERGE_DRY_RUN"
+          python3 scripts/verify_checkpoint.py --root . --latest
+          grep -Fq 'CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION' README.md
+          grep -Fq 'CP-0009B' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008z.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +66,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: comparison-interaction, script: scripts/test_propagation_offline_comparison_interaction.sh}
           - {label: comparison-display, script: scripts/test_propagation_offline_comparison_display.sh}
           - {label: comparison-pagination, script: scripts/test_propagation_offline_comparison_pagination.sh}
           - {label: comparison-presentation, script: scripts/test_propagation_offline_comparison_presentation.sh}
@@ -81,55 +116,3 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash "${{ matrix.script }}"
-
-
-
-
-
-
-  checkpoint:
-    needs: [interaction, inherited]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Update durable handoff
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008z.py
-      - name: Create and verify immutable checkpoint
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          python3 scripts/create_checkpoint.py \
-            --root . \
-            --id CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE \
-            --parent CP-0008Y-PROPAGATION_OFFLINE_COMPARISON_DISPLAY_CONTRACT \
-            --summary "Historical comparison accessibility and independent interaction state host contract" \
-            --phase "Offline comparison host accessibility/interaction state CI-verified; next software-only checkpoint; hardware deferred" \
-            --test-status "GREEN host/CI: interaction=PASS display=PASS inherited=PASS (40 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Immutable host interaction state bound to a strictly validated historical comparison artifact" \
-            --completed "Independent source/evidence pagination and typed filter intents with focus and accessible narration" \
-            --completed "Archived-only accessible row labels and retained four mandatory CP-0008Y provenance notices" \
-            --completed "Stale artifact rejection, safe end-of-page no-op, original report checks and overflow-safe historical ranges" \
-            --completed "CP-0008P/Q/R/S/T/U/V/W/X/Y contracts and full inherited host regression matrix GREEN" \
-            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
-            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No authenticated origin, cross-store atomicity, Android UI/TalkBack or phone/radio/RF proof" \
-            --next "CP-0009A: GitHub/CI-only next propagation workspace integration software checkpoint" \
-            --next "Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z artifact and historic display/interaction contracts" \
-            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
-          python3 scripts/verify_checkpoint.py --root . --latest
-
-      - name: Commit checkpoint
-        run: |
-          set -euo pipefail
-          git config user.name "fieldops-checkpoint-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
-          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE.json
-          git add -f checkpoints/snapshots/CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE.tar.gz
-          git commit -m "Checkpoint CP-0008Z historical comparison accessibility and state"
-          git push
