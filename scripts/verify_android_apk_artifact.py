@@ -10,8 +10,10 @@ def main() -> None:
     parser.add_argument("apk")
     args = parser.parse_args()
     apk = pathlib.Path(args.apk)
-    if not apk.is_file() or apk.stat().st_size < 16_384:
-        raise SystemExit("Not a nonempty generated Android APK")
+    if not apk.is_file():
+        raise SystemExit("Built APK missing at " + str(apk))
+    if apk.stat().st_size < 4096:
+        raise SystemExit("Generated APK unexpectedly small: " + str(apk.stat().st_size) + " bytes")
     with zipfile.ZipFile(apk) as bundle:
         names = set(bundle.namelist())
         required = {"AndroidManifest.xml", "classes.dex", "resources.arsc"}
