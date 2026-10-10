@@ -15,6 +15,9 @@ on:
       - 'research/js8/CP-0002B_JS8_TX_INTEGRATION.md'
       - '.github/workflows/cp0002b-js8-tx.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 
@@ -44,6 +47,7 @@ jobs:
         run: bash scripts/test_js8_native.sh
 
       - name: Dry-run checkpoint handoff generator
+        if: github.ref_name == 'cp-0002b-js8-tx' || github.head_ref == 'cp-0002b-js8-tx'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run

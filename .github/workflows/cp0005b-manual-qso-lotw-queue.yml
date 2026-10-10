@@ -19,6 +19,9 @@ on:
       - 'scripts/finalize_cp0005b.py'
       - '.github/workflows/cp0005b-manual-qso-lotw-queue.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 
@@ -42,6 +45,7 @@ jobs:
         run: bash scripts/test_manual_qso_lotw_queue.sh
 
       - name: Dry-run CP-0005B checkpoint handoff generator
+        if: github.ref_name == 'cp-0005b-manual-qso-lotw-queue' || github.head_ref == 'cp-0005b-manual-qso-lotw-queue'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run

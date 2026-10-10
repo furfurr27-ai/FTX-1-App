@@ -16,6 +16,9 @@ on:
       - '.github/workflows/finalize-cp0008d.yml'
       - '.github/workflows/finalize-cp0008e.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 
@@ -35,6 +38,7 @@ jobs:
       - name: Deterministic CP-0008E gate
         run: bash scripts/test_propagation_aggregation_offline_cache.sh
       - name: Dry-run CP-0008E checkpoint handoff generator
+        if: github.ref_name == 'cp-0008e-propagation-aggregation-offline-cache' || github.head_ref == 'cp-0008e-propagation-aggregation-offline-cache'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

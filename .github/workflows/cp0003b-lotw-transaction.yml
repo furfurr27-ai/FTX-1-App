@@ -19,6 +19,9 @@ on:
       - 'scripts/finalize_cp0003b.py'
       - '.github/workflows/cp0003b-lotw-transaction.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 
@@ -47,6 +50,7 @@ jobs:
         run: bash scripts/test_lotw_transaction.sh
 
       - name: Dry-run CP-0003B checkpoint handoff generator
+        if: github.ref_name == 'cp-0003b-lotw-transaction' || github.head_ref == 'cp-0003b-lotw-transaction'
         shell: bash
         env:
           FINALIZE_RUN_ID: premerge-dry-run
