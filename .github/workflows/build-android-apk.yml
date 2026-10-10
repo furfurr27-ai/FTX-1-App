@@ -43,9 +43,13 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - uses: android-actions/setup-android@v3
-      - name: Install Android SDK 35
-        run: sdkmanager --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Install Android SDK 35 with runner-provided SDK manager
+        run: |
+          set -euo pipefail
+          test -d "${ANDROID_HOME:?Android SDK missing on GitHub runner}"
+          SDK_MANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -1)"
+          test -n "$SDK_MANAGER"
+          "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0"
       - name: Verify official Gradle 8.13 wrapper and packaging contract
         run: |
           set -euo pipefail
