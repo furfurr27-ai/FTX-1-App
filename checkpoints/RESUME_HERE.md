@@ -30,3 +30,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## IN PROGRESS, not durable: CP-0009D
+
+Branch: cp-0009d-android-apk-build-foundation. Durable checkpoint above remains CP-0009C/v54. CP-0009D seeks real Android Gradle APK packaging, a no-radio launcher shell, actual CI debug APK ZIP/package inspection and artifact upload, plus full inherited regression verification. Before claiming v55, merge exact-head green PR and verify main finalizer, manifest and snapshot SHA. No physical device install or FTX-1/RF proof. CP-0003C DEFERRED, CP-0004A/B/C incomplete.

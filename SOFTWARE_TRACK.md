@@ -44,3 +44,7 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009D implementation branch (not checkpointed)
+
+cp-0009d-android-apk-build-foundation starts at CP-0009C/v54. Adds Gradle app packaging and a GitHub Actions debug APK artifact build with manifest/ZIP validation and no-transmit developer shell. Do not advance VERSION on an unverified branch. Merge only on exact-head CI green and publish immutable CP-0009D finalizer state. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
