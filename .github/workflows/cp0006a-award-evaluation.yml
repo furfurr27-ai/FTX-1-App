@@ -22,6 +22,9 @@ on:
       - '.github/workflows/cp0006a-award-evaluation.yml'
       - '.github/workflows/finalize-cp0006a.yml'
 
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
 permissions:
   contents: read
 
