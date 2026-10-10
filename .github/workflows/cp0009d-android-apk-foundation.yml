@@ -1,15 +1,84 @@
-name: Finalize CP-0009C checkpoint
+name: CP-0009D Android APK Build Foundation
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [cp-0009d-android-apk-build-foundation]
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'gradle/**'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - 'settings.gradle.kts'
+      - 'build.gradle.kts'
+      - 'gradle.properties'
+      - 'scripts/test_android_package_contract.py'
+      - 'scripts/verify_android_apk_artifact.py'
+      - 'scripts/check_android_build_readiness.py'
+      - 'scripts/test_propagation_archive_workspace.sh'
+      - 'scripts/finalize_cp0009d.py'
+      - 'research/android/CP-0009D_ANDROID_APK_BUILD_FOUNDATION.md'
+      - '.github/workflows/cp0009d-android-apk-foundation.yml'
+      - '.github/workflows/finalize-cp0009d.yml'
+      - 'README.md'
+      - 'SOFTWARE_TRACK.md'
+      - 'NEXT_ACTION.md'
+      - 'checkpoints/RESUME_HERE.md'
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
+  android-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK 35 with runner-provided SDK manager
+        run: |
+          set -euo pipefail
+          test -d "${ANDROID_HOME:?Android SDK missing on GitHub runner}"
+          SDK_MANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -1)"
+          test -n "$SDK_MANAGER"
+          "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Verify official Gradle 8.13 wrapper and packaging contract
+        run: |
+          set -euo pipefail
+          test "$(git hash-object gradle/wrapper/gradle-wrapper.jar)" = "9bbc975c742b298b441bfb90dbc124400a3751b9"
+          python3 scripts/check_android_build_readiness.py --expect-ready
+          python3 scripts/test_android_package_contract.py
+      - name: Compile installable debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug
+      - name: Inspect actual built APK and Android manifest
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          python3 scripts/verify_android_apk_artifact.py "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > app/build/apk-badging.txt
+          grep -E "^(package:|launchable-activity:)" app/build/apk-badging.txt
+          grep -Fq "package: name='dev.n0png.fieldops'" app/build/apk-badging.txt
+          grep -Fq "launchable-activity: name='dev.n0png.fieldops.app.MainActivity'" app/build/apk-badging.txt
+          sha256sum "$APK" > app/build/apk-sha256.txt
+          cat app/build/apk-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fieldops-cp0009d-debug-apk
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/apk-badging.txt
+            app/build/apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 30
+
   archive-workspace:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -92,49 +161,27 @@ jobs:
 
 
 
-  checkpoint:
-    needs: [archive-workspace, inherited]
+  premerge-checkpoint-proof:
+    needs: [android-apk, archive-workspace, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Promote durable handoff
+      - name: Premerge CP-0009D handoff and immutable snapshot dry-run
         env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0009c.py
-      - name: Create and verify immutable CP-0009C checkpoint
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
+          FINALIZE_RUN_ID: premerge-dry-run
         run: |
           set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0009d.py
+          python3 scripts/finalize_cp0009d.py
           python3 scripts/create_checkpoint.py \
             --root . \
-            --id CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS \
-            --parent CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE \
-            --summary "Accessible host archive history navigation and Android packaging gap audit" \
-            --phase "Host archive navigation verified; Android APK packaging not ready; hardware deferred" \
-            --test-status "GREEN host/CI: archive-workspace=PASS, Android packaging static gap=NOT_READY, inherited=PASS (43 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Caller-picture archive capture, selection, deletion, bounded paging and two-original paired historical comparison" \
-            --completed "Eviction reconciles selection/comparison state; stale/tampered receipts and invalid history state rejected" \
-            --completed "Accessible plain-text history labels and preserved archived/non-live/authentication/persistence warnings" \
-            --completed "Repository static APK readiness audit accurately identifies absent Gradle app/wrapper/manifest and APK CI" \
-            --completed "CP-0009B and full inherited host regression gates preserved" \
-            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not resume without explicit command" \
-            --blocker "CP-0004A/B/C hardware work remains incomplete" \
-            --blocker "No Android Activity/Gradle APK, Android DB, phone/radio/RF, USB, accounts or origin authentication proof" \
-            --next "CP-0009D Android Gradle application packaging foundation and APK CI, GitHub/CI only" \
-            --next "Preserve bounded archive/history contract and require actual CI build artifact before APK claim" \
-            --next "CP-0003C remains DEFERRED; skip hardware/account validation"
+            --id CP-0009D-ANDROID_APK_BUILD_FOUNDATION \
+            --parent CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS \
+            --summary "Premerge Android APK gate proof only" \
+            --phase "Premerge dry-run only" \
+            --test-status "PREMERGE_DRY_RUN"
           python3 scripts/verify_checkpoint.py --root . --latest
-
-      - name: Commit immutable CP-0009C checkpoint
-        run: |
-          set -euo pipefail
-          git config user.name "fieldops-checkpoint-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
-          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.json
-          git add -f checkpoints/snapshots/CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS.tar.gz
-          git commit -m "Checkpoint CP-0009C archive workspace and Android packaging gap"
-          git push
+          grep -Fq 'CP-0009D-ANDROID_APK_BUILD_FOUNDATION' README.md
+          grep -Fq 'CP-0009E' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          git diff --check
