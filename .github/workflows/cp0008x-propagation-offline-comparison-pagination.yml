@@ -1,16 +1,30 @@
-name: Finalize CP-0008W checkpoint
+name: CP-0008X Offline Comparison Pagination
 
 on:
-  workflow_dispatch:
+  push:
+    branches: [cp-0008x-propagation-offline-comparison-pagination]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportComparisonPaginationService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportComparisonPaginationTests.kt'
+      - 'scripts/test_propagation_offline_comparison_pagination.sh'
+      - 'research/propagation/CP-0008X_OFFLINE_COMPARISON_PAGINATION.md'
+      - 'scripts/finalize_cp0008x.py'
+      - '.github/workflows/cp0008x-propagation-offline-comparison-pagination.yml'
+      - '.github/workflows/finalize-cp0008x.yml'
+      - '.github/workflows/finalize-cp0008w.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
 
 permissions:
-  contents: write
+  contents: read
 
 env:
   JAVA_OPTS: "-Xmx1536m -Xms128m"
 
 jobs:
-  presentation:
+  pagination:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -22,7 +36,27 @@ jobs:
           curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
-      - run: bash scripts/test_propagation_offline_comparison_presentation.sh
+      - run: bash scripts/test_propagation_offline_comparison_pagination.sh
+      - name: Dry-run CP-0008X handoff and immutable checkpoint
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0008x.py
+          python3 scripts/finalize_cp0008x.py
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION \
+            --parent CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION \
+            --summary "Premerge dry-run only" \
+            --phase "Premerge dry-run only" \
+            --test-status "PREMERGE_DRY_RUN"
+          python3 scripts/verify_checkpoint.py --root . --latest
+          grep -Fq 'CP-0008X-PROPAGATION_OFFLINE_COMPARISON_PAGINATION' README.md
+          grep -Fq 'CP-0008Y' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'workflow_dispatch:' .github/workflows/finalize-cp0008w.yml
+          git diff --check
 
   inherited:
     name: inherited — ${{ matrix.label }}
@@ -32,6 +66,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - {label: comparison-presentation, script: scripts/test_propagation_offline_comparison_presentation.sh}
           - {label: comparison-import, script: scripts/test_propagation_offline_comparison_import.sh}
           - {label: comparison-decode, script: scripts/test_propagation_offline_comparison_decoder.sh}
           - {label: export-v1, script: scripts/test_propagation_offline_comparison_serialization.sh}
@@ -78,52 +113,3 @@ jobs:
           unzip -q /tmp/kotlin.zip -d /tmp/kotlin
           echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
       - run: bash "${{ matrix.script }}"
-
-
-
-  checkpoint:
-    needs: [presentation, inherited]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with: {fetch-depth: 0}
-      - name: Update durable handoff
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: python3 scripts/finalize_cp0008w.py
-      - name: Create and verify immutable checkpoint
-        env:
-          FINALIZE_RUN_ID: ${{ github.run_id }}
-        run: |
-          set -euo pipefail
-          python3 scripts/create_checkpoint.py \
-            --root . \
-            --id CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION \
-            --parent CP-0008V-PROPAGATION_OFFLINE_COMPARISON_IMPORT_INSPECTION \
-            --summary "Deterministic platform-neutral offline comparison presentation projection" \
-            --phase "Offline comparison presentation CI-verified; next filtering/pagination software checkpoint; hardware deferred" \
-            --test-status "GREEN host/CI: comparison-presentation=PASS comparison-import=PASS inherited=PASS (37 CI test jobs); finalizer run $FINALIZE_RUN_ID" \
-            --completed "Validated historical comparison V1 presentation projection with original receipts and query order" \
-            --completed "Sorted source/selected-evidence rows, identity/kind/change filters, separate evidence metadata and projection flags" \
-            --completed "Explicit four-category source/evidence change counts and standalone versus optional original-report reconciliation" \
-            --completed "Rejects corrupt, incompatible or incomplete artifacts without inventing live provider or RF state" \
-            --completed "Preserves CP-0008P/Q/R/S/T/U/V and inherited GitHub/CI regression matrix" \
-            --blocker "OWNER OVERRIDE: CP-0003C is DEFERRED; do not return until owner explicitly says 'resume CP-0003C'" \
-            --blocker "CP-0004A/B/C hardware checkpoints remain incomplete" \
-            --blocker "No authenticated provenance, cross-store atomicity, Android device or phone/radio/RF proof" \
-            --next "CP-0008X: GitHub/CI-only bounded historical comparison presentation filtering/pagination" \
-            --next "Preserve CP-0008P/Q/R/S/T/U/V/W canonical and historical presentation semantics" \
-            --next "CP-0003C remains DEFERRED; skip manual device, account and RF work"
-          python3 scripts/verify_checkpoint.py --root . --latest
-
-      - name: Commit checkpoint
-        run: |
-          set -euo pipefail
-          git config user.name "fieldops-checkpoint-bot"
-          git config user.email "actions@users.noreply.github.com"
-          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
-          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
-          git add checkpoints/manifests/CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.json
-          git add -f checkpoints/snapshots/CP-0008W-PROPAGATION_OFFLINE_COMPARISON_PRESENTATION.tar.gz
-          git commit -m "Checkpoint CP-0008W offline comparison presentation read model"
-          git push
