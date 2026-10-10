@@ -84,7 +84,7 @@ section = f"""## Current exact next action
 readme = replace_one(readme, r"## Current exact next action\n.*?\n## README maintenance contract",
     section + "## README maintenance contract", "README next")
 # Remove the branch-only recovery warning after successful finalization.
-readme = re.sub(r"\\n## In-progress, not yet durably verified\\n[\\s\\S]*$", "\\n", readme)
+readme = re.sub(r"\n## In-progress, not yet durably verified\n[\s\S]*$", "\n", readme)
 readme_file.write_text(readme)
 
 (root / "NEXT_ACTION.md").write_text(f"""# NEXT ACTION — FTX-1 FieldOps
@@ -119,7 +119,7 @@ Required scope:
 
 ## Resume rule""", "software track next")
 # Active branch recovery text is obsolete once the checkpoint is GREEN.
-track = re.sub(r"\\n## CP-0009B implementation branch \\(not checkpointed\\)\\n[\\s\\S]*$", "\\n", track)
+track = re.sub(r"\n## CP-0009B implementation branch \(not checkpointed\)\n[\s\S]*$", "\n", track)
 track_path.write_text(track)
 
 history = root / "checkpoints/CHECKPOINT_HISTORY.md"
