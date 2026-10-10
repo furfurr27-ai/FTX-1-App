@@ -1,0 +1,122 @@
+name: CP-0009C Archive Workspace and APK Readiness
+
+on:
+  push:
+    branches: [cp-0009c-archive-workspace-build-readiness]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveWorkspaceService.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationArchiveWorkspaceTests.kt'
+      - 'scripts/test_propagation_archive_workspace.sh'
+      - 'scripts/check_android_build_readiness.py'
+      - 'research/propagation/CP-0009C_ARCHIVE_WORKSPACE_BUILD_READINESS.md'
+      - 'scripts/finalize_cp0009c.py'
+      - '.github/workflows/cp0009c-archive-workspace-readiness.yml'
+      - '.github/workflows/finalize-cp0009c.yml'
+      - 'README.md'
+      - 'NEXT_ACTION.md'
+      - 'SOFTWARE_TRACK.md'
+      - 'checkpoints/RESUME_HERE.md'
+
+permissions:
+  contents: read
+
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
+jobs:
+  archive-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Host archive workspace and truthful Android packaging gap
+        run: bash scripts/test_propagation_archive_workspace.sh
+      - name: Premerge CP-0009C immutable checkpoint dry-run
+        env:
+          FINALIZE_RUN_ID: premerge-dry-run
+        run: |
+          set -euo pipefail
+          python3 -m py_compile scripts/finalize_cp0009c.py
+          python3 scripts/finalize_cp0009c.py
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS \
+            --parent CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE \
+            --summary "Premerge software-only dry-run" \
+            --phase "Premerge software-only dry-run" \
+            --test-status "PREMERGE_DRY_RUN"
+          python3 scripts/verify_checkpoint.py --root . --latest
+          grep -Fq 'CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS' README.md
+          grep -Fq 'CP-0009D' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'NOT READY (verified gap)' README.md
+          git diff --check
+
+  inherited:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: offline-archive, script: scripts/test_propagation_offline_archive.sh}
+          - {label: workspace-history, script: scripts/test_propagation_workspace_history.sh}
+          - {label: comparison-interaction, script: scripts/test_propagation_offline_comparison_interaction.sh}
+          - {label: comparison-display, script: scripts/test_propagation_offline_comparison_display.sh}
+          - {label: comparison-pagination, script: scripts/test_propagation_offline_comparison_pagination.sh}
+          - {label: comparison-presentation, script: scripts/test_propagation_offline_comparison_presentation.sh}
+          - {label: comparison-import, script: scripts/test_propagation_offline_comparison_import.sh}
+          - {label: comparison-decode, script: scripts/test_propagation_offline_comparison_decoder.sh}
+          - {label: export-v1, script: scripts/test_propagation_offline_comparison_serialization.sh}
+          - {label: comparison, script: scripts/test_propagation_offline_report_comparison.sh}
+          - {label: import, script: scripts/test_propagation_offline_report_import.sh}
+          - {label: decoder, script: scripts/test_propagation_offline_report_decoder.sh}
+          - {label: serialization, script: scripts/test_propagation_offline_report_serialization.sh}
+          - {label: offline-report, script: scripts/test_propagation_offline_diagnostic_report.sh}
+          - {label: diagnostics, script: scripts/test_propagation_read_model_consistency.sh}
+          - {label: operating-picture, script: scripts/test_propagation_operating_picture.sh}
+          - {label: source-status, script: scripts/test_propagation_source_status_presentation.sh}
+          - {label: state-persistence, script: scripts/test_propagation_refresh_state_persistence.sh}
+          - {label: runtime, script: scripts/test_propagation_runtime_composition.sh}
+          - {label: concrete-https, script: scripts/test_concrete_public_https_transport.sh}
+          - {label: public-transport, script: scripts/test_public_propagation_transport_adapters.sh}
+          - {label: refresh, script: scripts/test_propagation_refresh_coordinator.sh}
+          - {label: projection, script: scripts/test_propagation_projection.sh}
+          - {label: aggregation, script: scripts/test_propagation_aggregation_offline_cache.sh}
+          - {label: psk-reporter, script: scripts/test_psk_reporter_heard_path_adapter.sh}
+          - {label: glotec, script: scripts/test_glotec_ionospheric_adapter.sh}
+          - {label: noaa-swpc, script: scripts/test_noaa_swpc_propagation_adapter.sh}
+          - {label: propagation, script: scripts/test_propagation_foundation.sh}
+          - {label: production-pack, script: scripts/test_production_us_state_geometry_pack.sh}
+          - {label: geometry, script: scripts/test_award_geometry_providers.sh}
+          - {label: map, script: scripts/test_award_area_map_projection.sh}
+          - {label: extended, script: scripts/test_extended_award_catalog.sh}
+          - {label: service, script: scripts/test_awards_center_application_service.sh}
+          - {label: persistence, script: scripts/test_award_evidence_persistence.sh}
+          - {label: awards-projection, script: scripts/test_awards_center_projection.sh}
+          - {label: target, script: scripts/test_award_target_enrichment.sh}
+          - {label: catalog, script: scripts/test_official_award_catalog.sh}
+          - {label: award, script: scripts/test_award_evaluation.sh}
+          - {label: queue, script: scripts/test_manual_qso_lotw_queue.sh}
+          - {label: logger, script: scripts/test_universal_qso_logger.sh}
+          - {label: lotw, script: scripts/test_lotw_transaction.sh}
+          - {label: core, script: scripts/test_core_regression.sh}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash "${{ matrix.script }}"

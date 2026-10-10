@@ -400,3 +400,6 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+## CP-0009C implementation branch (not checkpointed)
+
+Implementation branch: cp-0009c-archive-workspace-build-readiness. Parent durable checkpoint is CP-0009B/v53, main commit 4bc53600453ccd3e14bcebcbc6bdb00965fff9be. Work in progress: host archive workspace selection/paging/comparison and truthful Android static APK build-readiness gap audit. NO installable APK, Android UI or physical hardware proof. Merge only after exact-head GitHub CI host and full regression matrix; then verify main finalizer and immutable CP-0009C manifest/snapshot before claiming v54. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.

@@ -30,3 +30,6 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+## IN-PROGRESS, not durable: CP-0009C
+
+Branch: cp-0009c-archive-workspace-build-readiness. The verified state above remains CP-0009B/v53. CP-0009C introduces pure Kotlin history selection, paging, deletion, canonical paired historical comparison, eviction handling and plain-text accessible warnings; it also adds a truthful static Android packaging gap audit. Do not claim a working Android Activity or APK. Await exact-head PR/branch CI, merge, then immutable checkpoint main finalizer. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
