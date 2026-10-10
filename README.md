@@ -39,25 +39,26 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION
+**Latest verified checkpoint:** CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE
 
-Parent durable checkpoint: CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE.
+Parent durable checkpoint: CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION.
 
-CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints, not part of this GitHub/CI-only verification.
+CP-0003C and CP-0004A/B/C remain deferred/incomplete hardware/account checkpoints.
 
-CP-0009A is a GREEN host-only propagation workspace-to-historical-comparison integration bridge.
+CP-0009B is a GREEN host-only bounded archive/store contract above CP-0009A.
 
-CP-0009A proves:
+CP-0009B proves:
 
-- One already-captured CP-0008M operating picture composes CP-0008N consistency diagnostics, CP-0008O report and strict CP-0008P/R canonical serialized report/receipt without a second store read.
-- Two explicitly provided canonical offline captures produce a CP-0008T–V comparison and CP-0008Z accessible historical interaction screen, with both original report artifacts independently reconciled.
-- Typed next/previous/filter/focus interactions revalidate the original canonical reports and derivative; stale, forged, swapped or tampered captures are rejected.
-- Preserves UTC query ordering, source/evidence receipts, selected-view-only meaning, separate bounded cursors and four mandatory historical/provenance warnings.
-- Full CP-0008P/Q/R/S/T/U/V/W/X/Y/Z contracts and inherited Kotlin/host GitHub CI regression suite remain GREEN.
-- Offline capture is not persisted and does not assert authenticated origin, store atomicity, live RF truth or Android device behavior.
+- A deterministic caller-retained canonical offline report history value; FIFO eviction by insertion order, count and UTF-8 byte budget.
+- Idempotent SHA-256 content key duplicates; canonical imported receipts reverified on every archive operation.
+- Explicit removal, stable query UTC-descending paginated selection, and original-paired CP-0009A historical comparison.
+- Rejects tampering, forged receipt/trust, invalid retention/page limits and missing selected captures.
+- CP-0009A and the full inherited CP-0008P/Q/R/S/T/U/V/W/X/Y/Z host regression matrix remain GREEN.
+- No Android filesystem/DB persistence, trusted origin, cross-store atomicity or live RF claims.
 
 Host/CI gates:
 
+- CP-0009B offline propagation report archive/store contract: **PASS**.
 - CP-0009A propagation workspace-to-offline-history integration: **PASS**.
 - CP-0008Z offline historical interaction/accessibility contract: **PASS**.
 - CP-0008Y offline comparison display integration: **PASS**.
@@ -102,19 +103,19 @@ Host/CI gates:
 
 Evidence:
 
-- research/propagation/CP-0009A_WORKSPACE_HISTORY_INTEGRATION.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationWorkspaceHistoryService.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationWorkspaceHistoryTests.kt
-- scripts/test_propagation_workspace_history.sh
-- CP-0009A finalization workflow run: 38059922845
+- research/propagation/CP-0009B_OFFLINE_ARCHIVE_CONTRACT.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationOfflineReportArchiveService.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/PropagationOfflineReportArchiveTests.kt
+- scripts/test_propagation_offline_archive.sh
+- CP-0009B main finalization workflow run: 38075190464
 
 ### Evidence boundary
 
-Only historical/offline self-consistency is proven. Unkeyed SHA-256 is not authenticated provider provenance, comparison changes are not provider deletions, and no actual archive persistence, live RF, Android UI, USB, radio, certificate or account verification is included.
+Only host-only, caller-owned in-memory archive behavior is proven. Content SHA-256 is not authenticated provenance; no Android storage, source-store atomicity, phone/radio/USB/RF, real account or certificate verification.
 
 ### Inherited verified ancestry
 
-CP-0008Z-PROPAGATION_OFFLINE_COMPARISON_ACCESSIBILITY_STATE and older verified checkpoints remain ancestry.
+CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION and older verified checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -138,7 +139,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009B — bounded offline propagation report history archive/store contract
+**Active software track:** CP-0009C — archive history selection and Android build-readiness integration
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -363,7 +364,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION
+- Current Git source baseline: CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -376,11 +377,11 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009B — bounded offline propagation report history archive/store contract.**
+**CP-0009C — archive history selection and Android build-readiness integration.**
 
-1. Create a GitHub/CI-only bounded offline propagation report archive/store contract above CP-0009A, preserving canonical imports and explicit history selection.
-2. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z original comparison/presentation/interaction contracts and the full inherited test matrix.
-3. No actual Android DB/filesystem persistence, real phone/radio/RF, authenticated provider source or cross-store atomicity claim.
+1. Wire canonical bounded archive selection and history controls into the application workspace; add GitHub/CI-only Android build-readiness smoke checks.
+2. Preserve CP-0009B canonical receipts, bounded retention, CP-0009A original-paired comparison, warnings and inherited regression gates.
+3. Do not claim Android on-device persistence, authenticated origin, RF operation or hardware/account verification.
 4. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 
 ## README maintenance contract

@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION",
-  "created_utc": "2026-10-10T14:33:27+00:00",
-  "manifest": "checkpoints/manifests/CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION.json",
-  "snapshot": "checkpoints/snapshots/CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION.tar.gz",
-  "snapshot_sha256": "b072a188651db03b39a48b1700204671b04c96268e39044cecbbbbb4e89a0006"
+  "checkpoint_id": "CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE",
+  "created_utc": "2026-10-10T18:19:52+00:00",
+  "manifest": "checkpoints/manifests/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.json",
+  "snapshot": "checkpoints/snapshots/CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE.tar.gz",
+  "snapshot_sha256": "0ff21d116ca5fe38e9496d525f0e687e1b64fd44ae4cd63de5f52f3a11780de1"
 }

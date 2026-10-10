@@ -638,3 +638,10 @@ An already-captured operating picture is transformed into strict deterministic C
 No archive persistence, authenticated provider origin, atomic stores, live RF, radio/phone/Android UI or account/certificate proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Evidence: research/propagation/CP-0009A_WORKSPACE_HISTORY_INTEGRATION.md and PropagationWorkspaceHistoryTests.kt.
+
+
+## CP-0009B — Bounded offline report archive
+
+Parent: CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION. Canonical, caller-retained archive values validate every retained report and receipt on access; deterministic count/byte FIFO eviction, idempotent content keys, UTC-based stable history paging, explicit removal and original-paired CP-0009A comparison. Host test and inherited complete CI matrix GREEN; finalizer 38075190464. This is not Android database persistence, provider signature authentication, live RF or physical hardware proof. CP-0003C DEFERRED and CP-0004A/B/C incomplete.
+
+Evidence: research/propagation/CP-0009B_OFFLINE_ARCHIVE_CONTRACT.md, PropagationOfflineReportArchiveTests.kt.

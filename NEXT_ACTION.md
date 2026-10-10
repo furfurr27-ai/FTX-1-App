@@ -1,13 +1,12 @@
 # NEXT ACTION — FTX-1 FieldOps
 
-## Execution override
+## Owner execution override
 
-CP-0003C is **DEFERRED**. Do not return until the owner explicitly says resume CP-0003C.
-
-Skip checkpoints requiring phone, radio, real accounts, credentials/certificates, RF or manual hardware validation. Skipped checkpoints remain incomplete.
+CP-0003C is **DEFERRED**. Do not resume until explicitly instructed 'resume CP-0003C'.
+Skip any checkpoint requiring actual phone, FTX-1, credentials, accounts, certificates, RF or manual hardware validation. CP-0004A/B/C remain incomplete.
 
 ## Next software checkpoint
 
-**CP-0009B — bounded offline propagation report history archive/store contract**
+**CP-0009C — archive history selection and Android build-readiness integration**
 
-Implement a bounded, deterministic, GitHub/CI-only offline report history archive/store contract above CP-0009A. Do not claim real Android filesystem/DB persistence, provider authentication, live RF state or source-store atomicity. Preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and CP-0009A APIs and full inherited regression CI.
+Integrate the bounded offline archive selection and history controls with the Android app workspace where possible through GitHub/CI. Validate Android build readiness without claiming successful physical install or device/radio operation. Preserve CP-0009A/B and inherited CI contracts.

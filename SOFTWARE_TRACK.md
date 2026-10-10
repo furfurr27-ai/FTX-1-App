@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION
+CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,13 +25,13 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009B — bounded offline propagation report history archive/store contract
+CP-0009C — archive history selection and Android build-readiness integration
 
 Required scope:
 
-- deterministic software-only bounded archive selection, retention and validated canonical report receipts
-- preserve CP-0008P/Q/R/S/T/U/V/W/X/Y/Z and CP-0009A workspace integration contracts
-- no Android device/DB persistence, authenticated origin, cross-store atomicity, RF or real account claim
+- integrate CP-0009B offline archive selection/history UX with accessible workspace and host/Android CI checks
+- preserve canonical report import/receipts and CP-0009A historical comparison fidelity
+- no actual device/DB persistence, authenticated origin or real RF/device/account verification
 - CP-0003C DEFERRED; CP-0004A/B/C incomplete
 
 ## Resume rule
