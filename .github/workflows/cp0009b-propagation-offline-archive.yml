@@ -48,7 +48,7 @@ jobs:
           python3 scripts/create_checkpoint.py \
             --root . \
             --id CP-0009B-PROPAGATION_OFFLINE_REPORT_ARCHIVE \
-            --parent CP-0009B-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION \
+            --parent CP-0009A-PROPAGATION_WORKSPACE_HISTORY_INTEGRATION \
             --summary "Premerge dry-run only" \
             --phase "Premerge dry-run only" \
             --test-status "PREMERGE_DRY_RUN"
