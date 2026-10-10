@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""CP-0009C: truthful, deterministic Android APK build-readiness GAP audit.
-
-This is not a build. It never asserts an APK exists or that a physical radio,
-phone, USB CAT/audio, certificate, RF chain or Android UI was tested.
-"""
+"""Static Android build prerequisites; NOT an APK compile or device test."""
 from __future__ import annotations
 import argparse
 import json
@@ -21,32 +17,34 @@ REQUIREMENTS = {
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--expect-not-ready", action="store_true")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--expect-not-ready", action="store_true")
+    mode.add_argument("--expect-ready", action="store_true")
     args = parser.parse_args()
     checks = {}
     for label, paths in REQUIREMENTS.items():
-        if label == "gradle_wrapper":
-            present = all((ROOT / path).is_file() for path in paths)
-        else:
-            present = any((ROOT / path).is_file() for path in paths)
+        present = (all((ROOT / path).is_file() for path in paths)
+                   if label == "gradle_wrapper" else
+                   any((ROOT / path).is_file() for path in paths))
         checks[label] = {"present": present, "paths_checked": list(paths)}
     ready = all(row["present"] for row in checks.values())
-    audit = {
-        "checkpoint": "CP-0009C",
-        "kind": "REPOSITORY_STATIC_GAP_AUDIT_NOT_BUILD",
+    print(json.dumps({
+        "checkpoint": "CP-0009C/CP-0009D",
+        "kind": "REPOSITORY_STATIC_PREREQUISITE_AUDIT_NOT_A_BUILD",
         "status": "STATIC_PREREQUISITES_PRESENT_UNVERIFIED" if ready else "NOT_READY",
         "can_claim_installable_apk": False,
         "checks": checks,
         "missing": sorted(key for key, row in checks.items() if not row["present"]),
         "boundaries": [
-            "Static file checks are not Gradle/Android compilation or an APK artifact.",
-            "Host-facing archive models are not an implemented Android Activity.",
+            "Static file checks are NOT Android compilation or APK artifact proof.",
+            "Android packaging presence is NOT archive engine Activity wiring.",
             "No Galaxy S23 Ultra, FTX-1, CAT/audio, RF, account or certificate proof.",
         ],
-    }
-    print(json.dumps(audit, indent=2, sort_keys=True))
+    }, indent=2, sort_keys=True))
     if args.expect_not_ready and ready:
-        raise SystemExit("The CP-0009C expected-gap fixture is stale; replace with a real Android APK CI gate.")
+        raise SystemExit("Expected packaging deficit but scaffolding now exists")
+    if args.expect_ready and not ready:
+        raise SystemExit("Android app packaging prerequisites missing")
 
 if __name__ == "__main__":
     main()
