@@ -12,10 +12,6 @@ on:
       - '.github/workflows/cp0009b-propagation-offline-archive.yml'
       - '.github/workflows/finalize-cp0009b.yml'
       - '.github/workflows/finalize-cp0009b.yml'
-      - 'README.md'
-      - 'NEXT_ACTION.md'
-      - 'SOFTWARE_TRACK.md'
-      - 'checkpoints/RESUME_HERE.md'
 
 permissions:
   contents: write
@@ -105,7 +101,7 @@ jobs:
 
 
   checkpoint:
-    needs: [workspace-history, inherited]
+    needs: [offline-archive, inherited]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
