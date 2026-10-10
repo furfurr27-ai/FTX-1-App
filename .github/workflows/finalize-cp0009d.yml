@@ -1,22 +1,7 @@
 name: Finalize CP-0009D checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'app/**'
-      - 'gradle/**'
-      - 'gradlew'
-      - 'gradlew.bat'
-      - 'settings.gradle.kts'
-      - 'build.gradle.kts'
-      - 'gradle.properties'
-      - 'scripts/test_android_package_contract.py'
-      - 'scripts/verify_android_apk_artifact.py'
-      - 'scripts/finalize_cp0009d.py'
-      - 'research/android/CP-0009D_ANDROID_APK_BUILD_FOUNDATION.md'
-      - '.github/workflows/cp0009d-android-apk-foundation.yml'
-      - '.github/workflows/finalize-cp0009d.yml'
+  workflow_dispatch:
 
 permissions:
   contents: write

@@ -167,6 +167,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Premerge CP-0009D handoff and immutable snapshot dry-run
+        if: github.ref_name == 'cp-0009d-android-apk-build-foundation' || github.head_ref == 'cp-0009d-android-apk-build-foundation'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

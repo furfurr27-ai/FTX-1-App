@@ -414,3 +414,7 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009E implementation branch (not checkpointed)
+
+Branch: cp-0009e-android-offline-archive-ui. Verified parent CP-0009D/v55 main 3212ed2bc2e0f5cea52cbae011e0284e1cbafeb9. This WIP compiles the canonical host Kotlin archive model into the Android APK and introduces private ArchiveHistoryActivity with synthetic offline report actions (select, delete, UTC-page, before/after comparison). Android device UI interaction, storage, radio and RF are NOT verified. Exact-head APK + full inherited CI and merged-main immutable finalization are required before CP-0009E/v56 becomes durable. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
