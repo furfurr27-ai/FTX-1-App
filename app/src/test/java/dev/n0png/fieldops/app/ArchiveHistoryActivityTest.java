@@ -128,7 +128,7 @@ public class ArchiveHistoryActivityTest {
                  Robolectric.buildActivity(ArchiveHistoryActivity.class).setup()) {
             ArchiveHistoryActivity activity = fresh.get();
             assertTrue("Opt-in is not carried to a fresh Activity",
-                screen(activity).contains("Storage is DISABLED"));
+                screen(activity).contains("storage is DISABLED"));
             assertTrue(screen(activity).contains("Retained reports: 3"));
             click(activity, "ENABLE LOCAL ARCHIVE STORAGE", 0);
             click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
