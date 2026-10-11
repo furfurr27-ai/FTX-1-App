@@ -11,11 +11,15 @@ android {
         applicationId = "dev.n0png.fieldops"
         minSdk = 29
         targetSdk = 35
-        versionCode = 56
-        versionName = "0.56.0-cp0009e"
+        versionCode = 57
+        versionName = "0.57.0-cp0009f"
     }
 
     sourceSets.getByName("main").java.srcDir(rootProject.file("core/src/main/kotlin"))
+
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
 
     buildTypes {
         getByName("release") {
@@ -27,4 +31,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.robolectric:robolectric:4.16.1")
 }

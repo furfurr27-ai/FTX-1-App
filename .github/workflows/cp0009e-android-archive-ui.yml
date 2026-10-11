@@ -160,6 +160,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Premerge CP-0009E immutable snapshot dry-run
+        if: github.ref_name == 'cp-0009e-android-offline-archive-ui' || github.head_ref == 'cp-0009e-android-offline-archive-ui'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

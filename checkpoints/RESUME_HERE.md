@@ -30,3 +30,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## IN PROGRESS — CP-0009F, not durable
+
+Branch cp-0009f-android-archive-navigation-tests; verified state above remains CP-0009E/v56. New Robolectric API35 Android View interaction tests cover paging/select/compare/clear/delete/fresh demo, launcher navigation and configuration recreation. RotationSession is in-memory, without Bundle/files/database/process-death persistence. Next: exact-head PR + push full CI, merge, main finalizer, verify v57 manifest and immutable snapshot. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
