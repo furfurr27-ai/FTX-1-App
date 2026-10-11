@@ -44,3 +44,7 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009F implementation branch (not checkpointed)
+
+cp-0009f-android-archive-navigation-tests from CP-0009E/v56: click/nav/compare/delete/rotation Robolectric API35 tests plus strict rotation-only memory boundary (NOT Android persisted reports). Do not claim physical Samsung app-run or live FTX-1. Continue exact-head CI, merge only after full regression, then immutable CP-0009F/v57 main finalizer. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

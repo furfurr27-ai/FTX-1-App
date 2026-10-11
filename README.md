@@ -419,3 +419,7 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009F implementation branch (not checkpointed)
+
+Branch: cp-0009f-android-archive-navigation-tests. Parent verified durable checkpoint CP-0009E/v56, main 82547fbe35628571bb58592fb0af017b7a6ef485. WIP: Robolectric API35 actual Activity navigation and rotation-only in-memory state tests, no durable storage, no hardware/RF. Actual GitHub APK job verified the focused Robolectric suite on branch; full premerge checkpoint, all inherited host CI, merged-main finalizer and immutable v57 manifest/snapshot still required. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
