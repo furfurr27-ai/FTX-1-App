@@ -36,3 +36,11 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## Active CP-0009I branch — not checkpointed
+
+Branch: cp-0009i-encrypted-archive-migration-contract. Verified parent remains CP-0009H/v59. CP-0009I adds
+pure Kotlin fail-closed migration contract, threat model and CI/finalization
+workflows; Android archive remains UNENCRYPTED. Continue GitHub CI verification,
+merge only after exact-head green, then validate main finalizer/snapshot.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
