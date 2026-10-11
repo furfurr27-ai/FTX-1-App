@@ -14,6 +14,9 @@ import org.robolectric.annotation.Config;
 import org.robolectric.Shadows;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.File;
+import java.nio.file.Files;
+import org.robolectric.RuntimeEnvironment;
 import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunner.class)
@@ -135,6 +138,33 @@ public class ArchiveHistoryActivityTest {
             assertTrue(screen(activity).contains("Retained reports: 4"));
             assertTrue(screen(activity).contains("Restored 4 canonical offline reports"));
             click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+            click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
+            assertTrue(screen(activity).contains("No saved local report archive exists."));
+        }
+    }
+
+    @Test
+    public void corruptStoredArchiveLeavesVisibleHistoryUnchangedAndShowsRecoveryAction()
+        throws Exception {
+        File saved = new File(RuntimeEnvironment.getApplication().getNoBackupFilesDir(),
+                              "fieldops-synthetic-archive-v1.bin");
+        if (saved.exists()) assertTrue(saved.delete());
+        try (ActivityController<ArchiveHistoryActivity> controller =
+                 Robolectric.buildActivity(ArchiveHistoryActivity.class).setup()) {
+            ArchiveHistoryActivity activity = controller.get();
+            click(activity, "ENABLE LOCAL ARCHIVE STORAGE", 0);
+            click(activity, "SAVE SYNTHETIC ARCHIVE LOCALLY", 0);
+            assertTrue(saved.exists());
+            Files.write(saved.toPath(), new byte[] { 0x01, 0x02, 0x03 });
+            click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
+            String displayed = screen(activity);
+            assertTrue(displayed.contains("RESTORE REJECTED"));
+            assertTrue(displayed.contains("Previous on-screen reports are unchanged"));
+            assertTrue(displayed.contains("DELETE LOCAL ARCHIVE FILE"));
+            assertTrue(displayed.contains("Retained reports: 3"));
+            assertEquals(3, Files.readAllBytes(saved.toPath()).length);
+            click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+            assertFalse(saved.exists());
             click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
             assertTrue(screen(activity).contains("No saved local report archive exists."));
         }
