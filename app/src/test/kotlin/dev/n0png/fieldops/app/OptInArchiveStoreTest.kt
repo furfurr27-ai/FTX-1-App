@@ -112,4 +112,24 @@ class OptInArchiveStoreTest {
         assertTrue(store.deleteExplicitly())
     }
 
+
+    @Test fun oversizedExistingPrivateArchiveIsNeverLoadedOrSilentlyReplaced() {
+        val app = RuntimeEnvironment.getApplication()
+        val store = OptInArchiveStore(app)
+        store.enableForThisSession()
+        store.deleteExplicitly()
+        val oversized = ByteArray(PropagationArchiveStorageCodec.MAX_ENVELOPE_BYTES + 1) { 0x5a.toByte() }
+        try {
+            store.localFileForTest().writeBytes(oversized)
+            assertThrows(IllegalArgumentException::class.java) { store.loadExplicitly() }
+            assertThrows(IllegalArgumentException::class.java) { store.saveExplicitly(capturedHistory()) }
+            assertEquals(oversized.size.toLong(), store.localFileForTest().length())
+            assertArrayEquals(oversized, store.localFileForTest().readBytes())
+            assertFalse("Oversized rejection must not leave staged files",
+                app.noBackupFilesDir.listFiles().orEmpty().any { it.name.startsWith("fieldops-stage-") })
+        } finally {
+            store.deleteExplicitly()
+        }
+    }
+
 }
