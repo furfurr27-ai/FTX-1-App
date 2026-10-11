@@ -422,3 +422,7 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009G implementation branch (not checkpointed)
+
+Branch cp-0009g-opt-in-archive-storage-contract. Parent verified CP-0009F/v57 main 2d868016dd4e1830c10a2673210c4969c61cb0a3. Work in progress: bounded canonical archive wire, opt-in app-private no-backup file save/restore/delete, integrity/failure handling, Robolectric simulated UI and host Kotlin regression. NOT encrypted, authenticated, phone-installed, RF-tested or power-loss durable. Main stays CP-0009F/v57 until exact-head PR/push all green, merged-main finalizer, immutable snapshot verification. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

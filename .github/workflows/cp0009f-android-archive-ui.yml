@@ -160,6 +160,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Premerge CP-0009F immutable snapshot dry-run
+        if: github.ref_name == 'cp-0009f-android-archive-navigation-tests' || github.head_ref == 'cp-0009f-android-archive-navigation-tests'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |
