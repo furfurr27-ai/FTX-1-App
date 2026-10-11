@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CP-0009G: publish a durable handoff only after merged-main CI is green."""
+"""CP-0009H: publish a durable handoff only after merged-main CI is green."""
 import os
 import pathlib
 import re

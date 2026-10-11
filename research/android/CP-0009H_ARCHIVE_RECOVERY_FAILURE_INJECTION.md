@@ -5,6 +5,7 @@ Verified parent: CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT (v58).
 ## Changes
 - An already-stored archive must pass canonical decode and integrity checks before a later Save can overwrite it. Corrupt or oversized retained files are left untouched and require a separate explicit Delete action before a replacement Save.
 - Two pre-commit fault-injection points in the Android private-file store, AFTER_STAGED_SYNC and BEFORE_ATOMIC_REPLACE, permit deterministic simulated I/O failures. The previous valid committed file must remain byte-for-byte unchanged, and staged temp files must be cleaned.
+- Existing archive validation and restore use bounded streaming FileInputStream reads, enforcing the envelope cap even if the file grows after a length pre-check. Robolectric verifies oversized files are neither loaded nor overwritten.
 - Restore failures preserve the current in-memory screen and retained bytes, with explicit Android error messaging explaining the separate deletion/discard action.
 - Robolectric API 35 tests simulate both injected faults and corrupt-file overwrite attempts, and click the Android Save/Restore/Delete controls against a corrupted private archive.
 - AndroidManifest remains zero-permission; no network, radio, CAT, USB, microphone, PTT, transmit, or external/cloud archive access is introduced.

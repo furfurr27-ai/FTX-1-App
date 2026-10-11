@@ -174,7 +174,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Premerge CP-0009G immutable snapshot dry-run
+      - name: Premerge CP-0009H immutable snapshot dry-run
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |

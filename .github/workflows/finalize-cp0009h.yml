@@ -170,11 +170,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
-      - name: Promote CP-0009G durable recovery files
+      - name: Promote CP-0009H durable recovery files
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
         run: python3 scripts/finalize_cp0009h.py
-      - name: Create and verify immutable CP-0009G snapshot
+      - name: Create and verify immutable CP-0009H snapshot
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
         run: |
@@ -204,7 +204,7 @@ jobs:
             --next "Preserve APK artifact build plus all inherited host regression gates" \
             --next "CP-0003C remains DEFERRED; skip manual hardware/account validation"
           python3 scripts/verify_checkpoint.py --root . --latest
-      - name: Commit CP-0009G checkpoint to main
+      - name: Commit CP-0009H checkpoint to main
         run: |
           set -euo pipefail
           git config user.name "fieldops-checkpoint-bot"

@@ -38,3 +38,13 @@ Do not redo completed work unless verification fails or a newer requirement expl
 ## IN PROGRESS — CP-0009H is not durable
 
 Branch cp-0009h-archive-recovery-failure-injection; parent durable main CP-0009G/v58. Android OptInArchiveStore prevents silent overwrites of a corrupt private saved archive and exposes staged-sync / before-rename simulated failure points. Robolectric tests verify earlier committed bytes, temp cleanup and explicit recovery controls, not physical device power-loss durability. Only promote CP-0009H/v59 after exact-head full CI, safe PR merge, main finalizer, manifest/snapshot SHA verification. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+## Additional CP-0009H in-progress recovery evidence
+
+Pull request: https://github.com/furfurr27-ai/FTX-1-App/pull/58
+Current implementation additions: bounded FileInputStream reads during restore
+and prior-save validation, oversize-file fail-closed Robolectric test, and
+matching Android static contract. Commits be2343e, 2dea86a and 405c14a
+are on the active branch; inspect newest head rather than assuming those
+are final. Earlier CI checks on 437afe9 are not valid for later changes.
+Competing PR #57 is not the selected integration path. Do not merge both.
