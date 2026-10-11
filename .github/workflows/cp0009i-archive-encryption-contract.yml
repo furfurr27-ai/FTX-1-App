@@ -11,7 +11,7 @@ on:
       - 'scripts/test_android_package_contract.py'
       - 'research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md'
       - 'scripts/finalize_cp0009i.py'
-      - '.github/workflows/cp0009i-archive-persistence.yml'
+      - '.github/workflows/cp0009i-archive-encryption-contract.yml'
       - '.github/workflows/finalize-cp0009i.yml'
       - 'scripts/test_encrypted_archive_migration_contract.sh'
       - 'core/src/test/kotlin/**'
@@ -188,8 +188,8 @@ jobs:
           python3 scripts/create_checkpoint.py \
             --root . \
             --id CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT \
-            --parent CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT \
-            --summary "Premerge archive recovery failure-injection dry-run" \
+            --parent CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION \
+            --summary "Premerge encrypted migration contract and threat-model dry-run" \
             --phase "Premerge dry-run only" \
             --test-status "PREMERGE_DRY_RUN"
           python3 scripts/verify_checkpoint.py --root . --latest
