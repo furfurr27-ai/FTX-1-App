@@ -1,0 +1,41 @@
+name: CP-0009G Canonical Archive Persistence Contract
+
+on:
+  push:
+    branches: [cp-0009g-opt-in-archive-storage-contract]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveStorageCodec.kt'
+      - 'core/src/test/kotlin/dev/n0png/fieldops/core/PropagationArchiveStorageCodecTests.kt'
+      - 'app/src/main/kotlin/dev/n0png/fieldops/app/OptInArchiveStore.kt'
+      - 'app/src/test/**'
+      - 'scripts/test_propagation_archive_storage.sh'
+      - 'research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md'
+      - '.github/workflows/cp0009g-archive-persistence.yml'
+      - '.github/workflows/finalize-cp0009g.yml'
+      - 'README.md'
+      - 'SOFTWARE_TRACK.md'
+      - 'NEXT_ACTION.md'
+      - 'checkpoints/RESUME_HERE.md'
+
+permissions:
+  contents: read
+
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
+jobs:
+  canonical-storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Deterministic bounded canonical archive serialization and corrupt-store tests
+        run: bash scripts/test_propagation_archive_storage.sh
