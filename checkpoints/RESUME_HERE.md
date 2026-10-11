@@ -32,3 +32,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## IN PROGRESS — CP-0009G, not durable
+
+Branch cp-0009g-opt-in-archive-storage-contract. Durable baseline above remains CP-0009F/v57. Opt-in app-private no-backup archive persistence has canonical bounded wire with checksum/reimport. No automatic restore, no encryption, no source trust guarantee, no Android physical device or RF proof. Exact-head CI tests, PR merge and main finalizer required before promoting v58; CP-0003C DEFERRED, CP-0004A/B/C incomplete.

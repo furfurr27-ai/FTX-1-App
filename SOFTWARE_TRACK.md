@@ -42,3 +42,7 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009G implementation branch (not checkpointed)
+
+cp-0009g-opt-in-archive-storage-contract from CP-0009F/v57. Deliver bounded canonical storage codec and explicit opt-in Android private-file facade with atomic staged commits, full JSON receipt reimport and corruption rejection. Host and Robolectric tests required alongside actual APK and inherited 42-gate regression; no physical phone, power-loss, encryption, RF, accounts or CAT/USB proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
