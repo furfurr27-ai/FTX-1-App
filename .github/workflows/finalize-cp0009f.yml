@@ -171,6 +171,8 @@ jobs:
             --summary "Android UI bound to canonical synthetic offline propagation archive history" \
             --phase "Robolectric navigation/rotation verified; persistent storage and hardware deferred" \
             --test-status "GREEN CI: Robolectric API35 navigation/rotation=PASS, debug APK=PASS, static storage boundary=PASS, canonical host regression=PASS, inherited=PASS; finalizer run $FINALIZE_RUN_ID" \
+            --completed "Robolectric API35 validates actual Android Activity navigation, compare/delete/page and launcher interactions" \
+            --completed "Transient configuration recreation retains in-memory session; fresh process has synthetic fixtures only" \
             --completed "Real Android Activity navigates immutable canonical CP-0009C archive workspace state machine" \
             --completed "Synthetic offline reports support select, delete, paging, paired comparison and clear comparison" \
             --completed "Original canonical receipt and historical warnings shown; no radio/USB/TX/RF or network interaction" \
@@ -178,7 +180,7 @@ jobs:
             --completed "All CP-0009D and CP-0009C inherited host regression gates green" \
             --blocker "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction" \
             --blocker "CP-0004A/B/C hardware checkpoints incomplete" \
-            --blocker "No emulator/device UI automation, physical install, persistent Android archive, CAT/audio/RF or live-source proof" \
+            --blocker "No physical-device installation or emulator instrumentation; Robolectric is JVM simulation only; no persistent archive, CAT/audio/RF or live source" \
             --next "CP-0009G: opt-in bounded Android archive persistence contract with synthetic restore/integrity tests, GitHub/CI-only" \
             --next "Preserve APK artifact build plus all inherited host regression gates" \
             --next "CP-0003C remains DEFERRED; skip manual hardware/account validation"
