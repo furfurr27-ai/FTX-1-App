@@ -68,3 +68,21 @@ for forbidden in ("openFileOutput(", "getSharedPreferences(", "Room.databaseBuil
     if forbidden in archive_kotlin:
         raise SystemExit("Unexpected durable Android archive storage: " + forbidden)
 print("CP-0009F transient rotation/session storage boundary: PASS")
+
+# CP-0009G bounded private-file persistence is explicitly opted in.
+persistence_file = root / "app/src/main/kotlin/dev/n0png/fieldops/app/OptInArchiveStore.kt"
+persistence = persistence_file.read_text()
+for token in ("noBackupFilesDir", "enableForThisSession", "check(enabled)", "ATOMIC_MOVE",
+              "REPLACE_EXISTING", "stream.fd.sync()", "PropagationArchiveStorageCodec.decode"):
+    if token not in persistence:
+        raise SystemExit("Missing opt-in private storage safety requirement: " + token)
+for token in ("getExternalFilesDir", "getExternalStorageDirectory", "URL(", "HttpURLConnection",
+              "Room.databaseBuilder", "SharedPreferences", "AES/ECB"):
+    if token in persistence:
+        raise SystemExit("Unexpected external or unverified persistence behavior: " + token)
+for token in ("ENABLE LOCAL ARCHIVE STORAGE", "SAVE SYNTHETIC ARCHIVE LOCALLY",
+              "RESTORE SAVED LOCAL ARCHIVE", "DELETE LOCAL ARCHIVE FILE", "not encrypted",
+              "RESTORE REJECTED"):
+    if token not in archive_kotlin:
+        raise SystemExit("Missing explicit Android opt-in/corruption UI: " + token)
+print("CP-0009G explicit private-file storage, no-backup and unencrypted provenance: PASS")
