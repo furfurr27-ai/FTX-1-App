@@ -20,6 +20,8 @@ class ArchiveHistoryActivity : Activity() {
     private var afterId: String? = null
     private var fixtureNumber = 0
     private lateinit var body: LinearLayout
+    private val localStore by lazy { OptInArchiveStore(applicationContext) }
+    private var localStatus = "Local archive storage is DISABLED. No automatic save or restore."
 
     /** Transient rotation-only session. Never Parcelable, Bundle, disk or database. */
     private data class RotationSession(
@@ -84,6 +86,59 @@ class ArchiveHistoryActivity : Activity() {
         screen.provenanceNotices.forEach { message("• " + it) }
         message("Retained reports: " + screen.totalReports)
         message("Archive UTF-8 bytes: " + screen.totalUtf8Bytes)
+        message("APP-PRIVATE FILE: Opt-in only; not encrypted or source-authenticated. No cloud or backup.")
+        message(localStatus)
+        if (!localStore.isEnabled()) {
+            actionButton("ENABLE LOCAL ARCHIVE STORAGE") {
+                localStore.enableForThisSession()
+                localStatus = "Enabled this session only. Save and restore require separate taps."
+                render()
+            }
+        } else {
+            actionButton("SAVE SYNTHETIC ARCHIVE LOCALLY") {
+                localStatus = runCatching {
+                    localStore.saveExplicitly(state.archive)
+                    "Saved canonical synthetic reports in app-private no-backup storage."
+                }.getOrElse { "SAVE REJECTED: " + (it.message ?: "unknown failure") }
+                render()
+            }
+            actionButton("RESTORE SAVED LOCAL ARCHIVE") {
+                localStatus = runCatching {
+                    val restored = localStore.loadExplicitly()
+                    if (restored == null) {
+                        "No saved local report archive exists."
+                    } else {
+                        state = state.copy(
+                            archive = restored,
+                            selectedSha256 = null,
+                            comparisonBeforeSha256 = null,
+                            comparisonAfterSha256 = null,
+                            offset = 0,
+                        )
+                        // Subsequent captures remain synthetic and distinct.
+                        fixtureNumber = maxOf(fixtureNumber, 100)
+                        beforeId = null
+                        afterId = null
+                        "Restored " + restored.entries.size + " canonical offline reports."
+                    }
+                }.getOrElse { "RESTORE REJECTED; previous on-screen state unchanged: " +
+                    (it.message ?: "invalid saved archive") }
+                render()
+            }
+            actionButton("DELETE LOCAL ARCHIVE FILE") {
+                localStatus = if (localStore.deleteExplicitly()) {
+                    "Deleted local file; this is not a secure physical wipe."
+                } else {
+                    "Local file could not be removed."
+                }
+                render()
+            }
+            actionButton("DISABLE LOCAL ARCHIVE STORAGE") {
+                localStore.disableForThisSession()
+                localStatus = "Storage disabled this session. Existing file is not erased."
+                render()
+            }
+        }
         actionButton("ADD SYNTHETIC REPORT") {
             addSyntheticCapture()
             render()
