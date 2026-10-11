@@ -88,7 +88,9 @@ for token in ("ENABLE LOCAL ARCHIVE STORAGE", "SAVE SYNTHETIC ARCHIVE LOCALLY",
 print("CP-0009G explicit private-file storage, no-backup and unencrypted provenance: PASS")
 
 # CP-0009H recovery/hardening contract.
-for required in ("ArchivePreCommitStage.AFTER_STAGED_SYNC", "ArchivePreCommitStage.BEFORE_ATOMIC_REPLACE", "Existing archive failed integrity checks", "preCommitFault.check"):
+for required in ("ArchivePreCommitStage.AFTER_STAGED_SYNC", "ArchivePreCommitStage.BEFORE_ATOMIC_REPLACE",
+                 "Existing archive failed integrity checks", "preCommitFault.check",
+                 "FileInputStream(file)", "output.size().toLong() + count <= maxBytes.toLong()"):
     if required not in persistence:
         raise SystemExit("Missing CP-0009H fail-closed store recovery requirement: " + required)
 for required in ("RESTORE REJECTED; on-screen archive unchanged", "Use DELETE LOCAL ARCHIVE FILE only if you want"):
