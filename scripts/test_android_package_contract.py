@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 56"):
+              "targetSdk = 35", "versionCode = 57"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -58,3 +58,13 @@ for disallowed in ("UsbManager", "AudioRecord", "startService(", "requestPermiss
     if disallowed in source_text:
         raise SystemExit("CP-0009E history demonstration requests real hardware I/O: " + disallowed)
 print("CP-0009E Android synthetic archive navigation contract: PASS")
+
+# CP-0009F: only nonconfiguration in-memory state may be retained.
+archive_kotlin = archive_src.read_text()
+for required in ("onRetainNonConfigurationInstance()", "lastNonConfigurationInstance", "RotationSession", "Fresh process/session"):
+    if required not in archive_kotlin:
+        raise SystemExit("Missing transient-only archive lifecycle contract: " + required)
+for forbidden in ("openFileOutput(", "getSharedPreferences(", "Room.databaseBuilder", "FileOutputStream", "SavedStateHandle"):
+    if forbidden in archive_kotlin:
+        raise SystemExit("Unexpected durable Android archive storage: " + forbidden)
+print("CP-0009F transient rotation/session storage boundary: PASS")

@@ -2,7 +2,7 @@ name: Build Android Debug APK
 
 on:
   push:
-    branches: [main, cp-0009e-android-offline-archive-ui]
+    branches: [main, cp-0009f-android-archive-navigation-tests]
     paths:
       - 'app/**'
       - 'core/src/main/kotlin/**'
@@ -62,6 +62,10 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew --no-daemon --stacktrace :app:assembleDebug
+      - name: Robolectric activity navigation and rotation tests (API 35)
+        run: |
+          set -euo pipefail
+          ./gradlew --no-daemon --stacktrace :app:testDebugUnitTest
       - name: Inspect actual built APK and Android manifest
         run: |
           set -euo pipefail
@@ -71,13 +75,13 @@ jobs:
           "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > app/build/apk-badging.txt
           grep -E "^(package:|launchable-activity:)" app/build/apk-badging.txt
           grep -Fq "package: name='dev.n0png.fieldops'" app/build/apk-badging.txt
-          grep -Fq "versionCode='56'" app/build/apk-badging.txt
+          grep -Fq "versionCode='57'" app/build/apk-badging.txt
           grep -Fq "launchable-activity: name='dev.n0png.fieldops.app.MainActivity'" app/build/apk-badging.txt
           sha256sum "$APK" > app/build/apk-sha256.txt
           cat app/build/apk-sha256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: fieldops-cp0009e-debug-apk
+          name: fieldops-cp0009f-debug-apk
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/apk-badging.txt
