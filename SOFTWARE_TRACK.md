@@ -41,3 +41,10 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009I implementation branch (not checkpointed)
+
+Branch: cp-0009i-encrypted-archive-migration-contract. GitHub/CI-only threat model, immutable legacy-format
+preflight, reserved v2 unreadable header and all-denying migration planner.
+No actual Keystore/encryption, migration writes or device proof. Pending
+exact-head CI, main finalizer and immutable snapshot before promotion.
