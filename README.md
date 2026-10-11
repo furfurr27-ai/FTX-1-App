@@ -39,26 +39,32 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009D-ANDROID_APK_BUILD_FOUNDATION
+**Latest verified checkpoint:** CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION
 
-Parent durable checkpoint: CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS / v54.
+Parent durable checkpoint: CP-0009D-ANDROID_APK_BUILD_FOUNDATION / v55.
 
-CP-0009D adds a genuine CI-built Android debug APK application shell
-built using pinned Gradle 8.13 and Android Gradle Plugin 8.13.2. It contains
-an exported launcher Activity, offline provenance banners and no requested
-Android runtime permissions. GitHub Actions independently checked the actual
-APK archive, Android package and launcher, SHA-256 and uploaded build artifact.
-It is a packaging proof, NOT a fully working FTX-1 companion or proof of
-installing/launching on the physical Galaxy S23 Ultra.
+CP-0009E compiles the existing CP-0009C canonical archive-history Kotlin
+service into the actual Android debug APK using Kotlin Gradle Android plugin.
+A non-exported ArchiveHistoryActivity is reachable from the FieldOps launcher.
+Its Select, Delete, Before/After Compare, Previous/Next Page and synthetic
+Capture controls dispatch to the unchanged archive workspace state machine.
+All canonical provenance notices are shown as readable Android text.
 
-CP-0009C host-only archive/history contracts and all inherited regressions
-remain preserved but are NOT yet attached to the Android Activity. There is
-no Android archive database or tested RF/CAT/USB/audio/PTT operation.
+Only synthetic caller-owned propagation pictures are provided. This does NOT
+read live propagation providers, CAT, USB audio, microphone, PTT or RF; it
+does NOT authenticate origin or persist reports to an Android database.
+Screen re-creation starts with synthetic fixtures rather than restored storage.
+The UI is compiled in CI but NOT physically run on the Galaxy S23 Ultra.
+Hardware tests and actual TalkBack behavior remain unverified.
 
-CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
+CP-0003C remains DEFERRED; CP-0004A/B/C are incomplete.
 
 Host/CI gates:
 
+- CP-0009E APK containing real canonical Kotlin core/ArchiveHistoryActivity: **PASS**.
+- CP-0009E Android manifest, no-permission and synthetic-only wiring audit: **PASS**.
+- CP-0009D actual APK ZIP, aapt package and launcher, artifact upload: **PASS**.
+- CP-0009C canonical archive history actions/receipts regression: **PASS**.
 - CP-0009D Android assembleDebug real APK build and artifact inspection: **PASS**.
 - CP-0009D offline-only AndroidManifest/launcher safety contract: **PASS**.
 - CP-0009D Gradle wrapper pinned source object verification: **PASS**.
@@ -110,23 +116,22 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009D_ANDROID_APK_BUILD_FOUNDATION.md
+- research/android/CP-0009E_ANDROID_ARCHIVE_UI_INTEGRATION.md
+- app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
 - app/src/main/java/dev/n0png/fieldops/app/MainActivity.java
-- app/src/main/AndroidManifest.xml
-- gradle/wrapper/gradle-wrapper.jar (upstream v8.13.0 Git blob pin)
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveWorkspaceService.kt
 - .github/workflows/build-android-apk.yml
-- scripts/verify_android_apk_artifact.py
-- CP-0009D merged-main finalizer: 38086248114
+- CP-0009E merged-main finalizer run: 38121222592
 
 ### Evidence boundary
 
-Only CI debug APK packaging and structure proven. No physical device install,
-Android UI automation, actual core archive binding, radio, CAT, RF, transmit,
-LoTW or real account/credential proof.
+Android APK compilation and static contracts, plus inherited host functional
+tests. No emulator instrumentation, physical phone installation, screen reader
+evaluation, disk persistence, RF operation or live FTX-1 integration.
 
 ### Inherited verified ancestry
 
-CP-0009C-ARCHIVE_WORKSPACE_BUILD_READINESS and older verified checkpoints remain ancestry.
+CP-0009D-ANDROID_APK_BUILD_FOUNDATION and older verified checkpoints remain verified ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -150,7 +155,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009E — Android archive-history screen and offline UI integration
+**Active software track:** CP-0009F — Android archive UI navigation test and storage-boundary contract
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -375,7 +380,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009D-ANDROID_APK_BUILD_FOUNDATION
+- Current Git source baseline: CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -388,15 +393,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009E — Android archive-history screen and offline UI integration.**
+**CP-0009F — Android archive UI navigation test and storage-boundary contract.**
 
-1. Bind the CP-0009C canonical archive history workspace into the packaged
-   Android Activity using platform-safe, offline-only UI patterns.
-2. Add deterministic Android CI tests for selection, paging and comparison
-   plus accessibility and navigation semantics. Preserve safe no-TX defaults.
-3. Do not claim live FTX-1/USB/RF operation, Android archive persistence or
-   physical device install until independently verified.
-4. CP-0003C remains DEFERRED and CP-0004A/B/C remain incomplete.
+1. Add CI-testable synthetic archive Android navigation and retained-state
+   tests, especially Activity recreation and lifecycle/back behavior.
+2. Define explicit storage boundary before Android persistent archives and
+   preserve canonical CP-0009C receipts, warnings and FIFO semantics.
+3. Continue full APK and inherited host CI. No real RF, phone, USB, account,
+   hardware or authenticated-source claims without separate validation.
+4. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 
 ## README maintenance contract
 
@@ -414,7 +419,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009E implementation branch (not checkpointed)
-
-Branch: cp-0009e-android-offline-archive-ui. Verified parent CP-0009D/v55 main 3212ed2bc2e0f5cea52cbae011e0284e1cbafeb9. This WIP compiles the canonical host Kotlin archive model into the Android APK and introduces private ArchiveHistoryActivity with synthetic offline report actions (select, delete, UTC-page, before/after comparison). Android device UI interaction, storage, radio and RF are NOT verified. Exact-head APK + full inherited CI and merged-main immutable finalization are required before CP-0009E/v56 becomes durable. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

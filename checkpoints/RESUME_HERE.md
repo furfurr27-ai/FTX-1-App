@@ -1,26 +1,26 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0009D-ANDROID_APK_BUILD_FOUNDATION**
-Project version: `v55-android-apk-build-foundation`
-Phase: **Genuine CI debug APK build verified, Android host integration pending, hardware deferred**
-Test status: **GREEN GitHub CI: debug APK compile=PASS, APK manifest/ZIP verification=PASS, Android static safety=PASS, host inherited=PASS (44+ CI jobs); finalizer run 38086248114**
+Latest verified checkpoint: **CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION**
+Project version: `v56-android-archive-ui-integration`
+Phase: **APK-integrated synthetic archive UI host verified; storage and hardware deferred**
+Test status: **GREEN CI: Android archive UI APK=PASS, no-privilege manifest=PASS, canonical Kotlin host regression=PASS, inherited=PASS (44+ CI jobs); finalizer run 38121222592**
 
 ## What is complete in this checkpoint
-- Official Gradle 8.13 wrapper pinned by upstream Git blob identity; Android Gradle Plugin 8.13.2
-- Android Java 17 app module, manifest and exported launcher Activity compiled into real debug APK
-- Zero requested permissions, offline-only developer UI, no RF/CAT/audio/PTT/network claim
-- APK ZIP and aapt package/launcher verified, SHA-256 and downloadable Actions artifact uploaded
-- CP-0009C archive workspace and all inherited host regression gates remain green
+- Real Android Activity navigates immutable canonical CP-0009C archive workspace state machine
+- Synthetic offline reports support select, delete, paging, paired comparison and clear comparison
+- Original canonical receipt and historical warnings shown; no radio/USB/TX/RF or network interaction
+- APK includes Kotlin archive core and passes aapt manifest, ZIP, SHA and Actions artifact checks
+- All CP-0009D and CP-0009C inherited host regression gates green
 
 ## Known blockers / red items
-- OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit owner instruction
-- CP-0004A/B/C hardware checkpoints remain incomplete
-- APK not physically installed/tested on Galaxy S23 Ultra; host archive not yet wired to Activity; no RF/USB/LoTW proof
+- OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction
+- CP-0004A/B/C hardware checkpoints incomplete
+- No emulator/device UI automation, physical install, persistent Android archive, CAT/audio/RF or live-source proof
 
 ## Continue with these exact actions
-1. CP-0009E Android archive-history UI integration with synthetic canonical offline fixtures and CI
-2. Preserve Android assembleDebug artifact gate and inherited full host regression suite
-3. CP-0003C remains DEFERRED; do not claim hardware/account validation
+1. CP-0009F: Android synthetic archive navigation test and storage boundary contract, GitHub/CI-only
+2. Preserve APK artifact build plus all inherited host regression gates
+3. CP-0003C remains DEFERRED; skip manual hardware/account validation
 
 ## Verification before continuing
 Run:
@@ -30,7 +30,3 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
-
-## IN PROGRESS — CP-0009E is not verified yet
-
-Implementation branch cp-0009e-android-offline-archive-ui. Durable checkpoint above remains CP-0009D/v55. New Android Kotlin Activity is bound to actual CP-0009C canonical archive host model using only synthetic fixed UTC reports; PSK Reporter secure XML constants are converted to equivalent JAXP URI literal for Android compiler compatibility. Verify build, full inherited Actions, dry-run, PR merge and main finalizer before v56 claim. No real app installation, RF, CAT/USB, network, real accounts or disk persistence. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

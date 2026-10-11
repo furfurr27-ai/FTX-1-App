@@ -673,3 +673,17 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38086248114.
 Evidence: research/android/CP-0009D_ANDROID_APK_BUILD_FOUNDATION.md.
+
+
+## CP-0009E — Android offline archive history UI integration
+
+Parent: CP-0009D-ANDROID_APK_BUILD_FOUNDATION. The CI-built Android debug APK now includes
+the real canonical Kotlin offline archive service and a private Android screen
+for synthetic history paging, capture, select, delete and paired comparison.
+All provenance notices remain visible; static manifest/UI checks and inherited
+host tests GREEN. No physical phone/emulator screen interaction, persistence,
+RF, CAT, USB, live propagation, authenticated provider or real LoTW proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer run 38121222592.
+Evidence: research/android/CP-0009E_ANDROID_ARCHIVE_UI_INTEGRATION.md.
