@@ -108,6 +108,39 @@ public class ArchiveHistoryActivityTest {
     }
 
     @Test
+    public void explicitOptInSaveAndFreshProcessRestoreRemainSeparateUserActions() {
+        try (ActivityController<ArchiveHistoryActivity> first =
+                 Robolectric.buildActivity(ArchiveHistoryActivity.class).setup()) {
+            ArchiveHistoryActivity activity = first.get();
+            assertEquals(0, buttons(activity.getWindow().getDecorView(),
+                "SAVE SYNTHETIC ARCHIVE LOCALLY").size());
+            click(activity, "ENABLE LOCAL ARCHIVE STORAGE", 0);
+            click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+            click(activity, "ADD SYNTHETIC REPORT", 0);
+            assertTrue(screen(activity).contains("Retained reports: 4"));
+            click(activity, "SAVE SYNTHETIC ARCHIVE LOCALLY", 0);
+            assertTrue(screen(activity).contains("Saved canonical synthetic reports"));
+            click(activity, "DISABLE LOCAL ARCHIVE STORAGE", 0);
+            assertEquals(0, buttons(activity.getWindow().getDecorView(),
+                "RESTORE SAVED LOCAL ARCHIVE").size());
+        }
+        try (ActivityController<ArchiveHistoryActivity> fresh =
+                 Robolectric.buildActivity(ArchiveHistoryActivity.class).setup()) {
+            ArchiveHistoryActivity activity = fresh.get();
+            assertTrue("Opt-in is not carried to a fresh Activity",
+                screen(activity).contains("Storage is DISABLED"));
+            assertTrue(screen(activity).contains("Retained reports: 3"));
+            click(activity, "ENABLE LOCAL ARCHIVE STORAGE", 0);
+            click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
+            assertTrue(screen(activity).contains("Retained reports: 4"));
+            assertTrue(screen(activity).contains("Restored 4 canonical offline reports"));
+            click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+            click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
+            assertTrue(screen(activity).contains("No saved local report archive exists."));
+        }
+    }
+
+    @Test
     public void launcherCanNavigateToPrivateSyntheticHistoryScreen() {
         try (ActivityController<MainActivity> mainController =
                  Robolectric.buildActivity(MainActivity.class).setup()) {
