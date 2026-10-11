@@ -99,7 +99,7 @@ class ArchiveHistoryActivity : Activity() {
                 localStatus = runCatching {
                     localStore.saveExplicitly(state.archive)
                     "Saved canonical synthetic reports in app-private no-backup storage."
-                }.getOrElse { "SAVE REJECTED: " + (it.message ?: "unknown failure") }
+                }.getOrElse { "SAVE REJECTED: write not confirmed. Review saved history using explicit RESTORE before relying on it. Existing on-screen reports unchanged." }
                 render()
             }
             actionButton("RESTORE SAVED LOCAL ARCHIVE") {
@@ -121,8 +121,7 @@ class ArchiveHistoryActivity : Activity() {
                         afterId = null
                         "Restored " + restored.entries.size + " canonical offline reports."
                     }
-                }.getOrElse { "RESTORE REJECTED; previous on-screen state unchanged: " +
-                    (it.message ?: "invalid saved archive") }
+                }.getOrElse { "RESTORE REJECTED: saved archive could not be verified. Previous on-screen reports are unchanged. Use DELETE LOCAL ARCHIVE FILE to discard corrupted saved data, then save a new copy explicitly." }
                 render()
             }
             actionButton("DELETE LOCAL ARCHIVE FILE") {
