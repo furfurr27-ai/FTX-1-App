@@ -21,6 +21,17 @@ class ArchiveHistoryActivity : Activity() {
     private var fixtureNumber = 0
     private lateinit var body: LinearLayout
 
+    /** Transient rotation-only session. Never Parcelable, Bundle, disk or database. */
+    private data class RotationSession(
+        val archiveState: PropagationArchiveWorkspaceState,
+        val before: String?,
+        val after: String?,
+        val ordinal: Int,
+    )
+
+    override fun onRetainNonConfigurationInstance(): Any =
+        RotationSession(state, beforeId, afterId, fixtureNumber)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val scroll = ScrollView(this).apply {
@@ -33,8 +44,17 @@ class ArchiveHistoryActivity : Activity() {
         }
         scroll.addView(body)
         setContentView(scroll)
-        repeat(3) { addSyntheticCapture() }
-        state = api.apply(state, PropagationArchiveWorkspaceAction.SetPageSize(2))
+        val rotated = lastNonConfigurationInstance as? RotationSession
+        if (rotated == null) {
+            // Fresh process/session uses synthetic demo fixtures, not saved history.
+            repeat(3) { addSyntheticCapture() }
+            state = api.apply(state, PropagationArchiveWorkspaceAction.SetPageSize(2))
+        } else {
+            state = rotated.archiveState
+            beforeId = rotated.before
+            afterId = rotated.after
+            fixtureNumber = rotated.ordinal
+        }
         render()
     }
 
