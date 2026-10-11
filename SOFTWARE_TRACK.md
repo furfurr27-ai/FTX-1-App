@@ -42,3 +42,7 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009H implementation branch (not checkpointed)
+
+cp-0009h-archive-recovery-hardening, parent CP-0009G/v58. Adds staged-write/atomic-rename fault injection, no orphan temp files, streamed read bounds and actionable corrupt-store failure UX. Preserve 42 inherited host gates plus Robolectric and real APK packaging. Do not claim production device durability/encryption or real radio operation. CP-0003C DEFERRED, CP-0004A/B/C incomplete.

@@ -34,3 +34,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## IN PROGRESS — CP-0009H not durable
+
+Branch cp-0009h-archive-recovery-hardening based on verified CP-0009G/v58. Failure-injected precommit storage recovery, in-memory view preservation, bounded file read and user delete/retry guidance. Exact-head CI, PR merge, main finalizer, snapshot/manifest checksum required before v59. No real phone filesystem power-loss, encryption, CAT/audio/RF or account proof; CP-0003C DEFERRED and CP-0004A/B/C incomplete.

@@ -431,3 +431,7 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009H implementation branch (not checkpointed)
+
+Branch cp-0009h-archive-recovery-hardening from durable CP-0009G/v58 main cc5e734404028a794f2b7ed57c2b37a648bfd7ca. WIP: injected precommit atomic-save faults, retained previous canonical file, bounded private-file reads and explicit corrupt-store recovery Android UI. New Robolectric tests require full exact-head CI, main merged finalizer and immutable snapshot before v59 durability claim. NO physical phone, RF, signed source, encryption or power-loss durability proven. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
