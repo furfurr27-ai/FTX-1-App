@@ -1,13 +1,15 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS**
-Project version: `v57-android-archive-navigation-tests`
-Phase: **Robolectric navigation/rotation verified; persistent storage and hardware deferred**
-Test status: **GREEN CI: Robolectric API35 navigation/rotation=PASS, debug APK=PASS, static storage boundary=PASS, canonical host regression=PASS, inherited=PASS; finalizer run 38129220049**
+Latest verified checkpoint: **CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT**
+Project version: `v58-android-archive-persistence-contract`
+Phase: **App-private opt-in archive storage simulated and bounded; physical device/radio deferred**
+Test status: **GREEN CI: canonical bounded storage codec=PASS, opt-in Robolectric private store=PASS, debug APK=PASS, inherited=PASS; finalizer run 38132196485**
 
 ## What is complete in this checkpoint
 - Robolectric API35 validates actual Android Activity navigation, compare/delete/page and launcher interactions
 - Transient configuration recreation retains in-memory session; fresh process has synthetic fixtures only
+- Bounded canonical private archive envelope roundtrip, tamper and corrupt-restore checks
+- Explicit Android user opt-in for atomic-replace app-private save, restore and delete
 - Real Android Activity navigates immutable canonical CP-0009C archive workspace state machine
 - Synthetic offline reports support select, delete, paging, paired comparison and clear comparison
 - Original canonical receipt and historical warnings shown; no radio/USB/TX/RF or network interaction
@@ -17,10 +19,10 @@ Test status: **GREEN CI: Robolectric API35 navigation/rotation=PASS, debug APK=P
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction
 - CP-0004A/B/C hardware checkpoints incomplete
-- No physical-device installation or emulator instrumentation; Robolectric is JVM simulation only; no persistent archive, CAT/audio/RF or live source
+- No physical device/RF/CAT/USB/account evidence; app-private storage not encrypted; real-world power-loss durability unverified
 
 ## Continue with these exact actions
-1. CP-0009G: opt-in bounded Android archive persistence contract with synthetic restore/integrity tests, GitHub/CI-only
+1. CP-0009H: private archive restore failure/recovery UI and Android durability hardening, GitHub/CI-only
 2. Preserve APK artifact build plus all inherited host regression gates
 3. CP-0003C remains DEFERRED; skip manual hardware/account validation
 
@@ -32,7 +34,3 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
-
-## IN PROGRESS — CP-0009G, not durable
-
-Branch cp-0009g-opt-in-archive-storage-contract. Durable baseline above remains CP-0009F/v57. Opt-in app-private no-backup archive persistence has canonical bounded wire with checksum/reimport. No automatic restore, no encryption, no source trust guarantee, no Android physical device or RF proof. Exact-head CI tests, PR merge and main finalizer required before promoting v58; CP-0003C DEFERRED, CP-0004A/B/C incomplete.

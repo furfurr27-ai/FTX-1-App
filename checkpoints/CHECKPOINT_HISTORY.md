@@ -701,3 +701,17 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38129220049.
 Evidence: research/android/CP-0009F_ANDROID_ARCHIVE_NAVIGATION_TESTS.md.
+
+
+## CP-0009G — opt-in bounded Android archive private-file persistence
+
+Parent: CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS. Bounded versioned canonical archive wire with
+checksum and full original receipt reimport; app-private no-backup opt-in
+atomic-replace file store; user-explicit Save/Restore/Delete, fail-closed
+corruption handling. Host Kotlin and Robolectric CI + real APK artifact
+pass. No encryption, physical phone, power-loss durability, real radio
+RF/CAT/USB, account, source authenticity or live propagation proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38132196485.
+Evidence: research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md.

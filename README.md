@@ -39,29 +39,37 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS
+**Latest verified checkpoint:** CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT
 
-Parent verified durable checkpoint: CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION / v56.
+Parent durable checkpoint: CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS / v57.
 
-CP-0009F verifies clickable Android archive-history navigation via Robolectric
-API 35 JVM Activity tests. Select, Before/After Compare, Delete, Page, Clear
-and Synthetic Capture UI actions dispatch to the canonical CP-0009C host
-workspace. Android launcher navigation is covered, too.
+CP-0009G adds explicit opt-in private-file storage for synthetic offline
+propagation archives in the compiled Android APK. A versioned, bounded
+canonical archive envelope stores JSON bytes in insertion order, includes
+a SHA-256 corruption check, and independently reimports all canonical
+report receipts on every restore. Corrupt/truncated/oversized input fails
+closed; no silent fixture substitution is reported as successful restore.
 
-Transient rotation-only retention uses onRetainNonConfigurationInstance
-with a bounded, in-memory workspace state holder. Fresh sessions reconstruct
-three synthetic demo captures and do NOT persist reports or retrieve live
-radio/network data. No Android database, file store or real-world RF state
-is proven or requested.
+Android saves only after a user enables local storage for the current
+Activity session AND selects Save. Restore and Delete are separate actions.
+The app-private no-backup file is not encrypted or source-authenticated.
+A staged file is fsynced and replaced with a same-directory atomic move;
+unsupported atomic replacement fails instead of falling back to a
+non-atomic update. This is not evidence of physical power-loss durability.
 
-Robolectric CI is virtualized JVM Android UI verification, not a physical
-Galaxy S23 Ultra installation, actual TalkBack interaction, radio CAT,
-audio/PTT/RF or live propagation validation.
+Host Kotlin tests and Robolectric simulated Android private-file tests
+verify codec determinism, corruption rejection, opt-in and fresh-Activity
+restore. No real Galaxy S23 Ultra install, actual RF/CAT/USB, live
+propagation data, TalkBack behavior, device filesystem durability,
+credential/account access, or encryption is verified.
 
-CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+CP-0003C DEFERRED; CP-0004A/B/C hardware validation incomplete.
 
 Host/CI gates:
 
+- CP-0009G bounded canonical archive envelope host integrity tests: **PASS**.
+- CP-0009G Robolectric explicit opt-in private-store/restore/failure tests: **PASS**.
+- CP-0009G no-permission Android APK build/aapt/ZIP/artifact: **PASS**.
 - CP-0009F Robolectric API 35 Android Activity navigation tests: **PASS**.
 - CP-0009F rotation-only storage-boundary static contract: **PASS**.
 - CP-0009F actual debug APK packaging/aapt/ZIP/Actions artifact: **PASS**.
@@ -120,21 +128,22 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009F_ANDROID_ARCHIVE_NAVIGATION_TESTS.md
-- app/src/test/java/dev/n0png/fieldops/app/ArchiveHistoryActivityTest.java
-- app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
+- research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveStorageCodec.kt
+- app/src/main/kotlin/dev/n0png/fieldops/app/OptInArchiveStore.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/OptInArchiveStoreTest.kt
 - .github/workflows/build-android-apk.yml
-- CP-0009F merged-main finalizer: 38129220049
+- CP-0009G merged-main finalizer: 38132196485
 
 ### Evidence boundary
 
-Robolectric Activity JVM simulation, static storage contract, APK packaging
-and inherited host tests. No actual phone install, hardware RF, real data,
-accessibility device testing, archive persistence or account verification.
+Only host/JVM and Robolectric simulation, actual APK package, private-file
+storage logic and inherited checks proven. No physical phone, RF,
+account, encryption, or real-world durability testing.
 
 ### Inherited verified ancestry
 
-CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION and earlier immutable checkpoints remain ancestry.
+CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS and older immutable checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -158,7 +167,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009G — bounded opt-in Android archive persistence contract
+**Active software track:** CP-0009H — persisted archive recovery UX and failure-injection hardening
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -383,7 +392,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS
+- Current Git source baseline: CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -396,15 +405,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009G — bounded opt-in Android archive persistence contract.**
+**CP-0009H — persisted archive recovery UX and failure-injection hardening.**
 
-1. Design explicit opt-in Android local archive persistence using canonical
-   receipts, bounded byte/count retention, and atomic integrity checks.
-2. Verify process-death restoration and intentionally corrupted archives
-   under synthetic CI fixtures before claiming persistent storage.
-3. Preserve Robolectric UI controls, actual APK build and inherited host
-   regression gates; no physical hardware or real RF/account validation.
-4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+1. Harden explicit failure notices, torn-write/error recovery and
+   process-death restore testing with synthetic fixtures in Android CI.
+2. Investigate atomic directory commit durability and evaluate encrypted
+   on-device storage; do not claim encryption before implementation.
+3. Preserve opt-in/no-backup behavior, canonical receipt validation,
+   bounded wire format, debug APK build and all inherited regressions.
+4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No live RF or phone tests.
 
 ## README maintenance contract
 
@@ -422,7 +431,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009G implementation branch (not checkpointed)
-
-Branch cp-0009g-opt-in-archive-storage-contract. Parent verified CP-0009F/v57 main 2d868016dd4e1830c10a2673210c4969c61cb0a3. Work in progress: bounded canonical archive wire, opt-in app-private no-backup file save/restore/delete, integrity/failure handling, Robolectric simulated UI and host Kotlin regression. NOT encrypted, authenticated, phone-installed, RF-tested or power-loss durable. Main stays CP-0009F/v57 until exact-head PR/push all green, merged-main finalizer, immutable snapshot verification. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

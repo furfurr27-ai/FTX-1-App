@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS
+CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,12 +25,12 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009G — bounded opt-in Android archive persistence contract
+CP-0009H — persisted archive recovery UX and failure-injection hardening
 
-Scope: gated, opt-in, bounded on-device local archive persistence with
-canonical receipt validation, corrupt-store handling and process-death
-restore tests. Preserve Robolectric UI checks, real APK artifact build and
-all host regressions. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+Harden explicit private-file restore failures, fault-injected atomic commit
+and preservation of prior valid data. Evaluate encryption separately.
+Preserve actual APK and Robolectric/host gates. CP-0003C DEFERRED;
+CP-0004A/B/C incomplete, physical RF/phone/account work unverified.
 
 ## Resume rule
 
@@ -42,7 +42,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009G implementation branch (not checkpointed)
-
-cp-0009g-opt-in-archive-storage-contract from CP-0009F/v57. Deliver bounded canonical storage codec and explicit opt-in Android private-file facade with atomic staged commits, full JSON receipt reimport and corruption rejection. Host and Robolectric tests required alongside actual APK and inherited 42-gate regression; no physical phone, power-loss, encryption, RF, accounts or CAT/USB proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
