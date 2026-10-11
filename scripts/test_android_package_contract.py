@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 58"):
+              "targetSdk = 35", "versionCode = 59"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -86,3 +86,12 @@ for token in ("ENABLE LOCAL ARCHIVE STORAGE", "SAVE SYNTHETIC ARCHIVE LOCALLY",
     if token not in archive_kotlin:
         raise SystemExit("Missing explicit Android opt-in/corruption UI: " + token)
 print("CP-0009G explicit private-file storage, no-backup and unencrypted provenance: PASS")
+
+# CP-0009H recovery/hardening contract.
+for required in ("ArchivePreCommitStage.AFTER_STAGED_SYNC", "ArchivePreCommitStage.BEFORE_ATOMIC_REPLACE", "Existing archive failed integrity checks", "preCommitFault.check"):
+    if required not in persistence:
+        raise SystemExit("Missing CP-0009H fail-closed store recovery requirement: " + required)
+for required in ("RESTORE REJECTED; on-screen archive unchanged", "Use DELETE LOCAL ARCHIVE FILE only if you want"):
+    if required not in archive_kotlin:
+        raise SystemExit("Missing explicit CP-0009H corrupt restore recovery UX: " + required)
+print("CP-0009H staged-write failure isolation and explicit recovery warnings: PASS")
