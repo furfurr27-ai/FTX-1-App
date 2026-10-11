@@ -10,7 +10,7 @@ on:
       - 'scripts/test_android_package_contract.py'
       - 'scripts/finalize_cp0009g.py'
       - 'research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md'
-      - '.github/workflows/cp0009g-android-archive-ui.yml'
+      - '.github/workflows/cp0009g-archive-persistence.yml'
       - '.github/workflows/finalize-cp0009g.yml'
 
 permissions:
@@ -188,6 +188,8 @@ jobs:
             --test-status "GREEN CI: canonical bounded storage codec=PASS, opt-in Robolectric private store=PASS, debug APK=PASS, inherited=PASS; finalizer run $FINALIZE_RUN_ID" \
             --completed "Robolectric API35 validates actual Android Activity navigation, compare/delete/page and launcher interactions" \
             --completed "Transient configuration recreation retains in-memory session; fresh process has synthetic fixtures only" \
+            --completed "Bounded canonical private archive envelope roundtrip, tamper and corrupt-restore checks" \
+            --completed "Explicit Android user opt-in for atomic-replace app-private save, restore and delete" \
             --completed "Real Android Activity navigates immutable canonical CP-0009C archive workspace state machine" \
             --completed "Synthetic offline reports support select, delete, paging, paired comparison and clear comparison" \
             --completed "Original canonical receipt and historical warnings shown; no radio/USB/TX/RF or network interaction" \
