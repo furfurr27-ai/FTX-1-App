@@ -68,4 +68,68 @@ class OptInArchiveStoreTest {
         assertTrue(store.deleteExplicitly())
         assertNull(store.loadExplicitly())
     }
+    @Test fun interruptedStagedWriteNeverReplacesPreviouslyValidArchive() {
+        val app = RuntimeEnvironment.getApplication()
+        val baseline = capturedHistory()
+        val trimmed = baseline.copy(entries = baseline.entries.take(1))
+        val original = OptInArchiveStore(app)
+        original.enableForThisSession()
+        assertTrue(original.deleteExplicitly())
+        original.saveExplicitly(baseline)
+        val bytes = original.localFileForTest().readBytes()
+
+        for (stage in ArchivePreCommitStage.values()) {
+            val crashing = OptInArchiveStore(app, ArchivePreCommitFault { observed ->
+                if (observed == stage) throw java.io.IOException("synthetic $stage")
+            })
+            crashing.enableForThisSession()
+            assertThrows(java.io.IOException::class.java) { crashing.saveExplicitly(trimmed) }
+            assertArrayEquals("Existing committed bytes lost at $stage",
+                bytes, original.localFileForTest().readBytes())
+            assertEquals(baseline, original.loadExplicitly())
+            assertFalse("A failed staged write left temporary files",
+                app.noBackupFilesDir.listFiles().orEmpty().any { it.name.startsWith("fieldops-stage-") })
+        }
+        assertTrue(original.deleteExplicitly())
+    }
+
+    @Test fun corruptCommittedArchiveCannotBeSilentlyOverwritten() {
+        val app = RuntimeEnvironment.getApplication()
+        val store = OptInArchiveStore(app)
+        store.enableForThisSession()
+        store.deleteExplicitly()
+        store.saveExplicitly(capturedHistory())
+        val bytes = store.localFileForTest().readBytes()
+        val corrupt = bytes.copyOf().apply { this[size / 2] = (this[size / 2].toInt() xor 1).toByte() }
+        store.localFileForTest().writeBytes(corrupt)
+        assertThrows(java.io.IOException::class.java) { store.saveExplicitly(capturedHistory()) }
+        assertArrayEquals("Corrupt evidence must remain until explicit user delete",
+            corrupt, store.localFileForTest().readBytes())
+        assertThrows(IllegalArgumentException::class.java) { store.loadExplicitly() }
+        assertTrue(store.deleteExplicitly())
+        store.saveExplicitly(capturedHistory())
+        assertEquals(capturedHistory(), store.loadExplicitly())
+        assertTrue(store.deleteExplicitly())
+    }
+
+
+    @Test fun oversizedExistingPrivateArchiveIsNeverLoadedOrSilentlyReplaced() {
+        val app = RuntimeEnvironment.getApplication()
+        val store = OptInArchiveStore(app)
+        store.enableForThisSession()
+        store.deleteExplicitly()
+        val oversized = ByteArray(PropagationArchiveStorageCodec.MAX_ENVELOPE_BYTES + 1) { 0x5a.toByte() }
+        try {
+            store.localFileForTest().writeBytes(oversized)
+            assertThrows(IllegalArgumentException::class.java) { store.loadExplicitly() }
+            assertThrows(IllegalArgumentException::class.java) { store.saveExplicitly(capturedHistory()) }
+            assertEquals(oversized.size.toLong(), store.localFileForTest().length())
+            assertArrayEquals(oversized, store.localFileForTest().readBytes())
+            assertFalse("Oversized rejection must not leave staged files",
+                app.noBackupFilesDir.listFiles().orEmpty().any { it.name.startsWith("fieldops-stage-") })
+        } finally {
+            store.deleteExplicitly()
+        }
+    }
+
 }

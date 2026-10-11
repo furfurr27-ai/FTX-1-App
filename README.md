@@ -431,3 +431,7 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009H implementation branch (not checkpointed)
+
+Branch cp-0009h-archive-recovery-failure-injection. Parent durable CP-0009G/v58 main cc5e734404028a794f2b7ed57c2b37a648bfd7ca. CP-0009H IN PROGRESS: validate existing opt-in private archive before replacement, refuse corrupt overwrite without an explicit user DELETE, simulate sync/rename failure precommit preserving prior bytes and cleaning temporary files, plus Robolectric UI recovery notices. CP-0009H also enforces a streaming size cap for both saved archive restore and prior-save verification; oversized retained files cannot be silently replaced. PR #58 is the continuation branch; PR #57 is a competing incomplete predecessor. This is not physical power-loss durability, encryption, RF, CAT, phone installation or real account verification. Do not promote v59 until exact-head branch and PR CI pass and merged-main finalizer verifies the immutable manifest and snapshot. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

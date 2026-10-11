@@ -141,6 +141,35 @@ public class ArchiveHistoryActivityTest {
     }
 
     @Test
+    public void corruptedPrivateArchiveShowsRecoveryWithoutReplacingOnScreenHistory() throws Exception {
+        try (ActivityController<ArchiveHistoryActivity> controller =
+                 Robolectric.buildActivity(ArchiveHistoryActivity.class).setup()) {
+            ArchiveHistoryActivity activity = controller.get();
+            click(activity, "ENABLE LOCAL ARCHIVE STORAGE", 0);
+            click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+            click(activity, "SAVE SYNTHETIC ARCHIVE LOCALLY", 0);
+            java.io.File file = new java.io.File(
+                activity.getApplicationContext().getNoBackupFilesDir(),
+                "fieldops-synthetic-archive-v1.bin");
+            byte[] valid = java.nio.file.Files.readAllBytes(file.toPath());
+            valid[valid.length / 2] ^= 1;
+            java.nio.file.Files.write(file.toPath(), valid);
+            click(activity, "RESTORE SAVED LOCAL ARCHIVE", 0);
+            assertTrue(screen(activity).contains(
+                "RESTORE REJECTED; on-screen archive unchanged and saved bytes retained"));
+            assertTrue(screen(activity).contains("Retained reports: 3"));
+            click(activity, "SAVE SYNTHETIC ARCHIVE LOCALLY", 0);
+            assertTrue(screen(activity).contains("SAVE REJECTED; existing local file"));
+            assertArrayEquals("Corrupted bytes must not be silently discarded",
+                valid, java.nio.file.Files.readAllBytes(file.toPath()));
+            click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+            click(activity, "SAVE SYNTHETIC ARCHIVE LOCALLY", 0);
+            assertTrue(screen(activity).contains("Saved canonical synthetic reports"));
+            click(activity, "DELETE LOCAL ARCHIVE FILE", 0);
+        }
+    }
+
+    @Test
     public void launcherCanNavigateToPrivateSyntheticHistoryScreen() {
         try (ActivityController<MainActivity> mainController =
                  Robolectric.buildActivity(MainActivity.class).setup()) {

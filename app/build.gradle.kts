@@ -11,8 +11,8 @@ android {
         applicationId = "dev.n0png.fieldops"
         minSdk = 29
         targetSdk = 35
-        versionCode = 58
-        versionName = "0.58.0-cp0009g"
+        versionCode = 59
+        versionName = "0.59.0-cp0009h"
     }
 
     sourceSets.getByName("main").java.srcDir(rootProject.file("core/src/main/kotlin"))
