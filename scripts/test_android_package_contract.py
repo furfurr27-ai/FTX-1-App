@@ -86,3 +86,17 @@ for token in ("ENABLE LOCAL ARCHIVE STORAGE", "SAVE SYNTHETIC ARCHIVE LOCALLY",
     if token not in archive_kotlin:
         raise SystemExit("Missing explicit Android opt-in/corruption UI: " + token)
 print("CP-0009G explicit private-file storage, no-backup and unencrypted provenance: PASS")
+
+
+# CP-0009H requires a fail-closed save stage, bounded read and recoverable UI.
+for required in ("ArchiveSaveFaultPoint", "AFTER_STAGED_FILE_SYNC",
+                 "ATOMIC_RENAME_UNAVAILABLE", "FileInputStream(file)",
+                 "output.size().toLong() + count <= maxBytes.toLong()",
+                 "Files.deleteIfExists(temporary)"):
+    if required not in persistence:
+        raise SystemExit("Missing bounded store recovery contract: " + required)
+for required in ("RESTORE REJECTED", "Previous on-screen reports are unchanged.",
+                 "SAVE REJECTED", "DELETE LOCAL ARCHIVE FILE"):
+    if required not in archive_kotlin:
+        raise SystemExit("Missing fail-closed user recovery copy: " + required)
+print("CP-0009H injected-commit and explicit restore-recovery boundary: PASS")
