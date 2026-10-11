@@ -12,7 +12,7 @@ on:
       - 'scripts/test_encrypted_archive_migration_contract.sh'
       - 'core/src/test/kotlin/**'
       - 'research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md'
-      - '.github/workflows/cp0009i-archive-persistence.yml'
+      - '.github/workflows/cp0009i-archive-encryption-contract.yml'
       - '.github/workflows/finalize-cp0009i.yml'
 
 permissions:
@@ -174,7 +174,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
-      - name: Promote CP-0009I durable recovery files
+      - name: Promote CP-0009I migration contract state
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
         run: python3 scripts/finalize_cp0009i.py
@@ -220,5 +220,5 @@ jobs:
           git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
           git add checkpoints/manifests/CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.json
           git add -f checkpoints/snapshots/CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.tar.gz
-          git commit -m "Checkpoint CP-0009I archive recovery failure injection"
+          git commit -m "Checkpoint CP-0009I encrypted archive migration contract"
           git push
