@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION
+CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,14 +25,12 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009F — Android archive UI navigation test and storage-boundary contract
+CP-0009G — bounded opt-in Android archive persistence contract
 
-Required scope:
-
-- Android archive screen CI navigation and recreation tests using synthetic canonical data
-- Design an explicit Android storage contract; no real persistence proof
-- Preserve all inherited host tests and real Android APK build upload
-- CP-0003C DEFERRED; CP-0004A/B/C remain incomplete
+Scope: gated, opt-in, bounded on-device local archive persistence with
+canonical receipt validation, corrupt-store handling and process-death
+restore tests. Preserve Robolectric UI checks, real APK artifact build and
+all host regressions. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -44,7 +42,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009F implementation branch (not checkpointed)
-
-cp-0009f-android-archive-navigation-tests from CP-0009E/v56: click/nav/compare/delete/rotation Robolectric API35 tests plus strict rotation-only memory boundary (NOT Android persisted reports). Do not claim physical Samsung app-run or live FTX-1. Continue exact-head CI, merge only after full regression, then immutable CP-0009F/v57 main finalizer. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

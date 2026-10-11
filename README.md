@@ -39,28 +39,32 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION
+**Latest verified checkpoint:** CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS
 
-Parent durable checkpoint: CP-0009D-ANDROID_APK_BUILD_FOUNDATION / v55.
+Parent verified durable checkpoint: CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION / v56.
 
-CP-0009E compiles the existing CP-0009C canonical archive-history Kotlin
-service into the actual Android debug APK using Kotlin Gradle Android plugin.
-A non-exported ArchiveHistoryActivity is reachable from the FieldOps launcher.
-Its Select, Delete, Before/After Compare, Previous/Next Page and synthetic
-Capture controls dispatch to the unchanged archive workspace state machine.
-All canonical provenance notices are shown as readable Android text.
+CP-0009F verifies clickable Android archive-history navigation via Robolectric
+API 35 JVM Activity tests. Select, Before/After Compare, Delete, Page, Clear
+and Synthetic Capture UI actions dispatch to the canonical CP-0009C host
+workspace. Android launcher navigation is covered, too.
 
-Only synthetic caller-owned propagation pictures are provided. This does NOT
-read live propagation providers, CAT, USB audio, microphone, PTT or RF; it
-does NOT authenticate origin or persist reports to an Android database.
-Screen re-creation starts with synthetic fixtures rather than restored storage.
-The UI is compiled in CI but NOT physically run on the Galaxy S23 Ultra.
-Hardware tests and actual TalkBack behavior remain unverified.
+Transient rotation-only retention uses onRetainNonConfigurationInstance
+with a bounded, in-memory workspace state holder. Fresh sessions reconstruct
+three synthetic demo captures and do NOT persist reports or retrieve live
+radio/network data. No Android database, file store or real-world RF state
+is proven or requested.
 
-CP-0003C remains DEFERRED; CP-0004A/B/C are incomplete.
+Robolectric CI is virtualized JVM Android UI verification, not a physical
+Galaxy S23 Ultra installation, actual TalkBack interaction, radio CAT,
+audio/PTT/RF or live propagation validation.
+
+CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
 
 Host/CI gates:
 
+- CP-0009F Robolectric API 35 Android Activity navigation tests: **PASS**.
+- CP-0009F rotation-only storage-boundary static contract: **PASS**.
+- CP-0009F actual debug APK packaging/aapt/ZIP/Actions artifact: **PASS**.
 - CP-0009E APK containing real canonical Kotlin core/ArchiveHistoryActivity: **PASS**.
 - CP-0009E Android manifest, no-permission and synthetic-only wiring audit: **PASS**.
 - CP-0009D actual APK ZIP, aapt package and launcher, artifact upload: **PASS**.
@@ -116,22 +120,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009E_ANDROID_ARCHIVE_UI_INTEGRATION.md
+- research/android/CP-0009F_ANDROID_ARCHIVE_NAVIGATION_TESTS.md
+- app/src/test/java/dev/n0png/fieldops/app/ArchiveHistoryActivityTest.java
 - app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
-- app/src/main/java/dev/n0png/fieldops/app/MainActivity.java
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveWorkspaceService.kt
 - .github/workflows/build-android-apk.yml
-- CP-0009E merged-main finalizer run: 38121222592
+- CP-0009F merged-main finalizer: 38129220049
 
 ### Evidence boundary
 
-Android APK compilation and static contracts, plus inherited host functional
-tests. No emulator instrumentation, physical phone installation, screen reader
-evaluation, disk persistence, RF operation or live FTX-1 integration.
+Robolectric Activity JVM simulation, static storage contract, APK packaging
+and inherited host tests. No actual phone install, hardware RF, real data,
+accessibility device testing, archive persistence or account verification.
 
 ### Inherited verified ancestry
 
-CP-0009D-ANDROID_APK_BUILD_FOUNDATION and older verified checkpoints remain verified ancestry.
+CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION and earlier immutable checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -155,7 +158,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009F — Android archive UI navigation test and storage-boundary contract
+**Active software track:** CP-0009G — bounded opt-in Android archive persistence contract
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -380,7 +383,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION
+- Current Git source baseline: CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -393,15 +396,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009F — Android archive UI navigation test and storage-boundary contract.**
+**CP-0009G — bounded opt-in Android archive persistence contract.**
 
-1. Add CI-testable synthetic archive Android navigation and retained-state
-   tests, especially Activity recreation and lifecycle/back behavior.
-2. Define explicit storage boundary before Android persistent archives and
-   preserve canonical CP-0009C receipts, warnings and FIFO semantics.
-3. Continue full APK and inherited host CI. No real RF, phone, USB, account,
-   hardware or authenticated-source claims without separate validation.
-4. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
+1. Design explicit opt-in Android local archive persistence using canonical
+   receipts, bounded byte/count retention, and atomic integrity checks.
+2. Verify process-death restoration and intentionally corrupted archives
+   under synthetic CI fixtures before claiming persistent storage.
+3. Preserve Robolectric UI controls, actual APK build and inherited host
+   regression gates; no physical hardware or real RF/account validation.
+4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## README maintenance contract
 
@@ -419,7 +422,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009F implementation branch (not checkpointed)
-
-Branch: cp-0009f-android-archive-navigation-tests. Parent verified durable checkpoint CP-0009E/v56, main 82547fbe35628571bb58592fb0af017b7a6ef485. WIP: Robolectric API35 actual Activity navigation and rotation-only in-memory state tests, no durable storage, no hardware/RF. Actual GitHub APK job verified the focused Robolectric suite on branch; full premerge checkpoint, all inherited host CI, merged-main finalizer and immutable v57 manifest/snapshot still required. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

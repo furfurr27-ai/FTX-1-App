@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION",
-  "created_utc": "2026-10-11T07:26:27+00:00",
-  "manifest": "checkpoints/manifests/CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION.json",
-  "snapshot": "checkpoints/snapshots/CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION.tar.gz",
-  "snapshot_sha256": "1ca7ce546e3d4ed1850f31174486d173820bb3d994c1c4ba3920cc901696e801"
+  "checkpoint_id": "CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS",
+  "created_utc": "2026-10-11T09:43:19+00:00",
+  "manifest": "checkpoints/manifests/CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS.json",
+  "snapshot": "checkpoints/snapshots/CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS.tar.gz",
+  "snapshot_sha256": "26114566291ef94d72bfa47f2e0e3724bd8b3a65b63f31641494590a90f9b01d"
 }

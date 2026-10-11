@@ -687,3 +687,17 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer run 38121222592.
 Evidence: research/android/CP-0009E_ANDROID_ARCHIVE_UI_INTEGRATION.md.
+
+
+## CP-0009F — Android archive navigation tests and storage boundary
+
+Parent: CP-0009E-ANDROID_ARCHIVE_UI_INTEGRATION. Robolectric API 35 runs actual Android View
+click/navigation/rotation tests with synthetic canonical reports. Activity
+retains caller-owned memory across configuration changes only, never disk
+or saved Android Bundle. Fresh sessions reconstruct demo fixtures. APK,
+manifest, and host inherited gates GREEN. Does not prove physical phone,
+persistent storage, real RF/CAT/PTT/USB, account or live data operation.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38129220049.
+Evidence: research/android/CP-0009F_ANDROID_ARCHIVE_NAVIGATION_TESTS.md.
