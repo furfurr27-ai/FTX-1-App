@@ -4,11 +4,20 @@ import android.content.Context
 import dev.n0png.fieldops.core.propagation.PropagationArchiveStorageCodec
 import dev.n0png.fieldops.core.propagation.PropagationOfflineReportArchive
 import java.io.File
+import java.io.ByteArrayOutputStream
+import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+
+/** Internal CI-controlled failure points; never exposed to production UI. */
+internal enum class ArchiveSaveFaultPoint {
+    NONE,
+    AFTER_STAGED_FILE_SYNC,
+    ATOMIC_RENAME_UNAVAILABLE,
+}
 
 /**
  * Explicit opt-in, bounded Android private file store for OFFLINE report artifacts.
@@ -27,6 +36,13 @@ class OptInArchiveStore(private val context: Context) {
     fun isEnabled(): Boolean = enabled
 
     fun saveExplicitly(archive: PropagationOfflineReportArchive) {
+        saveWithInjectedFault(archive, ArchiveSaveFaultPoint.NONE)
+    }
+
+    internal fun saveWithInjectedFault(
+        archive: PropagationOfflineReportArchive,
+        failAt: ArchiveSaveFaultPoint,
+    ) {
         check(enabled) { "Explicit session opt-in required to save archive" }
         val bytes = PropagationArchiveStorageCodec.encode(archive)
         val directory = context.noBackupFilesDir
@@ -37,7 +53,16 @@ class OptInArchiveStore(private val context: Context) {
                 stream.write(bytes)
                 stream.fd.sync()
             }
+            if (failAt == ArchiveSaveFaultPoint.AFTER_STAGED_FILE_SYNC) {
+                throw IOException("Simulated staged-file failure before atomic replacement")
+            }
             try {
+                if (failAt == ArchiveSaveFaultPoint.ATOMIC_RENAME_UNAVAILABLE) {
+                    throw AtomicMoveNotSupportedException(
+                        temporary.toString(), File(directory, filename).path,
+                        "Simulated unavailable atomic rename",
+                    )
+                }
                 Files.move(
                     temporary,
                     File(directory, filename).toPath(),
@@ -60,7 +85,20 @@ class OptInArchiveStore(private val context: Context) {
             "Retained archive exceeds bounded private-file limit"
         }
         // Full checksum, canonical import and receipt revalidation before value is returned.
-        return PropagationArchiveStorageCodec.decode(file.readBytes())
+        val maxBytes = PropagationArchiveStorageCodec.MAX_ENVELOPE_BYTES
+        val buffer = ByteArray(8192)
+        val output = ByteArrayOutputStream()
+        FileInputStream(file).use { input ->
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                require(output.size().toLong() + count <= maxBytes.toLong()) {
+                    "Saved archive changed or exceeded its bounded read limit"
+                }
+                output.write(buffer, 0, count)
+            }
+        }
+        return PropagationArchiveStorageCodec.decode(output.toByteArray())
     }
 
     /** User-requested app-private deletion; not a secure data-wipe guarantee. */
