@@ -22,8 +22,8 @@ import java.nio.file.StandardCopyOption
  * Injectable *test-only* pre-commit failures. Injection never makes an actual
  * save on the device by itself. Production always uses the no-op hook.
  */
-internal enum class ArchivePreCommitStage { AFTER_STAGED_SYNC, BEFORE_ATOMIC_REPLACE }
-internal fun interface ArchivePreCommitFault {
+enum class ArchivePreCommitStage { AFTER_STAGED_SYNC, BEFORE_ATOMIC_REPLACE }
+fun interface ArchivePreCommitFault {
     fun check(stage: ArchivePreCommitStage)
 }
 
