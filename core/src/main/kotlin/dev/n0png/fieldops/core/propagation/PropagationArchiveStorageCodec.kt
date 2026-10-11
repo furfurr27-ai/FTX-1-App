@@ -28,6 +28,9 @@ object PropagationArchiveStorageCodec {
     fun encode(archive: PropagationOfflineReportArchive): ByteArray {
         PropagationOfflineReportArchiveService.validate(archive)
         require(archive.policy.maxEntries <= MAX_ENTRIES) { "Persistence entry policy exceeds bound" }
+        require(archive.totalUtf8Bytes <= MAX_REPORT_BYTES.toLong()) {
+            "Archive too large for opt-in private-file storage"
+        }
         require(archive.policy.maxTotalUtf8Bytes <= MAX_ARCHIVE_POLICY_BYTES) {
             "Persistence byte policy exceeds bound"
         }
