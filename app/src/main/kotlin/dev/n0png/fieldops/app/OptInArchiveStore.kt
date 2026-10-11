@@ -18,7 +18,19 @@ import java.nio.file.StandardCopyOption
  * Atomic file replacement prevents exposing a partially written target; power-loss
  * durability (directory fsync) and physical-device behavior are NOT proven by JVM CI.
  */
-class OptInArchiveStore(private val context: Context) {
+/**
+ * Injectable *test-only* pre-commit failures. Injection never makes an actual
+ * save on the device by itself. Production always uses the no-op hook.
+ */
+internal enum class ArchivePreCommitStage { AFTER_STAGED_SYNC, BEFORE_ATOMIC_REPLACE }
+internal fun interface ArchivePreCommitFault {
+    fun check(stage: ArchivePreCommitStage)
+}
+
+class OptInArchiveStore(
+    private val context: Context,
+    private val preCommitFault: ArchivePreCommitFault = ArchivePreCommitFault { },
+) {
     private val filename = "fieldops-synthetic-archive-v1.bin"
     private var enabled = false
 
@@ -31,16 +43,35 @@ class OptInArchiveStore(private val context: Context) {
         val bytes = PropagationArchiveStorageCodec.encode(archive)
         val directory = context.noBackupFilesDir
         check(directory.isDirectory || directory.mkdirs()) { "Private app directory unavailable" }
+        val destination = File(directory, filename)
+        // Do not silently overwrite corrupt local evidence with new synthetic data.
+        // Recovery requires an explicit user-triggered delete of the unreadable file.
+        if (destination.exists()) {
+            require(destination.isFile && destination.length() in
+                1L..PropagationArchiveStorageCodec.MAX_ENVELOPE_BYTES.toLong()) {
+                "Existing archive is unreadable; delete it explicitly before saving"
+            }
+            try {
+                PropagationArchiveStorageCodec.decode(destination.readBytes())
+            } catch (invalid: IllegalArgumentException) {
+                throw IOException(
+                    "Existing archive failed integrity checks; delete it explicitly before saving",
+                    invalid,
+                )
+            }
+        }
         val temporary = Files.createTempFile(directory.toPath(), "fieldops-stage-", ".tmp")
         try {
             FileOutputStream(temporary.toFile()).use { stream ->
                 stream.write(bytes)
                 stream.fd.sync()
             }
+            preCommitFault.check(ArchivePreCommitStage.AFTER_STAGED_SYNC)
             try {
+                preCommitFault.check(ArchivePreCommitStage.BEFORE_ATOMIC_REPLACE)
                 Files.move(
                     temporary,
-                    File(directory, filename).toPath(),
+                    destination.toPath(),
                     StandardCopyOption.ATOMIC_MOVE,
                     StandardCopyOption.REPLACE_EXISTING,
                 )
