@@ -11,7 +11,7 @@ on:
       - 'scripts/test_android_package_contract.py'
       - 'research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md'
       - 'scripts/finalize_cp0009g.py'
-      - '.github/workflows/cp0009g-android-archive-ui.yml'
+      - '.github/workflows/cp0009g-archive-persistence.yml'
       - '.github/workflows/finalize-cp0009g.yml'
       - 'README.md'
       - 'SOFTWARE_TRACK.md'
