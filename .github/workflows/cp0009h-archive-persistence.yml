@@ -175,6 +175,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Premerge CP-0009H immutable snapshot dry-run
+        if: github.ref_name == 'cp-0009h-archive-recovery-failure-injection' || github.head_ref == 'cp-0009h-archive-recovery-failure-injection'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |
