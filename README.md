@@ -428,3 +428,12 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009I implementation branch (not checkpointed)
+
+Branch: cp-0009i-encrypted-archive-migration-contract. Durable parent CP-0009H/v59 remains authoritative
+until exact-head CI, merge and main-branch immutable checkpoint finalize.
+Pure Kotlin classification/planning never writes encrypted data or provisions
+a key; Android private file storage is STILL UNENCRYPTED. Threat model:
+research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
