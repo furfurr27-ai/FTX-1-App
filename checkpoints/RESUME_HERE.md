@@ -30,3 +30,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## IN PROGRESS — CP-0009E is not verified yet
+
+Implementation branch cp-0009e-android-offline-archive-ui. Durable checkpoint above remains CP-0009D/v55. New Android Kotlin Activity is bound to actual CP-0009C canonical archive host model using only synthetic fixed UTC reports; PSK Reporter secure XML constants are converted to equivalent JAXP URI literal for Android compiler compatibility. Verify build, full inherited Actions, dry-run, PR merge and main finalizer before v56 claim. No real app installation, RF, CAT/USB, network, real accounts or disk persistence. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

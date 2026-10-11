@@ -44,3 +44,7 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009E implementation branch (not checkpointed)
+
+cp-0009e-android-offline-archive-ui, parent CP-0009D/v55. APK now attempts to compile the same canonical Kotlin archive-history core as host tests, with an Android synthetic-only navigation screen. All static/no-permission, APK and inherited regression gates must pass before promoting CP-0009E/v56. Do not declare installed/on-device navigation or persistent archive verified. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

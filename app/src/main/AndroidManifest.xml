@@ -7,6 +7,9 @@
         android:usesCleartextTraffic="false"
         android:theme="@style/AppTheme">
         <activity
+            android:name="dev.n0png.fieldops.app.ArchiveHistoryActivity"
+            android:exported="false" />
+        <activity
             android:name="dev.n0png.fieldops.app.MainActivity"
             android:exported="true">
             <intent-filter>
