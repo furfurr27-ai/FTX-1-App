@@ -1,12 +1,14 @@
 {
-  "project_version": "v58-android-archive-persistence-contract",
-  "latest_checkpoint": "CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT",
-  "phase": "App-private opt-in archive storage simulated and bounded; physical device/radio deferred",
-  "test_status": "GREEN CI: canonical bounded storage codec=PASS, opt-in Robolectric private store=PASS, debug APK=PASS, inherited=PASS; finalizer run 38132196485",
+  "project_version": "v59-archive-recovery-failure-injection",
+  "latest_checkpoint": "CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION",
+  "phase": "Precommit failure rollback simulated, corrupt store preservation verified; device/RF deferred",
+  "test_status": "GREEN CI: simulated staged save failure and corrupt overwrite rejection=PASS, Android recovery UX=PASS, APK=PASS, inherited=PASS; finalizer run 38174601675",
   "completed": [
     "Robolectric API35 validates actual Android Activity navigation, compare/delete/page and launcher interactions",
     "Transient configuration recreation retains in-memory session; fresh process has synthetic fixtures only",
-    "Bounded canonical private archive envelope roundtrip, tamper and corrupt-restore checks",
+    "Fault-injected staged sync and pre-atomic-replace rejection retain prior committed bytes",
+    "Corrupt existing archive cannot be silently overwritten without explicit user delete",
+    "Robolectric archive recovery message and explicit delete-and-retry controls verified",
     "Explicit Android user opt-in for atomic-replace app-private save, restore and delete",
     "Real Android Activity navigates immutable canonical CP-0009C archive workspace state machine",
     "Synthetic offline reports support select, delete, paging, paired comparison and clear comparison",
@@ -17,12 +19,12 @@
   "blockers": [
     "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction",
     "CP-0004A/B/C hardware checkpoints incomplete",
-    "No physical device/RF/CAT/USB/account evidence; app-private storage not encrypted; real-world power-loss durability unverified"
+    "No physical device/RF/CAT/USB/account evidence; no encryption or hardware power-loss durability proof"
   ],
   "next_actions": [
-    "CP-0009H: private archive restore failure/recovery UI and Android durability hardening, GitHub/CI-only",
+    "CP-0009I: encrypted archive threat model and versioned migration contract, GitHub/CI-only",
     "Preserve APK artifact build plus all inherited host regression gates",
     "CP-0003C remains DEFERRED; skip manual hardware/account validation"
   ],
-  "updated_utc": "2026-10-11T10:33:45+00:00"
+  "updated_utc": "2026-10-11T21:03:51+00:00"
 }

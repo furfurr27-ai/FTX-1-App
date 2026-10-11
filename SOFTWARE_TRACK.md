@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT
+CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,12 +25,11 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009H — persisted archive recovery UX and failure-injection hardening
+CP-0009I — encrypted archive threat-model and migration contract
 
-Harden explicit private-file restore failures, fault-injected atomic commit
-and preservation of prior valid data. Evaluate encryption separately.
-Preserve actual APK and Robolectric/host gates. CP-0003C DEFERRED;
-CP-0004A/B/C incomplete, physical RF/phone/account work unverified.
+Design versioned encrypted archive threat model and migration contract.
+Retain fault-injected atomic save, explicit opt-in, APK/Robolectric and host
+regressions. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No RF/device proof.
 
 ## Resume rule
 
@@ -42,16 +41,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009H implementation branch (not checkpointed)
-
-cp-0009h-archive-recovery-failure-injection begins at verified CP-0009G/v58. Adds bounded private-file corrupt-overwrite protection, test-only pre-commit failure injection at staged fsync and atomic replacement, explicit Android restore error UX, and CI-based tests. No encryption or actual hardware, filesystem crash, real RF/CAT/USB/account proof. Full APK, 42+ host regressions, PR merge and finalizer remain gates. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
-
-## Current integration note
-
-Continue PR #58, not a new branch. Latest changes added bounded streaming
-reads for existing-file validation and restore, an oversized archive regression
-and a static Android safety check. Verify exact latest commit against all
-push/PR jobs; do not infer success from checks on an earlier commit.
-Do not merge the competing PR #57. CP-0009H remains incomplete pending
-main-branch CI finalizer and snapshot verification.

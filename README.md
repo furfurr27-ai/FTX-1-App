@@ -39,34 +39,32 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT
+**Latest verified checkpoint:** CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION
 
-Parent durable checkpoint: CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS / v57.
+Parent durable checkpoint: CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT / v58.
 
-CP-0009G adds explicit opt-in private-file storage for synthetic offline
-propagation archives in the compiled Android APK. A versioned, bounded
-canonical archive envelope stores JSON bytes in insertion order, includes
-a SHA-256 corruption check, and independently reimports all canonical
-report receipts on every restore. Corrupt/truncated/oversized input fails
-closed; no silent fixture substitution is reported as successful restore.
+CP-0009H hardens the Android app-private opt-in offline report archive.
+Before replacing an existing save, the store rechecks its bounded, canonical
+receipt-validated contents and refuses to overwrite corrupt evidence.
+A separate explicit DELETE action is required to discard unreadable files.
 
-Android saves only after a user enables local storage for the current
-Activity session AND selects Save. Restore and Delete are separate actions.
-The app-private no-backup file is not encrypted or source-authenticated.
-A staged file is fsynced and replaced with a same-directory atomic move;
-unsupported atomic replacement fails instead of falling back to a
-non-atomic update. This is not evidence of physical power-loss durability.
+Robolectric API 35 tests inject failures after staged-file sync and
+immediately before atomic replacement. In both cases the previously
+committed bytes remain unchanged and staged temporary files are cleaned.
+Android view-click tests verify invalid Restore and later Save leave corrupt
+bytes and existing on-screen history untouched, with explicit recovery text.
 
-Host Kotlin tests and Robolectric simulated Android private-file tests
-verify codec determinism, corruption rejection, opt-in and fresh-Activity
-restore. No real Galaxy S23 Ultra install, actual RF/CAT/USB, live
-propagation data, TalkBack behavior, device filesystem durability,
-credential/account access, or encryption is verified.
-
-CP-0003C DEFERRED; CP-0004A/B/C hardware validation incomplete.
+These are simulated JVM Android failures. The app-private storage is NOT
+encrypted, digitally signed, origin-authenticated, physically power-loss
+durable, or proven on Galaxy S23 Ultra hardware. No live FTX-1, USB CAT,
+RF, microphone/PTT, account or source-data validation is claimed.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Host/CI gates:
 
+- CP-0009H simulated precommit failure and corrupt overwrite protection: **PASS**.
+- CP-0009H Robolectric archive recovery UX: **PASS**.
+- CP-0009H Android debug APK/aapt/ZIP/artifact: **PASS**.
 - CP-0009G bounded canonical archive envelope host integrity tests: **PASS**.
 - CP-0009G Robolectric explicit opt-in private-store/restore/failure tests: **PASS**.
 - CP-0009G no-permission Android APK build/aapt/ZIP/artifact: **PASS**.
@@ -128,22 +126,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/PropagationArchiveStorageCodec.kt
+- research/android/CP-0009H_ARCHIVE_RECOVERY_FAILURE_INJECTION.md
 - app/src/main/kotlin/dev/n0png/fieldops/app/OptInArchiveStore.kt
 - app/src/test/kotlin/dev/n0png/fieldops/app/OptInArchiveStoreTest.kt
+- app/src/test/java/dev/n0png/fieldops/app/ArchiveHistoryActivityTest.java
 - .github/workflows/build-android-apk.yml
-- CP-0009G merged-main finalizer: 38132196485
+- CP-0009H merged-main finalizer: 38174601675
 
 ### Evidence boundary
 
-Only host/JVM and Robolectric simulation, actual APK package, private-file
-storage logic and inherited checks proven. No physical phone, RF,
-account, encryption, or real-world durability testing.
+Host and Robolectric simulation, APK package and inherited tests only.
+No physical device, RF, encryption, account or power-loss proof.
 
 ### Inherited verified ancestry
 
-CP-0009F-ANDROID_ARCHIVE_NAVIGATION_TESTS and older immutable checkpoints remain ancestry.
+CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT and older immutable checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -167,7 +164,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009H — persisted archive recovery UX and failure-injection hardening
+**Active software track:** CP-0009I — encrypted archive threat-model and migration contract
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -392,7 +389,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT
+- Current Git source baseline: CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -405,15 +402,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009H — persisted archive recovery UX and failure-injection hardening.**
+**CP-0009I — encrypted archive threat-model and migration contract.**
 
-1. Harden explicit failure notices, torn-write/error recovery and
-   process-death restore testing with synthetic fixtures in Android CI.
-2. Investigate atomic directory commit durability and evaluate encrypted
-   on-device storage; do not claim encryption before implementation.
-3. Preserve opt-in/no-backup behavior, canonical receipt validation,
-   bounded wire format, debug APK build and all inherited regressions.
-4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No live RF or phone tests.
+1. Specify a threat model for optional encrypted app-private archive storage
+   without asserting existing data is encrypted or authenticated.
+2. Design versioned migration from CP-0009G canonical unencrypted envelopes,
+   including explicit rollback, rotation and bad-key rejection scenarios.
+3. Preserve the no-backup opt-in gate, all failure-injection/restore tests,
+   actual APK artifact and inherited host regressions.
+4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No device/radio claims.
 
 ## README maintenance contract
 
@@ -431,7 +428,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009H implementation branch (not checkpointed)
-
-Branch cp-0009h-archive-recovery-failure-injection. Parent durable CP-0009G/v58 main cc5e734404028a794f2b7ed57c2b37a648bfd7ca. CP-0009H IN PROGRESS: validate existing opt-in private archive before replacement, refuse corrupt overwrite without an explicit user DELETE, simulate sync/rename failure precommit preserving prior bytes and cleaning temporary files, plus Robolectric UI recovery notices. CP-0009H also enforces a streaming size cap for both saved archive restore and prior-save verification; oversized retained files cannot be silently replaced. PR #58 is the continuation branch; PR #57 is a competing incomplete predecessor. This is not physical power-loss durability, encryption, RF, CAT, phone installation or real account verification. Do not promote v59 until exact-head branch and PR CI pass and merged-main finalizer verifies the immutable manifest and snapshot. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

@@ -715,3 +715,17 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38132196485.
 Evidence: research/android/CP-0009G_ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.md.
+
+
+## CP-0009H — archive corrupt-file recovery and failure injection
+
+Parent: CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT. An existing archive is validated before
+Save can overwrite it. Injected failures after staging sync and before
+atomic replacement preserve previous committed bytes, and staged files
+are cleaned. Robolectric checks explicit invalid-restore and corrupt-save
+recovery messages. No encryption, physical device, power-loss guarantee,
+radio CAT/USB/RF, real account or provider authenticity proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38174601675.
+Evidence: research/android/CP-0009H_ARCHIVE_RECOVERY_FAILURE_INJECTION.md.

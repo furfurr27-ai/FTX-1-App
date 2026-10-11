@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT",
-  "created_utc": "2026-10-11T10:33:45+00:00",
-  "manifest": "checkpoints/manifests/CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.json",
-  "snapshot": "checkpoints/snapshots/CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT.tar.gz",
-  "snapshot_sha256": "ee121977ccee8cf80ed2fa1a0d15397ba52e1be0d34dd67e5092a732f0e056b3"
+  "checkpoint_id": "CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION",
+  "created_utc": "2026-10-11T21:03:51+00:00",
+  "manifest": "checkpoints/manifests/CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION.json",
+  "snapshot": "checkpoints/snapshots/CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION.tar.gz",
+  "snapshot_sha256": "3b2012b3f50681152e4c93a8ce3d15c607a6885e42c596b8833326fb4ec40175"
 }
