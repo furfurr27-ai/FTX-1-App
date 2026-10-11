@@ -34,3 +34,7 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## IN PROGRESS — CP-0009H is not durable
+
+Branch cp-0009h-archive-recovery-failure-injection; parent durable main CP-0009G/v58. Android OptInArchiveStore prevents silent overwrites of a corrupt private saved archive and exposes staged-sync / before-rename simulated failure points. Robolectric tests verify earlier committed bytes, temp cleanup and explicit recovery controls, not physical device power-loss durability. Only promote CP-0009H/v59 after exact-head full CI, safe PR merge, main finalizer, manifest/snapshot SHA verification. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

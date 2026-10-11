@@ -42,3 +42,7 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009H implementation branch (not checkpointed)
+
+cp-0009h-archive-recovery-failure-injection begins at verified CP-0009G/v58. Adds bounded private-file corrupt-overwrite protection, test-only pre-commit failure injection at staged fsync and atomic replacement, explicit Android restore error UX, and CI-based tests. No encryption or actual hardware, filesystem crash, real RF/CAT/USB/account proof. Full APK, 42+ host regressions, PR merge and finalizer remain gates. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
