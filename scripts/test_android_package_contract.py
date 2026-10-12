@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 59"):
+              "targetSdk = 35", "versionCode = 60"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
