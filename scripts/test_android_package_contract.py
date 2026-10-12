@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 60"):
+              "targetSdk = 35", "versionCode = 61"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -97,3 +97,25 @@ for required in ("RESTORE REJECTED; on-screen archive unchanged", "Use DELETE LO
     if required not in archive_kotlin:
         raise SystemExit("Missing explicit CP-0009H corrupt restore recovery UX: " + required)
 print("CP-0009H staged-write failure isolation and explicit recovery warnings: PASS")
+
+# CP-0009J separate app-private AES-GCM V2 feature: never disable prior V1 safety.
+encrypted_file = root / "app/src/main/kotlin/dev/n0png/fieldops/app/OptInEncryptedArchiveStore.kt"
+encrypted_source = encrypted_file.read_text()
+for required in ("AndroidKeyStore", "KeyGenParameterSpec.Builder", "setKeySize(256)",
+                 "setRandomizedEncryptionRequired(true)", "noBackupFilesDir",
+                 "fieldops-synthetic-archive-v2.enc", "saveEncryptedExplicitly",
+                 "loadEncryptedExplicitly", "ArchivePreCommitStage",
+                 "StandardCopyOption.ATOMIC_MOVE", "output.fd.sync()"):
+    if required not in encrypted_source:
+        raise SystemExit("CP-0009J encrypted opt-in file requirement missing: " + required)
+for forbidden in ("getExternalFilesDir", "HttpURLConnection", "URL(", "AES/ECB"):
+    if forbidden in encrypted_source:
+        raise SystemExit("Unexpected CP-0009J external I/O or weak crypto: " + forbidden)
+for required in ("ENABLE ENCRYPTED ARCHIVE THIS SESSION",
+                 "SAVE ENCRYPTED COPY OF CURRENT HISTORY",
+                 "MIGRATE VALIDATED LOCAL V1 TO ENCRYPTED COPY",
+                 "RESTORE ENCRYPTED V2 ARCHIVE", "DELETE ENCRYPTED V2 FILE ONLY",
+                 "no fallback to V1", "UNENCRYPTED V1"):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009J encrypted opt-in UI missing: " + required)
+print("CP-0009J distinct opt-in encrypted V2 storage and UI: PASS")
