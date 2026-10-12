@@ -39,3 +39,10 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## CP-0009J work in progress — NOT durable
+
+Branch cp-0009j-authenticated-archive-encryption. Pure Kotlin v2 authenticated envelope primitive and host
+CI added. Parent CP-0009I/v60 remains latest verified. No Android Keystore
+integration or encrypted save/restore/migration exists yet; do not call this
+checkpoint complete until full PR/main CI and snapshot. CP-0003C DEFERRED.
