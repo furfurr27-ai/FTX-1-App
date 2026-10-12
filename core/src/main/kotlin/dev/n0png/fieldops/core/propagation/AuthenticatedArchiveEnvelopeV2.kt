@@ -33,7 +33,8 @@ object AuthenticatedArchiveEnvelopeV2 {
         keyIdentifier: ByteArray,
         secureRandom: SecureRandom = SecureRandom(),
     ): ByteArray {
-        require(key.algorithm.equals("AES", ignoreCase = true)) { "AES key required" }
+        require(key.algorithm.equals("AES", ignoreCase = true) &&
+            (key.encoded == null || key.encoded.size == 32)) { "AES-256 key required" }
         require(keyIdentifier.size == KEY_ID_BYTES) { "Invalid key identifier" }
         // Never take untrusted bytes as authenticated simply because they have v1 magic.
         PropagationArchiveStorageCodec.decode(legacyEnvelope)
@@ -68,22 +69,23 @@ object AuthenticatedArchiveEnvelopeV2 {
         key: SecretKey,
         expectedKeyIdentifier: ByteArray,
     ): ByteArray {
-        require(key.algorithm.equals("AES", ignoreCase = true)) { "AES key required" }
+        require(key.algorithm.equals("AES", ignoreCase = true) &&
+            (key.encoded == null || key.encoded.size == 32)) { "AES-256 key required" }
         require(expectedKeyIdentifier.size == KEY_ID_BYTES) { "Invalid key identifier" }
         require(envelope.size in (HEADER_BYTES + TAG_BYTES + 1)..MAX_ENCRYPTED_BYTES) {
             "Truncated or oversized V2 envelope"
         }
         val header = envelope.copyOfRange(0, HEADER_BYTES)
         val buffer = ByteBuffer.wrap(header)
-        val magic = ByteArray(MAGIC.size).also(buffer::get)
+        val magic = ByteArray(MAGIC.size).also { buffer.get(it) }
         require(magic.contentEquals(MAGIC)) { "Unrecognized encrypted archive magic" }
         require(buffer.int == VERSION) { "Unsupported encrypted archive version" }
         require(buffer.int == SUITE_AES_256_GCM) { "Unsupported encrypted archive cipher suite" }
-        val keyId = ByteArray(KEY_ID_BYTES).also(buffer::get)
+        val keyId = ByteArray(KEY_ID_BYTES).also { buffer.get(it) }
         require(MessageDigest.isEqual(keyId, expectedKeyIdentifier)) {
             "Encrypted archive key identifier mismatch"
         }
-        val nonce = ByteArray(NONCE_BYTES).also(buffer::get)
+        val nonce = ByteArray(NONCE_BYTES).also { buffer.get(it) }
         val cipherLength = buffer.int
         require(cipherLength >= TAG_BYTES + 1 &&
             cipherLength <= PropagationArchiveStorageCodec.MAX_ENVELOPE_BYTES + TAG_BYTES &&
