@@ -18,12 +18,16 @@ are preserved; physical Keystore and radio tests remain out of scope.
 - Bounded total payload using CP-0009I reserved cap. Wrong key/identifier,
   modified version/suite/nonce/AAD/tag, trailing data, invalid format and
   truncated input fail without a plaintext fallback.
-- Fresh SecureRandom-generated nonce per encryption; nonce reuse with the
-  same key is forbidden. CI test compares consecutive envelopes.
+- AES-GCM is initialized for encryption **without a caller-provided IV**;
+  the cryptographic provider generates the nonce, which is then copied into
+  the authenticated header. This is required for Android Keystore keys with
+  randomized encryption enforced. Nonce reuse with the same key is forbidden;
+  CI tests compare distinct provider-issued nonces. Real device Keystore
+  compatibility remains unverified.
 - Only an inspectable 256-bit AES key is accepted, or an opaque provider
-  AES key whose size cannot be queried. A future Android-specific provider
-  must explicitly request 256-bit Keystore keys; this pure JVM codec alone
-  cannot prove the key is hardware-backed or that an opaque key is 256 bits.
+  AES key whose size cannot be queried. The Android-specific provider requests 256-bit Keystore keys, but JVM
+  simulation cannot prove the key is hardware-backed or that every opaque
+  provider key is 256 bits.
 
 ## Implementation and verification requirements
 
