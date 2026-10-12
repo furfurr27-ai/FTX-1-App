@@ -166,9 +166,11 @@ class OptInEncryptedArchiveStore(
         val target = destination()
         if (!target.exists()) return null
         // Do NOT provision a new key here, and do NOT fall back to plaintext V1.
+        // Reject unsafe file size before asking Keystore for key material.
+        val ciphertext = readBounded(target)
         val key = keys.existingKey()
             ?: throw IOException("Encryption key missing; ciphertext retained without downgrade")
-        return decode(readBounded(target), key)
+        return decode(ciphertext, key)
     }
 
     /** Deletes only the V2 file; this is NOT secure erase or key retirement. */
