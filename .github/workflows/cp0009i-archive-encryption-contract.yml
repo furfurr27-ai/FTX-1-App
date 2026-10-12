@@ -179,6 +179,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Premerge CP-0009I immutable snapshot dry-run
+        if: github.ref_name == 'cp-0009i-encrypted-archive-migration-contract' || github.head_ref == 'cp-0009i-encrypted-archive-migration-contract'
         env:
           FINALIZE_RUN_ID: premerge-dry-run
         run: |
