@@ -39,29 +39,34 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION
+**Latest verified checkpoint:** CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT
 
-Parent durable checkpoint: CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT / v58.
+Parent durable checkpoint: CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION / v59.
 
-CP-0009H hardens the Android app-private opt-in offline report archive.
-Before replacing an existing save, the store rechecks its bounded, canonical
-receipt-validated contents and refuses to overwrite corrupt evidence.
-A separate explicit DELETE action is required to discard unreadable files.
+CP-0009I defines a **NON-EXECUTING** versioned migration and threat-model
+contract for optional future Android app-private encrypted archives. Valid
+plaintext v1 is accepted only after canonical receipt-validated decode;
+malformed, oversized and reserved v2 inputs fail closed. Simulated migration
+preflight requires explicit user opt-in, key availability and atomic file
+replacement but ALWAYS ends in ENCRYPTED_EXECUTOR_NOT_IMPLEMENTED.
 
-Robolectric API 35 tests inject failures after staged-file sync and
-immediately before atomic replacement. In both cases the previously
-committed bytes remain unchanged and staged temporary files are cleaned.
-Android view-click tests verify invalid Restore and later Save leave corrupt
-bytes and existing on-screen history untouched, with explicit recovery text.
+The production Android archive is STILL UNENCRYPTED. No encryption key
+is provisioned, no AES-GCM ciphertext is written, no migration occurs, no
+fallback/downgrade or key rotation executes. AES-GCM/Keystore integration,
+v2 exact wire fields and tamper/rotation tests are future CP-0009J work.
 
-These are simulated JVM Android failures. The app-private storage is NOT
-encrypted, digitally signed, origin-authenticated, physically power-loss
-durable, or proven on Galaxy S23 Ultra hardware. No live FTX-1, USB CAT,
-RF, microphone/PTT, account or source-data validation is claimed.
+CI proves these pure Kotlin decisions, legacy canonical safety, Android
+Robolectric archived-store recovery, APK packaging and inherited host
+regressions. It does not prove confidentiality, hardware-backed keys,
+origin authenticity, crash/power-loss durability, physical Galaxy S23
+Ultra behavior or live FTX-1 radio CAT/USB/RF/account operation.
 CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Host/CI gates:
 
+- CP-0009I fail-closed non-executing migration planner host tests: **PASS**.
+- CP-0009I original canonical archive integrity and bounds: **PASS**.
+- CP-0009I Android APK/Robolectric and inherited host matrix: **PASS**.
 - CP-0009H simulated precommit failure and corrupt overwrite protection: **PASS**.
 - CP-0009H Robolectric archive recovery UX: **PASS**.
 - CP-0009H Android debug APK/aapt/ZIP/artifact: **PASS**.
@@ -126,21 +131,21 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009H_ARCHIVE_RECOVERY_FAILURE_INJECTION.md
-- app/src/main/kotlin/dev/n0png/fieldops/app/OptInArchiveStore.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/OptInArchiveStoreTest.kt
-- app/src/test/java/dev/n0png/fieldops/app/ArchiveHistoryActivityTest.java
-- .github/workflows/build-android-apk.yml
-- CP-0009H merged-main finalizer: 38174601675
+- research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md
+- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/EncryptedArchiveMigrationContract.kt
+- core/src/test/kotlin/dev/n0png/fieldops/core/EncryptedArchiveMigrationContractTests.kt
+- scripts/test_encrypted_archive_migration_contract.sh
+- .github/workflows/cp0009i-archive-encryption-contract.yml
+- CP-0009I merged-main finalizer: 38197040099
 
 ### Evidence boundary
 
-Host and Robolectric simulation, APK package and inherited tests only.
-No physical device, RF, encryption, account or power-loss proof.
+Pure Kotlin host classification and design, real APK packaging and
+Robolectric simulations; **NOT** implemented or verified encryption.
 
 ### Inherited verified ancestry
 
-CP-0009G-ANDROID_ARCHIVE_PERSISTENCE_CONTRACT and older immutable checkpoints remain ancestry.
+CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION and earlier immutable checkpoints remain ancestry.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -164,7 +169,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009I — encrypted archive threat-model and migration contract
+**Active software track:** CP-0009J — authenticated encrypted archive implementation
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -389,7 +394,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION
+- Current Git source baseline: CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -402,14 +407,14 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009I — encrypted archive threat-model and migration contract.**
+**CP-0009J — authenticated encrypted archive implementation.**
 
-1. Specify a threat model for optional encrypted app-private archive storage
-   without asserting existing data is encrypted or authenticated.
-2. Design versioned migration from CP-0009G canonical unencrypted envelopes,
-   including explicit rollback, rotation and bad-key rejection scenarios.
-3. Preserve the no-backup opt-in gate, all failure-injection/restore tests,
-   actual APK artifact and inherited host regressions.
+1. Freeze an independently testable authenticated v2 wire schema including
+   header AAD, key identifiers, nonce uniqueness and deterministic vectors.
+2. Implement a separate explicit opt-in Android Keystore/AES-256-GCM path,
+   staged atomic save, decrypt/receipt validate, bad-key/tag recovery.
+3. Preserve plaintext v1 if migration fails; never automatically downgrade
+   encrypted files. Retain APK, Robolectric, all inherited host checks.
 4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No device/radio claims.
 
 ## README maintenance contract
@@ -428,12 +433,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009I implementation branch (not checkpointed)
-
-Branch: cp-0009i-encrypted-archive-migration-contract. Durable parent CP-0009H/v59 remains authoritative
-until exact-head CI, merge and main-branch immutable checkpoint finalize.
-Pure Kotlin classification/planning never writes encrypted data or provisions
-a key; Android private file storage is STILL UNENCRYPTED. Threat model:
-research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md.
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.

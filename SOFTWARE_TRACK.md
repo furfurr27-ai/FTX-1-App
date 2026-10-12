@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION
+CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,11 +25,12 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009I — encrypted archive threat-model and migration contract
+CP-0009J — authenticated encrypted archive implementation
 
-Design versioned encrypted archive threat model and migration contract.
-Retain fault-injected atomic save, explicit opt-in, APK/Robolectric and host
-regressions. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No RF/device proof.
+CP-0009I verified NON-EXECUTING pure Kotlin migration checks only. Build
+real opt-in authenticated encrypted storage in CP-0009J with Keystore
+key lifecycle and robust failure/decryption tests. Current file remains
+plaintext. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -41,10 +42,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009I implementation branch (not checkpointed)
-
-Branch: cp-0009i-encrypted-archive-migration-contract. GitHub/CI-only threat model, immutable legacy-format
-preflight, reserved v2 unreadable header and all-denying migration planner.
-No actual Keystore/encryption, migration writes or device proof. Pending
-exact-head CI, main finalizer and immutable snapshot before promotion.

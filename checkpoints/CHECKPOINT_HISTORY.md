@@ -729,3 +729,19 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38174601675.
 Evidence: research/android/CP-0009H_ARCHIVE_RECOVERY_FAILURE_INJECTION.md.
+
+
+## CP-0009I — encrypted archive threat and migration contract
+
+Parent: CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION. Host Kotlin recognizes validated plaintext
+v1 and rejects corrupt, oversized, unknown and reserved-v2 candidates.
+All simulated migration preflight paths forbid actual encrypted writes;
+consent, key and atomic-replace checks are design gates, not crypto proof.
+Threat model documents future AEAD, Keystore, rotation, lost keys, old
+plaintext retention, replay and downgrade boundaries. Android persistence
+remains unencrypted. No physical Galaxy S23 Ultra, FTX-1, CAT/USB, RF,
+real account/certificate or hardware key evidence.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38197040099.
+Evidence: research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md.

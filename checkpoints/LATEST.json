@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION",
-  "created_utc": "2026-10-11T21:03:51+00:00",
-  "manifest": "checkpoints/manifests/CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION.json",
-  "snapshot": "checkpoints/snapshots/CP-0009H-ARCHIVE_RECOVERY_FAILURE_INJECTION.tar.gz",
-  "snapshot_sha256": "3b2012b3f50681152e4c93a8ce3d15c607a6885e42c596b8833326fb4ec40175"
+  "checkpoint_id": "CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT",
+  "created_utc": "2026-10-12T02:48:18+00:00",
+  "manifest": "checkpoints/manifests/CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.json",
+  "snapshot": "checkpoints/snapshots/CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.tar.gz",
+  "snapshot_sha256": "873d61898d8ad880a3d0c629367f4fc66170ebdcae5d6837173593e953c52188"
 }
