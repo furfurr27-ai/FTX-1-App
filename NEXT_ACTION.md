@@ -18,8 +18,10 @@ assert hardware backing or encryption until the real code and CI prove it.
 
 ## CP-0009J active unverified branch
 
-cp-0009j-authenticated-archive-encryption has an initial pure Kotlin authenticated v2 envelope and test
-suite. Do NOT merge or promote it as CP-0009J until Android Keystore opt-in,
-encrypted app-private v2 persistence, key-loss/restore/fault-injection UX,
-Robolectric/APK/full inherited CI and main finalizer/snapshot all pass.
-Current Android storage is still UNENCRYPTED. CP-0003C DEFERRED.
+Branch cp-0009j-authenticated-archive-encryption contains working-source AES-GCM V2, Android Keystore
+provider, explicit separate V2 storage/migration/restore UI, fault injection
+and Robolectric/host tests. PR and full CI/main finalizer are not yet verified.
+Do NOT promote to CP-0009J/v61 before complete CI and immutable checkpoint.
+Plaintext V1 is retained without secure erase. Next after CP-0009J:
+**CP-0009K — encrypted archive key lifecycle, rotation and replay recovery**.
+CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
