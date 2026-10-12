@@ -433,3 +433,15 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009J implementation branch (not checkpointed)
+
+Branch: cp-0009j-authenticated-archive-encryption. Verified durable parent remains CP-0009I/v60. A new
+pure Kotlin AES-256-GCM envelope primitive uses a bounded, versioned v2
+format with authenticated header, fresh random nonce and canonical v1
+receipt revalidation. Host tamper/wrong-key CI is pending. **The Android
+archive store still writes UNENCRYPTED v1 files**; Android Keystore,
+separate encrypted persistence, migration UX, Robolectric and full APK
+matrix/finalizer remain TODO. See
+research/android/CP-0009J_AUTHENTICATED_ARCHIVE_ENCRYPTION.md.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
