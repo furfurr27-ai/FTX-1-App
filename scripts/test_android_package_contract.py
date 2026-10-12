@@ -119,3 +119,14 @@ for required in ("ENABLE ENCRYPTED ARCHIVE THIS SESSION",
     if required not in archive_kotlin:
         raise SystemExit("CP-0009J encrypted opt-in UI missing: " + required)
 print("CP-0009J distinct opt-in encrypted V2 storage and UI: PASS")
+
+# AndroidKeyStore with randomizedEncryptionRequired(true) must generate its own IV
+# during encryption; caller-specified GCM nonce is rejected by Keystore.
+crypto_source = (root / "core/src/main/kotlin/dev/n0png/fieldops/core/propagation/AuthenticatedArchiveEnvelopeV2.kt").read_text()
+for required in ("cipher.init(Cipher.ENCRYPT_MODE, key, secureRandom)", "val nonce = cipher.iv",
+                 "nonce.size == NONCE_BYTES", "cipher.updateAAD(header)"):
+    if required not in crypto_source:
+        raise SystemExit("CP-0009J provider-issued GCM IV contract missing: " + required)
+if "cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(" in crypto_source:
+    raise SystemExit("CP-0009J AndroidKeyStore encryption must not supply a caller IV")
+print("CP-0009J provider-generated AES-GCM nonce Keystore compatibility: PASS")
