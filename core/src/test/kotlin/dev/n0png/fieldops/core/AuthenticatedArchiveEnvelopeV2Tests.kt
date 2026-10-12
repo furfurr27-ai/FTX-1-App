@@ -28,6 +28,10 @@ object AuthenticatedArchiveEnvelopeV2Tests {
         val one = codec.sealLegacyV1(legacy, key, id)
         val two = codec.sealLegacyV1(legacy, key, id)
         yes(!one.contentEquals(two), "separate AES-GCM nonces yield distinct ciphertext")
+        val nonceOffset = 8 + 4 + 4 + 16
+        val nonce1 = one.copyOfRange(nonceOffset, nonceOffset + codec.NONCE_BYTES)
+        val nonce2 = two.copyOfRange(nonceOffset, nonceOffset + codec.NONCE_BYTES)
+        yes(!nonce1.contentEquals(nonce2), "provider-generated IVs are independently distinct")
         yes(legacy.contentEquals(codec.openLegacyV1(one, key, id)), "authenticated decrypt")
         yes(legacy.contentEquals(codec.openLegacyV1(two, key, id)), "second nonce decrypt")
         yes(one.copyOfRange(0, 8).contentEquals("FTX1ENC2".toByteArray()),
@@ -69,7 +73,7 @@ object AuthenticatedArchiveEnvelopeV2Tests {
         }
         refuses("bad identifier on save") { codec.sealLegacyV1(legacy, key, ByteArray(3)) }
         refuses("weak 128-bit key not silently accepted as AES-256") {
-            // The codec must be tightened to reject undersized keys before CP-0009J ships.
+            // Keep rejecting inspectable undersized AES keys (opaque Keystore keys have no encoded bytes).
             val weak = SecretKeySpec(ByteArray(16), "AES")
             codec.sealLegacyV1(legacy, weak, id)
         }
