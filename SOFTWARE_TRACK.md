@@ -42,3 +42,9 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009J implementation branch — not checkpointed
+
+Branch cp-0009j-authenticated-archive-encryption. Parent CP-0009I/v60 is durable. Host AES-GCM v2 envelope
+primitive + tamper tests in progress; no Android encrypted writer/key lifecycle
+or user migration controls yet. Follow documented CP-0009J exit criteria.
