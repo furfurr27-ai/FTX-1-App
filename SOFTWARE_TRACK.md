@@ -45,6 +45,8 @@ On interruption or a new chat:
 
 ## CP-0009J implementation branch — not checkpointed
 
-Branch cp-0009j-authenticated-archive-encryption. Parent CP-0009I/v60 is durable. Host AES-GCM v2 envelope
-primitive + tamper tests in progress; no Android encrypted writer/key lifecycle
-or user migration controls yet. Follow documented CP-0009J exit criteria.
+Branch cp-0009j-authenticated-archive-encryption, parent CP-0009I/v60. Android Keystore AES-256-GCM
+separate V2 store and independent UI opt-in are committed; host and Robolectric
+failure tests added, full CI and immutable finalization not yet passed.
+V1 remains plaintext; no hardware-backed key, physical power-loss or
+on-radio proof. Next planned CP-0009K rotation/replay recovery.
