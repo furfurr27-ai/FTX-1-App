@@ -745,3 +745,18 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38197040099.
 Evidence: research/android/CP-0009I_ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT.md.
+
+
+## CP-0009J — Android authenticated encrypted archive
+
+Parent: CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT. AES-256-GCM V2 encrypts and verifies canonical
+V1 archive receipts. Android Keystore is invoked only from explicit
+encrypted-save actions, while restore never generates keys. Separate V2
+app-private bytes leave legacy V1 plaintext unchanged. Robolectric tests
+cover lost/wrong key, corruption, size bounds and precommit injection.
+No hardware-backed key claim, physical device crash/RF/CAT/USB tests,
+account validation, secure plaintext erase or replay resistance.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38380915587.
+Evidence: research/android/CP-0009J_AUTHENTICATED_ARCHIVE_ENCRYPTION.md.

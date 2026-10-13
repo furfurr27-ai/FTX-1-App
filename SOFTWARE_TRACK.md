@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009I-ENCRYPTED_ARCHIVE_MIGRATION_CONTRACT
+CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,12 +25,13 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009J — authenticated encrypted archive implementation
+CP-0009K — encrypted archive key lifecycle, rotation and replay recovery
 
-CP-0009I verified NON-EXECUTING pure Kotlin migration checks only. Build
-real opt-in authenticated encrypted storage in CP-0009J with Keystore
-key lifecycle and robust failure/decryption tests. Current file remains
-plaintext. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009J added per-session opt-in AES-GCM V2 app-private storage, distinct
+from retained plaintext V1. Android Keystore provider exists, with
+Robolectric software-key tests only. Next test explicit key rotation, lost
+key and replay/downgrade recovery on GitHub/CI. Hardware remains unproven.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -42,11 +43,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009J implementation branch — not checkpointed
-
-Branch cp-0009j-authenticated-archive-encryption, parent CP-0009I/v60. Android Keystore AES-256-GCM
-separate V2 store and independent UI opt-in are committed; host and Robolectric
-failure tests added, full CI and immutable finalization not yet passed.
-V1 remains plaintext; no hardware-backed key, physical power-loss or
-on-radio proof. Next planned CP-0009K rotation/replay recovery.
