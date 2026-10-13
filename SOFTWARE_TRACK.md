@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT
+CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,13 +25,14 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009L — explicit encrypted key-rotation transaction design and implementation
+CP-0009M — rotated archive conflict inspection and key retirement safety
 
-CP-0009K proved no-write key lifecycle and replay-risk classification,
-with Android warning, inherited V2 encryption, Android package and
-Robolectric/regression CI. No key rotation, anti-replay witness,
-on-device Keystore hardware or RF proof. CP-0003C DEFERRED; CP-0004A/B/C
-incomplete.
+CP-0009L added explicit first-rotation encrypted COPY using a distinct
+Keystore alias, staged authenticated readback and exclusive link creation.
+Original V2/key, unencrypted V1 and synthetic demo constraints remain.
+Robolectric/Android APK verified by CI; no physical Android Keystore,
+filesystem/power-loss, trusted anti-replay, automatic key cutover or
+retirement proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -43,11 +44,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009L work in progress — not durable
-
-Branch `cp-0009l-explicit-archive-key-rotation`, parent CP-0009K/v62. Implementing explicit isolated
-new-key AES-256-GCM V2 rotated archive copy and fail-closed stage/restore.
-Original V2/key and plaintext V1 remain intact. Android tests added, but
-no exact-head complete CI or merged-main checkpoint yet; device hardlink,
-Android hardware Keystore, power-loss and radio behavior unverified.

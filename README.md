@@ -39,37 +39,47 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT
+**Latest verified checkpoint:** CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION
 
-Parent durable checkpoint: CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION / v61.
+Parent durable checkpoint: CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT / v62.
 
-CP-0009K is a **NON-EXECUTING** encrypted key lifecycle and ciphertext
-replay recovery policy. Pure Kotlin decisions explicitly reject damaged
-ciphertext, unavailable keys, conflicting authenticated copies, absent
-consent, non-distinct replacement keys, non-atomic staging and missing
-authenticated read-back. Every simulated eligible rotation still returns
-ROTATION_EXECUTOR_NOT_IMPLEMENTED. No key-rotation writer or key retirement
-is implemented.
+CP-0009L adds an **explicit, ONE-SHOT distinct-key ROTATED COPY**
+of an existing authenticated Android V2 encrypted archive. The original
+encrypted V2 file and Android Keystore key are NEVER deleted, overwritten,
+invalidated, replaced, or automatically selected away. The old V1 file
+remains UNENCRYPTED until independently deleted by an explicit user action.
 
-AES-GCM authenticity is not evidence of recency: an older genuine
-ciphertext may decrypt successfully. The policy reports
-NO_TRUSTED_MONOTONIC_WITNESS, not replay protection; even a synthetic
-witness flag yields TRUSTED_WITNESS_INTEGRATION_NOT_IMPLEMENTED.
-Android offline archive UI explicitly warns FRESHNESS NOT VERIFIED. An
-encrypted restore labels the same limitation after canonical validation.
+An entirely separate Android Keystore AES-256-GCM alias and distinct
+16-byte nonsecret key identifier protect a separate FTX1ENC2 file in
+app-private no-backup storage. Source V2 must first decrypt/authenticate
+and its canonical receipts validate BEFORE the new key is provisioned.
+After fresh provider-nonce AES-GCM encryption, new ciphertext is staged in
+the same directory and fsynced, decrypted/read-back/receipt validated under
+the rotated key and published by exclusive atomic hard link (no overwrite).
+Failure to support hard links fails closed rather than falling back to
+an unsafe copy; physical Galaxy S23 Ultra behavior remains UNTESTED.
 
-Inherited CP-0009J encrypted V2 opt-in save/restore/migration COPY remains
-unchanged. V1 archives remain UNENCRYPTED until separately deleted.
-No automatic migration/downgrade, key rotation, or secure erase occurs.
-Host tests and Robolectric/API35 prove the simulated decisions and visible
-warnings, not key hardware, device power-loss durability, trusted monotonic
-counter, archival origin, real S23 Ultra behavior, FTX-1/CAT/USB/RF or
-account/certificate operation.
+Separate Android rotation opt-in, create, restore and delete actions
+never auto-restore, auto-migrate, downgrade, retire a key or secure-erase
+the original. Robolectric software-key tests check new key, independent
+ciphertext, old-file retention, bad source tag/key, corrupted rotated copy,
+missing key, existing-file conflict, oversized input, and fault-injected
+staging/prepublish cleanup. Existing V2/V1 and UI regressions stay green.
 
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+**Security limits:** This is an explicitly selected encrypted copy, not
+automatic active-archive/key cutover. Original key remains usable; old
+ciphertext and unencrypted V1 remain. AES-GCM does NOT prevent replay of
+older genuine ciphertext; no trusted monotonic freshness witness exists.
+No secure flash erase, on-device hard-link support, hardware-backed key,
+actual Keystore interoperability/power-loss durability, station provenance,
+real Galaxy S23 Ultra, FTX-1 CAT/USB/RF or account/certificate tests are
+claimed. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Host/CI gates:
 
+- CP-0009L encrypted rotation software-key Robolectric failure isolation: **PASS**.
+- CP-0009L separate Android opt-in and no-downgrade UX: **PASS**.
+- CP-0009L actual Android APK packaging and complete inherited host CI: **PASS**.
 - CP-0009K no-write key lifecycle/replay classification tests: **PASS**.
 - CP-0009K Android freshness warning and no-rotation static checks: **PASS**.
 - CP-0009K real Android debug APK and Robolectric regressions: **PASS**.
@@ -143,23 +153,25 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md
-- core/src/main/kotlin/dev/n0png/fieldops/core/propagation/EncryptedArchiveKeyLifecycleContract.kt
-- core/src/test/kotlin/dev/n0png/fieldops/core/EncryptedArchiveKeyLifecycleContractTests.kt
-- scripts/test_encrypted_archive_key_lifecycle_contract.sh
-- app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/EncryptedArchiveActivityTest.kt
-- .github/workflows/cp0009k-archive-lifecycle-contract.yml
-- CP-0009K merged-main finalizer run: 38412488466
+- research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md
+- app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRotation.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRotationTest.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/ExplicitRotationActivityTest.kt
+- scripts/test_android_package_contract.py
+- .github/workflows/cp0009l-explicit-key-rotation.yml
+- .github/workflows/finalize-cp0009l.yml
+- CP-0009L merged-main finalizer run: 38435267578
 
 ### Evidence boundary
 
-No executable key rotation/retirement or verified anti-rollback mechanism;
-physical device and radio/security properties remain unverified.
+Only JVM and Robolectric encrypted-rotation simulation/Android build proof.
+Hardware-backed keys, hard-link filesystem compatibility and power-loss
+safety require physical target-device validation; anti-replay and key
+retirement are NOT implemented.
 
 ### Inherited verified ancestry
 
-CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION and all earlier immutable checkpoints remain intact.
+CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT and all earlier immutable checkpoints remain intact.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -183,7 +195,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009L — explicit encrypted key-rotation transaction design and implementation
+**Active software track:** CP-0009M — rotated archive conflict inspection and key retirement safety
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -408,7 +420,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT
+- Current Git source baseline: CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -421,16 +433,16 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009L — explicit encrypted key-rotation transaction design and implementation.**
+**CP-0009M — rotated archive conflict inspection and key retirement safety.**
 
-1. Design and test a distinct new Keystore alias/ID and a retained
-   recoverable old ciphertext/key through staged authenticated readback.
-2. Implement explicit user-confirmed rotation without automatic downgrade
-   or deletion, and fault-inject every stage; never imply AES-GCM itself
-   protects against replay without independent trusted monotonic witness.
-3. Preserve separate encrypted V2 and unencrypted V1 opt-in, APK,
-   Robolectric, prior host regressions, CI and immutable checkpoint proof.
-4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No device/radio claims.
+1. Implement explicit authenticated inspection of competing original and
+   rotated archives, including key-loss and corrupt-file recovery states.
+2. Define SAFE optional old-key retirement prerequisites; do not delete
+   original key/ciphertext automatically or claim secure flash deletion.
+3. Continue to warn that AES-GCM cannot prove recency without a trusted
+   independent monotonic witness. Preserve original V1/V2 opt-ins,
+   Robolectric, APK, all inherited host and immutable checkpoint gates.
+4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No physical device/RF claims.
 
 ## README maintenance contract
 
@@ -448,16 +460,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009L implementation branch — not checkpointed
-
-Verified durable parent: CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT / v62.
-Branch: `cp-0009l-explicit-archive-key-rotation`. Implementing **one-shot explicit encrypted re-keyed COPY**:
-new distinct Android Keystore alias/key identifier, new app-private ciphertext,
-authenticated staged readback, exclusive atomic hard-link publish, original
-encrypted V2/file/key retained, no plaintext fallback, no automatic key
-retirement or anti-replay claim. Robolectric fault tests and separate Android
-rotation UI added. Real physical Android hard-link/Keystore viability remains
-unproven; full inherited APK/CI, PR and immutable finalizer still required.
-Evidence: research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md.
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.

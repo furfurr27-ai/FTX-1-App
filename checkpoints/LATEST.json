@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT",
-  "created_utc": "2026-10-13T14:23:31+00:00",
-  "manifest": "checkpoints/manifests/CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.json",
-  "snapshot": "checkpoints/snapshots/CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.tar.gz",
-  "snapshot_sha256": "ab115f57d3b2854def1de224acec0d11c0ac8e0b8f2d739a1826508c78af1303"
+  "checkpoint_id": "CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION",
+  "created_utc": "2026-10-13T17:04:11+00:00",
+  "manifest": "checkpoints/manifests/CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION.json",
+  "snapshot": "checkpoints/snapshots/CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION.tar.gz",
+  "snapshot_sha256": "308bde3e519441d2be05565f74c82fc519230f6eea314560b6ccbf93cca04858"
 }

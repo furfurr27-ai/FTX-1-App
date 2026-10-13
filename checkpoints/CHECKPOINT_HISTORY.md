@@ -776,3 +776,19 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38412488466.
 Evidence: research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md.
+
+
+## CP-0009L — explicit distinct-key encrypted rotation copy
+
+Parent: CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT. Separate opt-in Android encrypted rotation
+COPY to distinct Keystore alias/identifier and app-private file.
+Original authenticated source validated first; new candidate staged/synced,
+authenticated/read back and exclusively published via hard link.
+Original V2/key and V1 untouched. Robolectric fault/lost-key/corrupt/conflict
+tests and Android APK/inherited host regressions passed. No automatic
+cutover, key retirement, trusted anti-replay, secure erase or physical
+Galaxy S23 Ultra/FTX-1/Android filesystem/account/RF proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38435267578.
+Evidence: research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md.
