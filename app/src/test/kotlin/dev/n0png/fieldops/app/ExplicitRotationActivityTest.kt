@@ -38,9 +38,8 @@ class ExplicitRotationActivityTest {
     @Test fun rotationCopyRequiresSeparateOptInAndMissingSourceRetainsHistory() {
         Robolectric.buildActivity(ArchiveHistoryActivity::class.java).setup().use {
             val activity = it.get()
-            assertEquals(3, 3)
             assertTrue(text(activity).contains("FRESHNESS NOT VERIFIED"))
-            assertTrue(text(activity).contains("Original V2"))
+            assertTrue(text(activity).contains("Existing V2, its key"))
             assertNull(button(activity, "CREATE DISTINCT-KEY ENCRYPTED COPY"))
             tap(activity, "ENABLE ROTATION COPY THIS SESSION")
             assertNotNull(button(activity, "CREATE DISTINCT-KEY ENCRYPTED COPY"))
