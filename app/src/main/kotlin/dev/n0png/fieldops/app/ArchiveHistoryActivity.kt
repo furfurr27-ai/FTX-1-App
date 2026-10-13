@@ -144,6 +144,8 @@ class ArchiveHistoryActivity : Activity() {
         message("OPTIONAL ENCRYPTED V2: AES-GCM file is separate from existing UNENCRYPTED V1. " +
             "A Keystore key is created only when explicitly saving a new encrypted copy. " +
             "No automatic plaintext fallback, downgrade or secure erase.")
+        message("FRESHNESS NOT VERIFIED: Older authentic V2 copies may be replayed. " +
+            "Authentication is NOT rollback detection; key rotation is not implemented.")
         message(encryptedStatus)
         if (!encryptedStore.isEnabled()) {
             actionButton("ENABLE ENCRYPTED ARCHIVE THIS SESSION") {
@@ -189,7 +191,16 @@ class ArchiveHistoryActivity : Activity() {
                         fixtureNumber = maxOf(fixtureNumber, 100)
                         beforeId = null
                         afterId = null
-                        "Restored " + restored.entries.size + " authenticated V2 report entries."
+                        val replay = EncryptedArchiveKeyLifecycleContract.assessReplay(
+                            ArchiveReplayInputs(
+                                authenticatedCiphertext = true,
+                                competingValidCopy = false,
+                                trustedMonotonicWitnessAvailable = false,
+                            )
+                        )
+                        check(replay == ArchiveReplayDecision.NO_TRUSTED_MONOTONIC_WITNESS)
+                        "Restored " + restored.entries.size + " authenticated V2 report entries. " +
+                            "FRESHNESS NOT VERIFIED; valid older ciphertext may be replayed."
                     }
                 }.getOrElse { "ENCRYPTED RESTORE REJECTED; on-screen history preserved; no fallback to V1. " +
                     "Keep the ciphertext if the key is unavailable: " +
