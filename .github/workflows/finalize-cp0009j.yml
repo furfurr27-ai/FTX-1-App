@@ -1,6 +1,10 @@
 name: Finalize CP-0009J checkpoint
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-cp0009j.yml'
   workflow_dispatch:
 
 permissions:
