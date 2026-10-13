@@ -176,7 +176,7 @@ class ExplicitEncryptedArchiveRotation(
         val bytes = readBounded(file)
         // No key generation on restore, nor any fallback to legacy V2 or V1.
         val key = rotatedKeys.existingKey()
-            ?: throw IOException("Rotated key unavailable; encrypted copy retained")
+            ?: throw EncryptedArchiveKeyUnavailableException("Rotated key unavailable; encrypted copy retained")
         val canonical = AuthenticatedArchiveEnvelopeV2.openLegacyV1(
             bytes, key, AndroidKeystoreRotatedArchiveKeyProvider.KEY_IDENTIFIER
         )
