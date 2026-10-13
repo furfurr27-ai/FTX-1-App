@@ -74,7 +74,7 @@ jobs:
           cat app/build/apk-sha256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: fieldops-cp0009j-debug-apk
+          name: fieldops-cp0009k-debug-apk
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/apk-badging.txt

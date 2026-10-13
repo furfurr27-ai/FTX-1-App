@@ -9,14 +9,14 @@ on:
       - 'core/src/main/kotlin/**'
       - 'build.gradle.kts'
       - 'scripts/test_android_package_contract.py'
-      - 'research/android/CP-0009K_ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
+      - 'research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
       - 'scripts/finalize_cp0009k.py'
       - '.github/workflows/cp0009k-archive-lifecycle-contract.yml'
       - '.github/workflows/finalize-cp0009k.yml'
       - 'scripts/test_encrypted_archive_migration_contract.sh'
       - 'core/src/test/kotlin/**'
       - 'scripts/test_authenticated_archive_envelope_v2.sh'
-      - 'research/android/CP-0009K_ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
+      - 'research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
       - 'research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
       - 'scripts/test_encrypted_archive_key_lifecycle_contract.sh'
       - 'README.md'
@@ -89,7 +89,7 @@ jobs:
           cat app/build/apk-sha256.txt
       - uses: actions/upload-artifact@v4
         with:
-          name: fieldops-cp0009j-debug-apk
+          name: fieldops-cp0009k-debug-apk
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/apk-badging.txt
