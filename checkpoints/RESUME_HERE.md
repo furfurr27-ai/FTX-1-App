@@ -31,3 +31,13 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## CP-0009K unverified implementation
+
+Branch `cp-0009k-encrypted-key-lifecycle-replay-contract`, parent CP-0009J/v61. Added fail-closed host policy
+for lost keys, unverified ciphertext, competing encrypted copies, consent,
+new keys, atomic staging and readback. Replay remains undetectable without
+trusted monotonic state; no rotation writer exists. Host tests are not
+full CP-0009K verification. Complete inherited APK/Robolectric CI, PR
+premerge, merged-main finalizer and immutable SHA before promoting.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
