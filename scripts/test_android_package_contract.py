@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 61"):
+              "targetSdk = 35", "versionCode = 62"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -130,3 +130,18 @@ for required in ("cipher.init(Cipher.ENCRYPT_MODE, key, secureRandom)", "val non
 if "cipher.init(Cipher.ENCRYPT_MODE, key, GCMParameterSpec(" in crypto_source:
     raise SystemExit("CP-0009J AndroidKeyStore encryption must not supply a caller IV")
 print("CP-0009J provider-generated AES-GCM nonce Keystore compatibility: PASS")
+
+# CP-0009K: No automatic key rotation or false rollback/replay guarantees.
+lifecycle_source = (root / "core/src/main/kotlin/dev/n0png/fieldops/core/propagation/EncryptedArchiveKeyLifecycleContract.kt").read_text()
+for marker in ("ROTATION_EXECUTOR_NOT_IMPLEMENTED", "NO_TRUSTED_MONOTONIC_WITNESS",
+               "TRUSTED_WITNESS_INTEGRATION_NOT_IMPLEMENTED", "PRESERVE_UNREADABLE_CIPHERTEXT"):
+    if marker not in lifecycle_source:
+        raise SystemExit("CP-0009K fail-closed key lifecycle marker missing: " + marker)
+for forbidden in ("javax.crypto", "FileOutputStream", "KeyGenerator", "Files.move", "HttpURLConnection"):
+    if forbidden in lifecycle_source:
+        raise SystemExit("CP-0009K lifecycle policy must not rotate or write keys: " + forbidden)
+for required in ("FRESHNESS NOT VERIFIED", "Older authentic V2 copies may be replayed",
+                 "ArchiveReplayInputs", "ArchiveReplayDecision.NO_TRUSTED_MONOTONIC_WITNESS"):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009K missing explicit no-replay-proof UX: " + required)
+print("CP-0009K no-write key lifecycle and replay warning: PASS")

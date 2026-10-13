@@ -43,3 +43,10 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009K branch in progress — not durable
+
+Branch `cp-0009k-encrypted-key-lifecycle-replay-contract`. Verified CP-0009J/v61 is parent. Added non-executing
+key lifecycle and replay-risk contract, unit tests and host CI. No Android
+rotation executor, trusted monotonic witness, physical Keystore or device/RF
+proof. Full inherited APK CI/finalizer pending. Owner hardware rules hold.

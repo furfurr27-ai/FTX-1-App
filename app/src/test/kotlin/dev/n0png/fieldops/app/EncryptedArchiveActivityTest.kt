@@ -46,6 +46,8 @@ class EncryptedArchiveActivityTest {
             val activity = it.get()
             assertTrue(text(activity).contains("Retained reports: 3"))
             assertTrue(text(activity).contains("UNENCRYPTED V1"))
+            assertTrue(text(activity).contains("FRESHNESS NOT VERIFIED"))
+            assertTrue(text(activity).contains("Older authentic V2 copies may be replayed"))
             assertNull(button(activity, "RESTORE ENCRYPTED V2 ARCHIVE"))
             click(activity, "ENABLE ENCRYPTED ARCHIVE THIS SESSION")
             assertNotNull(button(activity, "SAVE ENCRYPTED COPY OF CURRENT HISTORY"))

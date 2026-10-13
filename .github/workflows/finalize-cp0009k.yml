@@ -1,0 +1,211 @@
+name: Finalize CP-0009K checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/finalize-cp0009k.yml'
+      - 'research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
+      - 'scripts/test_encrypted_archive_key_lifecycle_contract.sh'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  JAVA_OPTS: "-Xmx1536m -Xms128m"
+
+jobs:
+  canonical-storage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Deterministic bounded canonical archive serialization and corrupt-store tests
+        run: |
+          bash scripts/test_propagation_archive_storage.sh
+          bash scripts/test_encrypted_archive_migration_contract.sh
+          bash scripts/test_authenticated_archive_envelope_v2.sh
+          bash scripts/test_encrypted_archive_key_lifecycle_contract.sh
+
+  android-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Android SDK 35 with runner-provided SDK manager
+        run: |
+          set -euo pipefail
+          test -d "${ANDROID_HOME:?Android SDK missing on GitHub runner}"
+          SDK_MANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -1)"
+          test -n "$SDK_MANAGER"
+          "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0"
+      - name: Verify official Gradle 8.13 wrapper and packaging contract
+        run: |
+          set -euo pipefail
+          test "$(git hash-object gradle/wrapper/gradle-wrapper.jar)" = "9bbc975c742b298b441bfb90dbc124400a3751b9"
+          python3 scripts/check_android_build_readiness.py --expect-ready
+          python3 scripts/test_android_package_contract.py
+      - name: Compile installable debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace :app:assembleDebug :app:testDebugUnitTest
+      - name: Inspect actual built APK and Android manifest
+        run: |
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          python3 scripts/verify_android_apk_artifact.py "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > app/build/apk-badging.txt
+          grep -E "^(package:|launchable-activity:)" app/build/apk-badging.txt
+          grep -Fq "package: name='dev.n0png.fieldops'" app/build/apk-badging.txt
+          grep -Fq "launchable-activity: name='dev.n0png.fieldops.app.MainActivity'" app/build/apk-badging.txt
+          sha256sum "$APK" > app/build/apk-sha256.txt
+          cat app/build/apk-sha256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fieldops-cp0009k-debug-apk
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/build/apk-badging.txt
+            app/build/apk-sha256.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  archive-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Host archive workspace and truthful Android packaging gap
+        run: bash scripts/test_propagation_archive_workspace.sh
+
+  inherited:
+    name: inherited — ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {label: offline-archive, script: scripts/test_propagation_offline_archive.sh}
+          - {label: workspace-history, script: scripts/test_propagation_workspace_history.sh}
+          - {label: comparison-interaction, script: scripts/test_propagation_offline_comparison_interaction.sh}
+          - {label: comparison-display, script: scripts/test_propagation_offline_comparison_display.sh}
+          - {label: comparison-pagination, script: scripts/test_propagation_offline_comparison_pagination.sh}
+          - {label: comparison-presentation, script: scripts/test_propagation_offline_comparison_presentation.sh}
+          - {label: comparison-import, script: scripts/test_propagation_offline_comparison_import.sh}
+          - {label: comparison-decode, script: scripts/test_propagation_offline_comparison_decoder.sh}
+          - {label: export-v1, script: scripts/test_propagation_offline_comparison_serialization.sh}
+          - {label: comparison, script: scripts/test_propagation_offline_report_comparison.sh}
+          - {label: import, script: scripts/test_propagation_offline_report_import.sh}
+          - {label: decoder, script: scripts/test_propagation_offline_report_decoder.sh}
+          - {label: serialization, script: scripts/test_propagation_offline_report_serialization.sh}
+          - {label: offline-report, script: scripts/test_propagation_offline_diagnostic_report.sh}
+          - {label: diagnostics, script: scripts/test_propagation_read_model_consistency.sh}
+          - {label: operating-picture, script: scripts/test_propagation_operating_picture.sh}
+          - {label: source-status, script: scripts/test_propagation_source_status_presentation.sh}
+          - {label: state-persistence, script: scripts/test_propagation_refresh_state_persistence.sh}
+          - {label: runtime, script: scripts/test_propagation_runtime_composition.sh}
+          - {label: concrete-https, script: scripts/test_concrete_public_https_transport.sh}
+          - {label: public-transport, script: scripts/test_public_propagation_transport_adapters.sh}
+          - {label: refresh, script: scripts/test_propagation_refresh_coordinator.sh}
+          - {label: projection, script: scripts/test_propagation_projection.sh}
+          - {label: aggregation, script: scripts/test_propagation_aggregation_offline_cache.sh}
+          - {label: psk-reporter, script: scripts/test_psk_reporter_heard_path_adapter.sh}
+          - {label: glotec, script: scripts/test_glotec_ionospheric_adapter.sh}
+          - {label: noaa-swpc, script: scripts/test_noaa_swpc_propagation_adapter.sh}
+          - {label: propagation, script: scripts/test_propagation_foundation.sh}
+          - {label: production-pack, script: scripts/test_production_us_state_geometry_pack.sh}
+          - {label: geometry, script: scripts/test_award_geometry_providers.sh}
+          - {label: map, script: scripts/test_award_area_map_projection.sh}
+          - {label: extended, script: scripts/test_extended_award_catalog.sh}
+          - {label: service, script: scripts/test_awards_center_application_service.sh}
+          - {label: persistence, script: scripts/test_award_evidence_persistence.sh}
+          - {label: awards-projection, script: scripts/test_awards_center_projection.sh}
+          - {label: target, script: scripts/test_award_target_enrichment.sh}
+          - {label: catalog, script: scripts/test_official_award_catalog.sh}
+          - {label: award, script: scripts/test_award_evaluation.sh}
+          - {label: queue, script: scripts/test_manual_qso_lotw_queue.sh}
+          - {label: logger, script: scripts/test_universal_qso_logger.sh}
+          - {label: lotw, script: scripts/test_lotw_transaction.sh}
+          - {label: core, script: scripts/test_core_regression.sh}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - run: bash "${{ matrix.script }}"
+
+
+
+
+
+
+
+  checkpoint:
+    needs: [canonical-storage, android-apk, archive-workspace, inherited]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Promote CP-0009K lifecycle and replay policy state
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: python3 scripts/finalize_cp0009k.py
+      - name: Create and verify immutable CP-0009K snapshot
+        env:
+          FINALIZE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/create_checkpoint.py \
+            --root . \
+            --id CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT \
+            --parent CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION \
+            --summary "Fail-closed key lifecycle and replay policy with Android freshness warning" \
+            --phase "No-write key lifecycle and replay policy with Android UX verified; rotation/device/RF deferred" \
+            --test-status "GREEN CI: CP-0009K lifecycle policy=PASS, inherited AES-GCM=PASS, freshness UI Robolectric=PASS, APK=PASS, other inherited=PASS; finalizer $FINALIZE_RUN_ID" \
+            --completed "No-I/O key lifecycle planner rejects missing key, untrusted ciphertext, conflicting copies, missing consent, distinct key, staging or readback" \
+            --completed "Every simulated key-rotation decision remains non-executable; no key writer or automatic key retirement introduced" \
+            --completed "AES-GCM authentic ciphertext replay remains possible; no trusted monotonic freshness witness is claimed" \
+            --completed "Android UI warns freshness unverified before and after restored authenticated encrypted V2 history" \
+            --completed "Encrypted V2 and plaintext V1 opt-in, Robolectric fault cases, actual APK and all inherited host regressions passed" \
+            --blocker "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction" \
+            --blocker "CP-0004A/B/C hardware checkpoints incomplete" \
+            --blocker "No key rotation, key retirement, trusted rollback witness or physical Galaxy S23 Ultra/Keystore/RF/CAT/USB/account proof" \
+            --next "CP-0009L: explicit encrypted archive key rotation with staged recovery, GitHub/CI-only" \
+            --next "Preserve APK artifact build plus all inherited host regression gates" \
+            --next "CP-0003C remains DEFERRED; skip manual hardware/account validation"
+          python3 scripts/verify_checkpoint.py --root . --latest
+      - name: Commit CP-0009K checkpoint to main
+        run: |
+          set -euo pipefail
+          git config user.name "fieldops-checkpoint-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add README.md VERSION NEXT_ACTION.md SOFTWARE_TRACK.md checkpoints/CHECKPOINT_HISTORY.md
+          git add checkpoints/LATEST.json checkpoints/CURRENT_STATE.json checkpoints/RESUME_HERE.md
+          git add checkpoints/manifests/CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.json
+          git add -f checkpoints/snapshots/CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.tar.gz
+          git commit -m "Checkpoint CP-0009K encrypted key lifecycle and replay policy"
+          git push

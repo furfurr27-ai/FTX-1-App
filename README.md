@@ -447,3 +447,16 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009K implementation branch (NOT checkpointed)
+
+Branch: `cp-0009k-encrypted-key-lifecycle-replay-contract`. Verified durable parent remains
+CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION / v61. Pure Kotlin no-I/O key
+rotation and ciphertext replay-risk decisions deliberately never execute
+rotation or claim trusted rollback prevention. Host tests and source guide:
+`research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md`.
+The existing opt-in encrypted V2 archive remains in production code;
+rotation, key retirement and trusted monotonic witness are NOT implemented.
+Before promotion: add full APK/Robolectric/inherited premerge and merged-main
+checkpoint finalizer, prove all CI green and immutable snapshot integrity.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
