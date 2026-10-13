@@ -448,3 +448,16 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009L implementation branch — not checkpointed
+
+Verified durable parent: CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT / v62.
+Branch: `cp-0009l-explicit-archive-key-rotation`. Implementing **one-shot explicit encrypted re-keyed COPY**:
+new distinct Android Keystore alias/key identifier, new app-private ciphertext,
+authenticated staged readback, exclusive atomic hard-link publish, original
+encrypted V2/file/key retained, no plaintext fallback, no automatic key
+retirement or anti-replay claim. Robolectric fault tests and separate Android
+rotation UI added. Real physical Android hard-link/Keystore viability remains
+unproven; full inherited APK/CI, PR and immutable finalizer still required.
+Evidence: research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
