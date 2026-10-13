@@ -30,3 +30,14 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## CP-0009L WIP handoff, NOT verified
+
+Branch: `cp-0009l-explicit-archive-key-rotation`, verified parent CP-0009K/v62. New
+`ExplicitEncryptedArchiveRotation.kt` and Robolectric tests exercise
+one-shot distinct-key archive COPY with exclusive hard-link staging and
+full original preservation. Android separate rotation enable/create/restore
+and delete actions added. Physical device and durability assumptions remain
+unverified. Do not promote without full Android/Robolectric/inherited CI,
+PR merge, main finalizer and immutable SHA-256 comparison.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
