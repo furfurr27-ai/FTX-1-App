@@ -165,7 +165,7 @@ for forbidden in ("KeyStore.deleteEntry", "deleteEntry(", "HttpURLConnection",
         raise SystemExit("CP-0009L automatic key retirement, external I/O or overwrite: " + forbidden)
 for needle in ("ENABLE ROTATION COPY THIS SESSION", "CREATE DISTINCT-KEY ENCRYPTED COPY",
                "RESTORE ROTATED ENCRYPTED COPY", "DELETE ROTATED COPY ONLY",
-               "Original V2/key retained", "FRESHNESS NOT VERIFIED"):
+               "original V2/key retained", "FRESHNESS NOT VERIFIED"):
     if needle not in archive_kotlin:
         raise SystemExit("CP-0009L opt-in/retention UI missing: " + needle)
 print("CP-0009L distinct alias, atomic exclusive link, opt-in/retention UI: PASS")
