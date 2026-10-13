@@ -42,3 +42,11 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009J implementation branch — not checkpointed
+
+Branch cp-0009j-authenticated-archive-encryption, parent CP-0009I/v60. Android Keystore AES-256-GCM
+separate V2 store and independent UI opt-in are committed; host and Robolectric
+failure tests added, full CI and immutable finalization not yet passed.
+V1 remains plaintext; no hardware-backed key, physical power-loss or
+on-radio proof. Next planned CP-0009K rotation/replay recovery.

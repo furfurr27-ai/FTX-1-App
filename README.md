@@ -433,3 +433,17 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009J implementation branch (not checkpointed)
+
+Branch: cp-0009j-authenticated-archive-encryption. Durable verified parent: CP-0009I/v60.
+A separate optional V2 Android app-private archive now has AES-256-GCM
+authenticated data, a production Android Keystore 256-bit key provider,
+explicit session enable/save, validated plaintext V1-to-V2 copy, separate
+restore and delete actions, bounded staging and atomic replacement.
+Legacy V1 remains UNENCRYPTED and is never deleted automatically.
+Host and Robolectric tests plus full CI are still pending verification.
+Keystore physical-device behavior, key hardware backing, directory power-loss
+durability, anti-replay/key rotation, actual station/RF and account behavior
+are NOT proven. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+Evidence: research/android/CP-0009J_AUTHENTICATED_ARCHIVE_ENCRYPTION.md.

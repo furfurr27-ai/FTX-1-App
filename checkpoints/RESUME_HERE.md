@@ -39,3 +39,11 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## CP-0009J implementation in progress (NOT durable)
+
+Branch cp-0009j-authenticated-archive-encryption. Parent CP-0009I/v60 remains verified.
+New V2 AES-GCM Android Keystore store, migration-copy, restore/delete opt-in
+UI and failure-injection tests are committed; await premerge full host,
+Robolectric and real APK, then merged-main finalizer and immutable hash.
+Old V1 file remains plaintext. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

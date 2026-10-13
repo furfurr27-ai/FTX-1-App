@@ -1,0 +1,37 @@
+name: CP-0009J AES-GCM Envelope Host Tests
+
+on:
+  push:
+    branches: [cp-0009j-authenticated-archive-encryption]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/**'
+      - 'core/src/test/kotlin/**'
+      - 'scripts/test_authenticated_archive_envelope_v2.sh'
+      - 'research/android/CP-0009J_AUTHENTICATED_ARCHIVE_ENCRYPTION.md'
+      - '.github/workflows/cp0009j-encrypted-envelope-host.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  authenticated-envelope-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Prior v1 and non-executing migration contract regression
+        run: |
+          bash scripts/test_propagation_archive_storage.sh
+          bash scripts/test_encrypted_archive_migration_contract.sh
+      - name: Authenticated v2 primitive tamper and wrong-key tests
+        run: bash scripts/test_authenticated_archive_envelope_v2.sh

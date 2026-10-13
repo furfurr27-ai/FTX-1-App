@@ -22,6 +22,8 @@ class ArchiveHistoryActivity : Activity() {
     private lateinit var body: LinearLayout
     private val localStore by lazy { OptInArchiveStore(applicationContext) }
     private var localStatus = "Local archive storage is DISABLED. No automatic save or restore."
+    private val encryptedStore by lazy { OptInEncryptedArchiveStore(applicationContext) }
+    private var encryptedStatus = "Encrypted V2 storage DISABLED; no automatic key generation or restore."
 
     /** Transient rotation-only session. Never Parcelable, Bundle, disk or database. */
     private data class RotationSession(
@@ -136,6 +138,75 @@ class ArchiveHistoryActivity : Activity() {
             actionButton("DISABLE LOCAL ARCHIVE STORAGE") {
                 localStore.disableForThisSession()
                 localStatus = "Storage disabled this session. Existing file is not erased."
+                render()
+            }
+        }
+        message("OPTIONAL ENCRYPTED V2: AES-GCM file is separate from existing UNENCRYPTED V1. " +
+            "A Keystore key is created only when explicitly saving a new encrypted copy. " +
+            "No automatic plaintext fallback, downgrade or secure erase.")
+        message(encryptedStatus)
+        if (!encryptedStore.isEnabled()) {
+            actionButton("ENABLE ENCRYPTED ARCHIVE THIS SESSION") {
+                encryptedStore.enableForThisSession()
+                encryptedStatus = "Enabled encrypted session. Save, migrate and restore are separate taps."
+                render()
+            }
+        } else {
+            actionButton("SAVE ENCRYPTED COPY OF CURRENT HISTORY") {
+                encryptedStatus = runCatching {
+                    encryptedStore.saveEncryptedExplicitly(state.archive)
+                    "Saved AES-GCM encrypted V2 copy. Existing plaintext V1 was not deleted."
+                }.getOrElse { "ENCRYPTED SAVE REJECTED; retained bytes preserved: " +
+                    (it.message ?: "key or storage error") }
+                render()
+            }
+            actionButton("MIGRATE VALIDATED LOCAL V1 TO ENCRYPTED COPY") {
+                encryptedStatus = runCatching {
+                    check(localStore.isEnabled()) {
+                        "Enable plaintext V1 local storage separately before explicit migration"
+                    }
+                    val legacy = localStore.loadExplicitly()
+                        ?: throw IllegalStateException("No local V1 archive exists")
+                    encryptedStore.saveEncryptedExplicitly(legacy)
+                    "Migrated validated V1 into encrypted V2 COPY. Original plaintext V1 retained."
+                }.getOrElse { "ENCRYPTED MIGRATION REJECTED; V1 and V2 files not intentionally deleted: " +
+                    (it.message ?: "invalid legacy or encryption failure") }
+                render()
+            }
+            actionButton("RESTORE ENCRYPTED V2 ARCHIVE") {
+                encryptedStatus = runCatching {
+                    val restored = encryptedStore.loadEncryptedExplicitly()
+                    if (restored == null) {
+                        "No saved encrypted V2 file. No key was created."
+                    } else {
+                        state = state.copy(
+                            archive = restored,
+                            selectedSha256 = null,
+                            comparisonBeforeSha256 = null,
+                            comparisonAfterSha256 = null,
+                            offset = 0,
+                        )
+                        fixtureNumber = maxOf(fixtureNumber, 100)
+                        beforeId = null
+                        afterId = null
+                        "Restored " + restored.entries.size + " authenticated V2 report entries."
+                    }
+                }.getOrElse { "ENCRYPTED RESTORE REJECTED; on-screen history preserved; no fallback to V1. " +
+                    "Keep the ciphertext if the key is unavailable: " +
+                    (it.message ?: "authentication failed") }
+                render()
+            }
+            actionButton("DELETE ENCRYPTED V2 FILE ONLY") {
+                encryptedStatus = if (encryptedStore.deleteEncryptedExplicitly()) {
+                    "Encrypted V2 file deleted; V1 plaintext unchanged. Not a secure wipe."
+                } else {
+                    "Encrypted V2 file could not be deleted."
+                }
+                render()
+            }
+            actionButton("DISABLE ENCRYPTED ARCHIVE SESSION") {
+                encryptedStore.disableForThisSession()
+                encryptedStatus = "Encrypted session disabled; saved files and Keystore keys retained."
                 render()
             }
         }
