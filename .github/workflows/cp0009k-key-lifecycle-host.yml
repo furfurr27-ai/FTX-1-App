@@ -1,0 +1,38 @@
+name: CP-0009K Key Lifecycle and Replay Contract
+
+on:
+  push:
+    branches: [cp-0009k-encrypted-key-lifecycle-replay-contract]
+  pull_request:
+    paths:
+      - 'core/src/main/kotlin/**'
+      - 'core/src/test/kotlin/**'
+      - 'scripts/test_encrypted_archive_key_lifecycle_contract.sh'
+      - 'research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md'
+      - '.github/workflows/cp0009k-key-lifecycle-host.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  key-lifecycle-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install Kotlin 1.9.22
+        run: |
+          curl --retry 4 --retry-delay 2 --retry-all-errors -fsSL -o /tmp/kotlin.zip https://github.com/JetBrains/kotlin/releases/download/v1.9.22/kotlin-compiler-1.9.22.zip
+          unzip -q /tmp/kotlin.zip -d /tmp/kotlin
+          echo "/tmp/kotlin/kotlinc/bin" >> "$GITHUB_PATH"
+      - name: Inherited encrypted envelope and migration regressions
+        run: |
+          bash scripts/test_propagation_archive_storage.sh
+          bash scripts/test_encrypted_archive_migration_contract.sh
+          bash scripts/test_authenticated_archive_envelope_v2.sh
+      - name: Non-executing rotation and replay guard assertions
+        run: bash scripts/test_encrypted_archive_key_lifecycle_contract.sh
