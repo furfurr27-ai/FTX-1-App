@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 62"):
+              "targetSdk = 35", "versionCode = 63"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -145,3 +145,27 @@ for required in ("FRESHNESS NOT VERIFIED", "Older authentic V2 copies may be rep
     if required not in archive_kotlin:
         raise SystemExit("CP-0009K missing explicit no-replay-proof UX: " + required)
 print("CP-0009K no-write key lifecycle and replay warning: PASS")
+
+# CP-0009L: distinct-KeyStore-alias rotation only on explicit user action.
+rotation_source = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRotation.kt").read_text()
+for needle in ("AndroidKeystoreRotatedArchiveKeyProvider", "setKeySize(256)",
+               "setRandomizedEncryptionRequired(true)", "ROTATED_FILENAME",
+               "legacyEncrypted.loadEncryptedExplicitly()", "rotateExplicitly()",
+               "restoreRotatedExplicitly()", "Files.createTempFile",
+               "Files.createLink", "AFTER_STAGED_SYNC", "BEFORE_ATOMIC_PUBLISH",
+               "output.fd.sync()", "context.noBackupFilesDir"):
+    if needle not in rotation_source:
+        # Stage IO sync uses 'it.fd.sync()' in a scoped Kotlin lambda.
+        if needle == "output.fd.sync()" and "it.fd.sync()" in rotation_source:
+            continue
+        raise SystemExit("CP-0009L rotation source guard missing: " + needle)
+for forbidden in ("KeyStore.deleteEntry", "deleteEntry(", "HttpURLConnection",
+                  "getExternalFilesDir", "REPLACE_EXISTING", "System.exit"):
+    if forbidden in rotation_source:
+        raise SystemExit("CP-0009L automatic key retirement, external I/O or overwrite: " + forbidden)
+for needle in ("ENABLE ROTATION COPY THIS SESSION", "CREATE DISTINCT-KEY ENCRYPTED COPY",
+               "RESTORE ROTATED ENCRYPTED COPY", "DELETE ROTATED COPY ONLY",
+               "original V2/key retained", "FRESHNESS NOT VERIFIED"):
+    if needle not in archive_kotlin:
+        raise SystemExit("CP-0009L opt-in/retention UI missing: " + needle)
+print("CP-0009L distinct alias, atomic exclusive link, opt-in/retention UI: PASS")

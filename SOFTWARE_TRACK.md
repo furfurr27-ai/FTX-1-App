@@ -43,3 +43,11 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009L work in progress — not durable
+
+Branch `cp-0009l-explicit-archive-key-rotation`, parent CP-0009K/v62. Implementing explicit isolated
+new-key AES-256-GCM V2 rotated archive copy and fail-closed stage/restore.
+Original V2/key and plaintext V1 remain intact. Android tests added, but
+no exact-head complete CI or merged-main checkpoint yet; device hardlink,
+Android hardware Keystore, power-loss and radio behavior unverified.

@@ -24,6 +24,8 @@ class ArchiveHistoryActivity : Activity() {
     private var localStatus = "Local archive storage is DISABLED. No automatic save or restore."
     private val encryptedStore by lazy { OptInEncryptedArchiveStore(applicationContext) }
     private var encryptedStatus = "Encrypted V2 storage DISABLED; no automatic key generation or restore."
+    private val rotationStore by lazy { ExplicitEncryptedArchiveRotation(applicationContext, encryptedStore) }
+    private var rotationStatus = "Key-rotation copy is DISABLED. A separate action and new key are required."
 
     /** Transient rotation-only session. Never Parcelable, Bundle, disk or database. */
     private data class RotationSession(
@@ -145,7 +147,7 @@ class ArchiveHistoryActivity : Activity() {
             "A Keystore key is created only when explicitly saving a new encrypted copy. " +
             "No automatic plaintext fallback, downgrade or secure erase.")
         message("FRESHNESS NOT VERIFIED: Older authentic V2 copies may be replayed. " +
-            "Authentication is NOT rollback detection; key rotation is not implemented.")
+            "Authentication is NOT rollback detection; rotation never proves freshness.")
         message(encryptedStatus)
         if (!encryptedStore.isEnabled()) {
             actionButton("ENABLE ENCRYPTED ARCHIVE THIS SESSION") {
@@ -218,6 +220,68 @@ class ArchiveHistoryActivity : Activity() {
             actionButton("DISABLE ENCRYPTED ARCHIVE SESSION") {
                 encryptedStore.disableForThisSession()
                 encryptedStatus = "Encrypted session disabled; saved files and Keystore keys retained."
+                render()
+            }
+        }
+        message("EXPLICIT ONE-SHOT KEY ROTATION COPY: creates a distinct Keystore key and " +
+            "new encrypted file. Existing V2, its key, and V1 plaintext are retained. " +
+            "No automatic switching, key retirement or replay protection.")
+        message(rotationStatus)
+        if (!rotationStore.isEnabled()) {
+            actionButton("ENABLE ROTATION COPY THIS SESSION") {
+                rotationStore.enableForThisSession()
+                rotationStatus = "Rotation session enabled. Create and restore require separate taps."
+                render()
+            }
+        } else {
+            actionButton("CREATE DISTINCT-KEY ENCRYPTED COPY") {
+                rotationStatus = runCatching {
+                    rotationStore.rotateExplicitly()
+                    "Created authenticated separate rotation copy; original V2/key retained. " +
+                        "FRESHNESS NOT VERIFIED."
+                }.getOrElse {
+                    "ROTATION COPY REJECTED; original V2/key retained, any existing copy preserved: " +
+                        (it.message ?: "staging or key failure")
+                }
+                render()
+            }
+            actionButton("RESTORE ROTATED ENCRYPTED COPY") {
+                rotationStatus = runCatching {
+                    val restored = rotationStore.restoreRotatedExplicitly()
+                    if (restored == null) {
+                        "No rotated encrypted copy exists; no key generated."
+                    } else {
+                        state = state.copy(
+                            archive = restored,
+                            selectedSha256 = null,
+                            comparisonBeforeSha256 = null,
+                            comparisonAfterSha256 = null,
+                            offset = 0,
+                        )
+                        fixtureNumber = maxOf(fixtureNumber, 100)
+                        beforeId = null
+                        afterId = null
+                        "Restored " + restored.entries.size +
+                            " authenticated rotated archive entries. FRESHNESS NOT VERIFIED."
+                    }
+                }.getOrElse {
+                    "ROTATED RESTORE REJECTED; no fallback and on-screen history retained: " +
+                        (it.message ?: "unavailable key or invalid ciphertext")
+                }
+                render()
+            }
+            actionButton("DELETE ROTATED COPY ONLY") {
+                rotationStatus = if (rotationStore.deleteRotatedCopyExplicitly()) {
+                    "Deleted rotated encrypted copy only. Original V2/key and V1 left untouched. " +
+                        "Not secure erase."
+                } else {
+                    "Rotated encrypted copy could not be deleted."
+                }
+                render()
+            }
+            actionButton("DISABLE ROTATION COPY SESSION") {
+                rotationStore.disableForThisSession()
+                rotationStatus = "Rotation copy session disabled; keys and files retained."
                 render()
             }
         }
