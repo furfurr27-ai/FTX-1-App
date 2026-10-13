@@ -1,25 +1,24 @@
 {
-  "project_version": "v61-authenticated-archive-encryption",
-  "latest_checkpoint": "CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION",
-  "phase": "Authenticated V2 app-private store and Robolectric failure tests verified; real device/RF deferred",
-  "test_status": "GREEN CI: V2 AES-GCM crypto host=PASS, Keystore-API encrypted store Robolectric=PASS, APK=PASS, inherited=PASS; finalizer 38380915587",
+  "project_version": "v62-encrypted-key-lifecycle-replay-contract",
+  "latest_checkpoint": "CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT",
+  "phase": "No-write key lifecycle and replay policy with Android UX verified; rotation/device/RF deferred",
+  "test_status": "GREEN CI: CP-0009K lifecycle policy=PASS, inherited AES-GCM=PASS, freshness UI Robolectric=PASS, APK=PASS, other inherited=PASS; finalizer 38412488466",
   "completed": [
-    "AES-256-GCM V2 bounded authenticated header/ciphertext and canonical V1 receipt validation tested on JVM",
-    "Android Keystore AES-256-GCM key creation occurs only on explicit V2 save; restore never creates replacement key",
-    "Encrypted V2 archive saved in separate no-backup file with atomic staging and previous V1 plaintext preserved",
-    "Robolectric injects software keys to verify encrypted save/restore, wrong key/tag, missing key, oversized files and precommit failures",
-    "Android UI requires separate opt-in; explicit V1-to-V2 copy/restore/delete do not downgrade or silently erase plaintext",
-    "Actual Android debug APK, aapt/ZIP/artifact plus inherited host regressions succeeded"
+    "No-I/O key lifecycle planner rejects missing key, untrusted ciphertext, conflicting copies, missing consent, distinct key, staging or readback",
+    "Every simulated key-rotation decision remains non-executable; no key writer or automatic key retirement introduced",
+    "AES-GCM authentic ciphertext replay remains possible; no trusted monotonic freshness witness is claimed",
+    "Android UI warns freshness unverified before and after restored authenticated encrypted V2 history",
+    "Encrypted V2 and plaintext V1 opt-in, Robolectric fault cases, actual APK and all inherited host regressions passed"
   ],
   "blockers": [
     "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction",
     "CP-0004A/B/C hardware checkpoints incomplete",
-    "No physical Galaxy S23 Ultra/Android Keystore hardware backing, power-loss, RF/CAT/USB/account or source-authenticity proof"
+    "No key rotation, key retirement, trusted rollback witness or physical Galaxy S23 Ultra/Keystore/RF/CAT/USB/account proof"
   ],
   "next_actions": [
-    "CP-0009K: encrypted archive key lifecycle, rotation and replay-recovery contract, GitHub/CI-only",
+    "CP-0009L: explicit encrypted archive key rotation with staged recovery, GitHub/CI-only",
     "Preserve APK artifact build plus all inherited host regression gates",
     "CP-0003C remains DEFERRED; skip manual hardware/account validation"
   ],
-  "updated_utc": "2026-10-13T10:07:51+00:00"
+  "updated_utc": "2026-10-13T14:23:31+00:00"
 }

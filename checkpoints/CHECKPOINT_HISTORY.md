@@ -760,3 +760,19 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38380915587.
 Evidence: research/android/CP-0009J_AUTHENTICATED_ARCHIVE_ENCRYPTION.md.
+
+
+## CP-0009K — encrypted key lifecycle and replay-recovery contract
+
+Parent: CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION. Pure Kotlin rejects unverified source, lost
+keys, competing copies, absent consent, absent distinct new key, unavailable
+atomic staging and missing authenticated readback before key rotation.
+Even simulated readiness cannot trigger a writer. AES-GCM authenticity
+does not prove freshness or preclude old valid ciphertext replay; Android
+UI warns FRESHNESS NOT VERIFIED. No rotation or trusted anti-replay
+witness is present. No physical phone/radio, Android hardware Keystore,
+flash crash-consistency, account or RF validation is claimed.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38412488466.
+Evidence: research/android/CP-0009K_KEY_LIFECYCLE_REPLAY_CONTRACT.md.

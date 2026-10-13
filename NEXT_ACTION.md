@@ -8,17 +8,11 @@ real accounts/certificates/credentials and manual hardware testing.
 
 ## Next software checkpoint
 
-**CP-0009K — encrypted archive key lifecycle, rotation and replay recovery**
+**CP-0009L — explicit encrypted key-rotation transaction design and implementation**
 
-CP-0009J provides verified *host/Android-simulated* AES-GCM V2 storage with
-user opt-in, but no physical Android Keystore proof. Old V1 plaintext still
-exists until independently deleted. Next implement explicit key rotation
-and lost-key/replay recovery safeguards. Preserve all APK/CI regression gates.
-
-## CP-0009K active branch — unverified
-
-`cp-0009k-encrypted-key-lifecycle-replay-contract` contains a fail-closed pure Kotlin rotation/replay contract,
-synthetic tests and host workflow. Key rotation, key retirement and replay
-protection are **NOT IMPLEMENTED**. Next create full inherited Android and
-checkpoint CI gates, then verify exact-head checks, merge and finalizer.
-Do not return to CP-0003C until explicitly told to resume it.
+CP-0009K is a non-executing key lifecycle and replay-risk contract, NOT
+implemented rotation or replay protection. Plan a recoverable new-key
+transaction and explicit user choices with fully verified ciphertext
+readback and original retention. Never imply a local AES-GCM tag or
+mutable local version prevents replay. Keep V1 plaintext and V2 separate.
+CP-0003C remains deferred.

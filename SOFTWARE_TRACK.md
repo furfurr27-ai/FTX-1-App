@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION
+CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,13 +25,13 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009K — encrypted archive key lifecycle, rotation and replay recovery
+CP-0009L — explicit encrypted key-rotation transaction design and implementation
 
-CP-0009J added per-session opt-in AES-GCM V2 app-private storage, distinct
-from retained plaintext V1. Android Keystore provider exists, with
-Robolectric software-key tests only. Next test explicit key rotation, lost
-key and replay/downgrade recovery on GitHub/CI. Hardware remains unproven.
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009K proved no-write key lifecycle and replay-risk classification,
+with Android warning, inherited V2 encryption, Android package and
+Robolectric/regression CI. No key rotation, anti-replay witness,
+on-device Keystore hardware or RF proof. CP-0003C DEFERRED; CP-0004A/B/C
+incomplete.
 
 ## Resume rule
 
@@ -43,10 +43,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009K branch in progress — not durable
-
-Branch `cp-0009k-encrypted-key-lifecycle-replay-contract`. Verified CP-0009J/v61 is parent. Added non-executing
-key lifecycle and replay-risk contract, unit tests and host CI. No Android
-rotation executor, trusted monotonic witness, physical Keystore or device/RF
-proof. Full inherited APK CI/finalizer pending. Owner hardware rules hold.

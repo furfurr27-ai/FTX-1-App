@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION",
-  "created_utc": "2026-10-13T10:07:51+00:00",
-  "manifest": "checkpoints/manifests/CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION.json",
-  "snapshot": "checkpoints/snapshots/CP-0009J-AUTHENTICATED_ARCHIVE_ENCRYPTION.tar.gz",
-  "snapshot_sha256": "a494caf9353af3baddb1df2ce683129de48eabaded91201f01dc300a6ee1963d"
+  "checkpoint_id": "CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT",
+  "created_utc": "2026-10-13T14:23:31+00:00",
+  "manifest": "checkpoints/manifests/CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.json",
+  "snapshot": "checkpoints/snapshots/CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT.tar.gz",
+  "snapshot_sha256": "ab115f57d3b2854def1de224acec0d11c0ac8e0b8f2d739a1826508c78af1303"
 }
