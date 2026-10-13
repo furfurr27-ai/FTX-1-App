@@ -111,7 +111,7 @@ class ExplicitEncryptedArchiveRotationTest {
             assertFalse(failing.rotatedFileForTest().exists())
             assertArrayEquals(before, source.localEncryptedFileForTest().readBytes())
             assertEquals(canonical(), source.loadEncryptedExplicitly())
-            assertFalse(RuntimeEnvironment.getApplication<android.app.Application>()
+            assertFalse(RuntimeEnvironment.getApplication()
                 .noBackupFilesDir.listFiles().orEmpty()
                 .any { it.name.startsWith("fieldops-rotation-stage-") })
             rotation.deleteRotatedCopyExplicitly()
