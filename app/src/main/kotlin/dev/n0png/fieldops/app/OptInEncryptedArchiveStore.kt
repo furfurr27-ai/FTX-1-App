@@ -169,7 +169,7 @@ class OptInEncryptedArchiveStore(
         // Reject unsafe file size before asking Keystore for key material.
         val ciphertext = readBounded(target)
         val key = keys.existingKey()
-            ?: throw IOException("Encryption key missing; ciphertext retained without downgrade")
+            ?: throw EncryptedArchiveKeyUnavailableException("Encryption key missing; ciphertext retained without downgrade")
         return decode(ciphertext, key)
     }
 

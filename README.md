@@ -460,3 +460,16 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009M implementation branch — not checkpointed
+
+Branch: `cp-0009m-archive-conflict-inspection`; durable parent CP-0009L/v63.
+Added read-only original/rotated V2 authenticated inspection, missing/key-loss/
+unreadable/matching/conflicting states, Android opt-in action, and Robolectric
+fault/regression tests. All inspection outcomes retain both keys, ciphertext,
+plaintext V1 and user-owned selected history; no automatic restoration or
+key retirement. No freshness/replay witness or physical Galaxy S23 Ultra proof.
+Premerge Android APK, full inherited 46-job matrix, main finalizer and
+immutable hash are STILL REQUIRED. Do not mark CP-0009M durable prematurely.
+Next after durable CP-0009M: CP-0009N recovery choice/retirement-readiness.
+CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.

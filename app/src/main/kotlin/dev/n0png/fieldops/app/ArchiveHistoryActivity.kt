@@ -234,6 +234,23 @@ class ArchiveHistoryActivity : Activity() {
                 render()
             }
         } else {
+            actionButton("INSPECT ENCRYPTED CANDIDATES (READ ONLY)") {
+                rotationStatus = runCatching {
+                    val report = EncryptedArchiveConflictInspector(
+                        encryptedStore, rotationStore
+                    ).inspectExplicitly()
+                    "Original V2: " + report.original.evidence.name +
+                        "; Rotated V2: " + report.rotated.evidence.name +
+                        "; Relationship: " + report.relationship.name +
+                        ". " + report.freshness +
+                        ". Old-key retirement: " + report.oldKeyRetirement +
+                        ". No archive automatically selected or changed."
+                }.getOrElse {
+                    "READ-ONLY INSPECTION REJECTED; no keys or files changed: " +
+                        (it.message ?: "session unavailable")
+                }
+                render()
+            }
             actionButton("CREATE DISTINCT-KEY ENCRYPTED COPY") {
                 rotationStatus = runCatching {
                     rotationStore.rotateExplicitly()

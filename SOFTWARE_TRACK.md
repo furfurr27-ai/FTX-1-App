@@ -44,3 +44,12 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009M work in progress — not durable
+
+Implementation branch `cp-0009m-archive-conflict-inspection` adds
+explicit read-only inspection of independently authenticated encrypted
+candidates. Robolectric and APK/full inherited GitHub CI verification,
+PR merge and immutable checkpoint finalizer remain pending.
+Neither archive is automatically preferred; prior encrypted files and
+Keystore aliases are preserved. CP-0003C DEFERRED.

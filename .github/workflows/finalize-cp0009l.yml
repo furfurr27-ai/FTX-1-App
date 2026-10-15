@@ -1,14 +1,6 @@
 name: Finalize CP-0009L checkpoint
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/finalize-cp0009l.yml'
-      - 'app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRotation.kt'
-      - 'research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md'
-      - 'research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md'
-      - 'scripts/test_encrypted_archive_key_lifecycle_contract.sh'
   workflow_dispatch:
 
 permissions:

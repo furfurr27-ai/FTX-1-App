@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 63"):
+              "targetSdk = 35", "versionCode = 64"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -169,3 +169,24 @@ for needle in ("ENABLE ROTATION COPY THIS SESSION", "CREATE DISTINCT-KEY ENCRYPT
     if needle not in archive_kotlin:
         raise SystemExit("CP-0009L opt-in/retention UI missing: " + needle)
 print("CP-0009L distinct alias, atomic exclusive link, opt-in/retention UI: PASS")
+
+# CP-0009M: opt-in, read-only inspection must not rotate or retire keys.
+inspector = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictInspector.kt").read_text()
+for required in ("ArchiveCandidateEvidence", "KEY_UNAVAILABLE", "UNREADABLE",
+                 "CONFLICTING_AUTHENTICATED", "MATCHING_AUTHENTICATED",
+                 "BLOCKED_NON_EXECUTING", "FRESHNESS NOT VERIFIED",
+                 "inspectExplicitly()", "original.loadEncryptedExplicitly()",
+                 "rotated.restoreRotatedExplicitly()"):
+    if required not in inspector:
+        raise SystemExit("CP-0009M read-only inspection contract missing: " + required)
+for forbidden in ("createKeyOnExplicitSave(", "saveEncryptedExplicitly(",
+                  "rotateExplicitly(", "deleteEncryptedExplicitly(",
+                  "deleteRotatedCopyExplicitly(", "deleteEntry(", "Files.move("):
+    if forbidden in inspector:
+        raise SystemExit("CP-0009M inspection may not change keys or ciphertext: " + forbidden)
+for required in ("INSPECT ENCRYPTED CANDIDATES (READ ONLY)",
+                 "EncryptedArchiveConflictInspector(", "Old-key retirement:",
+                 "No archive automatically selected or changed."):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009M Android inspection UX missing: " + required)
+print("CP-0009M read-only inspection / no retirement contract: PASS")

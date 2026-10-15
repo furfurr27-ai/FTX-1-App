@@ -30,3 +30,12 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## CP-0009M WIP — not yet checkpointed
+
+Branch: `cp-0009m-archive-conflict-inspection`, parent CP-0009L/v63.
+Independent encrypted candidate inspection, missing-key distinction,
+original/rotated comparison, Android UI and Robolectric regression tests
+are committed. Do not promote without exact-head PR and push verification,
+merge, main CP-0009M finalizer and immutable SHA-256 comparison.
+Next CP-0009N after durable CP-0009M. CP-0003C DEFERRED.

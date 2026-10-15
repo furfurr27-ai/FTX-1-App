@@ -15,3 +15,11 @@ key cutover or key retirement. Old V2 and its key remain intact; old V1
 remains plaintext. Next expose competing archive authentication states
 safely, document optional key retirement constraints and test failures.
 Do not claim replay protection or physical Android Keystore proof.
+
+## CP-0009M active unverified branch
+
+Branch `cp-0009m-archive-conflict-inspection` has source code, Android
+read-only inspection UI, test coverage and inherited regression workflows.
+Do not promote without all exact-head PR/push tests, merge, main finalizer,
+and verified immutable manifest/snapshot hashes. After verified CP-0009M,
+continue CP-0009N. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
