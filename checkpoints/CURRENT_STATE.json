@@ -1,24 +1,24 @@
 {
-  "project_version": "v63-explicit-encrypted-key-rotation",
-  "latest_checkpoint": "CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION",
-  "phase": "One-shot authenticated distinct-key archive rotation-copy simulated; real device/RF deferred",
-  "test_status": "GREEN CI: explicit rotation Robolectric=PASS, new-key/staging/recovery=PASS, APK=PASS, inherited=PASS; finalizer 38435267578",
+  "project_version": "v64-encrypted-archive-conflict-inspection",
+  "latest_checkpoint": "CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION",
+  "phase": "Explicit read-only encrypted candidate comparison host-tested; device/RF deferred",
+  "test_status": "GREEN CI: archive conflict Robolectric=PASS, missing-key/tamper/match=PASS, APK=PASS, inherited=PASS; finalizer 38817185203",
   "completed": [
-    "Distinct AES-256-GCM Keystore alias and separate V2 encrypted copy with authenticated source and staged readback",
-    "Atomic exclusive hard-link publish never overwrites existing candidate; original ciphertext and key remain",
-    "Robolectric tests explicit rotation opt-in, corrupt source/destination, wrong/lost key, conflict, oversized and staged faults",
-    "Android UI requires separate rotation create/restore/delete; FRESHNESS NOT VERIFIED and old V1/V2 retention warnings",
+    "Read-only independent original/rotated authentication, canonical checksum and conflict classification",
+    "No key provision, automatic archive choice, deletion, downgrade or key retirement",
+    "Robolectric tests match/conflict, lost keys, unreadable tags, missing copies and explicit opt-ins",
+    "Android explicit inspection button displays freshness limitation and blocked key retirement",
     "Real Android debug APK and inherited synthetic Kotlin/Robolectric host regressions succeeded"
   ],
   "blockers": [
     "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction",
     "CP-0004A/B/C hardware checkpoints incomplete",
-    "No automatic active-key cutover, key retirement, replay witness or physical Galaxy S23 Ultra/Keystore/hard-link/RF/CAT/USB/account proof"
+    "No old-key retirement, trusted replay witness or physical Galaxy S23 Ultra/Keystore/hard-link/RF/CAT/USB/account proof"
   ],
   "next_actions": [
-    "CP-0009M: rotated encrypted archive conflict inspection and old-key retirement safety, GitHub/CI-only",
+    "CP-0009N: explicit candidate recovery choice and non-executing retirement readiness, GitHub/CI-only",
     "Preserve APK artifact build plus all inherited host regression gates",
     "CP-0003C remains DEFERRED; skip manual hardware/account validation"
   ],
-  "updated_utc": "2026-10-13T17:04:11+00:00"
+  "updated_utc": "2026-10-15T22:31:08+00:00"
 }

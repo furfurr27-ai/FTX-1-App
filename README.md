@@ -39,44 +39,41 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION
+**Latest verified checkpoint:** CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION
 
-Parent durable checkpoint: CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT / v62.
+Parent durable checkpoint: CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION / v63.
 
-CP-0009L adds an **explicit, ONE-SHOT distinct-key ROTATED COPY**
-of an existing authenticated Android V2 encrypted archive. The original
-encrypted V2 file and Android Keystore key are NEVER deleted, overwritten,
-invalidated, replaced, or automatically selected away. The old V1 file
-remains UNENCRYPTED until independently deleted by an explicit user action.
+CP-0009M adds opt-in READ-ONLY authenticated inspection of original encrypted
+V2 and separate rotated V2 archive candidates. Existing distinct-key archive
+stores authenticate independently; existing canonical receipts are decoded.
+Candidates are classified as MISSING, AUTHENTICATED, KEY_UNAVAILABLE, or
+UNREADABLE, without mistaking authentication failure for proven corruption.
+Two authenticated canonical archives are checked for equality, yielding
+MATCHING_AUTHENTICATED or CONFLICTING_AUTHENTICATED; otherwise status remains
+INDETERMINATE or BOTH_MISSING.
 
-An entirely separate Android Keystore AES-256-GCM alias and distinct
-16-byte nonsecret key identifier protect a separate FTX1ENC2 file in
-app-private no-backup storage. Source V2 must first decrypt/authenticate
-and its canonical receipts validate BEFORE the new key is provisioned.
-After fresh provider-nonce AES-GCM encryption, new ciphertext is staged in
-the same directory and fsynced, decrypted/read-back/receipt validated under
-the rotated key and published by exclusive atomic hard link (no overwrite).
-Failure to support hard links fails closed rather than falling back to
-an unsafe copy; physical Galaxy S23 Ultra behavior remains UNTESTED.
+Android provides an explicit inspection button requiring BOTH encrypted and
+rotation sessions enabled. No inspection action creates keys, writes files,
+restores archive UI state, selects a winner, deletes the original V2/V1,
+deletes the rotated copy, retires aliases, or attempts secure erase.
+A missing/unavailable key does not trigger replacement. All results continue
+to say FRESHNESS NOT VERIFIED and BLOCKED_NON_EXECUTING for old-key
+retirement. Even authenticated matching ciphertext content cannot establish
+recency without an independent trusted monotonic witness. This is a
+non-executing retirement safety policy, not a key-retirement implementation.
 
-Separate Android rotation opt-in, create, restore and delete actions
-never auto-restore, auto-migrate, downgrade, retire a key or secure-erase
-the original. Robolectric software-key tests check new key, independent
-ciphertext, old-file retention, bad source tag/key, corrupted rotated copy,
-missing key, existing-file conflict, oversized input, and fault-injected
-staging/prepublish cleanup. Existing V2/V1 and UI regressions stay green.
-
-**Security limits:** This is an explicitly selected encrypted copy, not
-automatic active-archive/key cutover. Original key remains usable; old
-ciphertext and unencrypted V1 remain. AES-GCM does NOT prevent replay of
-older genuine ciphertext; no trusted monotonic freshness witness exists.
-No secure flash erase, on-device hard-link support, hardware-backed key,
-actual Keystore interoperability/power-loss durability, station provenance,
-real Galaxy S23 Ultra, FTX-1 CAT/USB/RF or account/certificate tests are
-claimed. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+Robolectric tests cover equal copies, conflicting canonical archives,
+missing files, lost old/new keys, tampered candidate tags, absent opt-ins,
+no automatic fallback, and unchanged ciphertext. The Android demo remains
+synthetic-only. Real Galaxy S23 Ultra Keystore, filesystem hard links,
+power-loss durability, CAT/USB/audio/RF, FTX-1 hardware, LoTW accounts and
+certificates remain UNTESTED. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Host/CI gates:
 
+- CP-0009M read-only archive inspection and conflict Robolectric tests: **PASS**.
+- CP-0009M Android opt-in/no retirement UX and APK packaging: **PASS**.
+- CP-0009M complete inherited GitHub Actions software matrix: **PASS**.
 - CP-0009L encrypted rotation software-key Robolectric failure isolation: **PASS**.
 - CP-0009L separate Android opt-in and no-downgrade UX: **PASS**.
 - CP-0009L actual Android APK packaging and complete inherited host CI: **PASS**.
@@ -153,25 +150,24 @@ Host/CI gates:
 
 Evidence:
 
-- research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md
-- app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRotation.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRotationTest.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/ExplicitRotationActivityTest.kt
-- scripts/test_android_package_contract.py
-- .github/workflows/cp0009l-explicit-key-rotation.yml
-- .github/workflows/finalize-cp0009l.yml
-- CP-0009L merged-main finalizer run: 38435267578
+- app/src/main/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictInspector.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictInspectorTest.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictActivityTest.kt
+- research/android/CP-0009M_ARCHIVE_CONFLICT_INSPECTION.md
+- .github/workflows/cp0009m-archive-conflict-inspection.yml
+- .github/workflows/finalize-cp0009m.yml
+- CP-0009M merged-main finalizer run: 38817185203
 
 ### Evidence boundary
 
-Only JVM and Robolectric encrypted-rotation simulation/Android build proof.
-Hardware-backed keys, hard-link filesystem compatibility and power-loss
-safety require physical target-device validation; anti-replay and key
-retirement are NOT implemented.
+Only software-key Robolectric/JVM/Android build evidence. Authentication is not
+freshness, station provenance, device security, secure erase, or RF validation.
+No key retirement executor, file deletion, automatic copy preference, or
+trusted replay witness has been implemented by CP-0009M.
 
 ### Inherited verified ancestry
 
-CP-0009K-ENCRYPTED_KEY_LIFECYCLE_REPLAY_CONTRACT and all earlier immutable checkpoints remain intact.
+CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION and every earlier immutable checkpoint remain intact.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -195,7 +191,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009M — rotated archive conflict inspection and key retirement safety
+**Active software track:** CP-0009N — explicit archive recovery choice and retirement-readiness review
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -420,7 +416,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION
+- Current Git source baseline: CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -433,16 +429,16 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009M — rotated archive conflict inspection and key retirement safety.**
+**CP-0009N — explicit archive recovery choice and retirement-readiness review.**
 
-1. Implement explicit authenticated inspection of competing original and
-   rotated archives, including key-loss and corrupt-file recovery states.
-2. Define SAFE optional old-key retirement prerequisites; do not delete
-   original key/ciphertext automatically or claim secure flash deletion.
-3. Continue to warn that AES-GCM cannot prove recency without a trusted
-   independent monotonic witness. Preserve original V1/V2 opt-ins,
-   Robolectric, APK, all inherited host and immutable checkpoint gates.
-4. CP-0003C DEFERRED; CP-0004A/B/C incomplete. No physical device/RF claims.
+1. Design safe, EXPLICIT user selection for independently authenticated
+   recovery candidates without silently preferring older/rotated content.
+2. Provide a non-executing retirement-readiness checklist; old key, V1/V2
+   and rotated ciphertext may not be destroyed without separate evidence
+   and authorization. Do not implement automatic key retirement or erase.
+3. Preserve full host/Android APK and Robolectric regression CI, immutable
+   snapshot proof, and visible FRESHNESS NOT VERIFIED warning.
+4. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
 
 ## README maintenance contract
 
@@ -460,16 +456,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009M implementation branch — not checkpointed
-
-Branch: `cp-0009m-archive-conflict-inspection`; durable parent CP-0009L/v63.
-Added read-only original/rotated V2 authenticated inspection, missing/key-loss/
-unreadable/matching/conflicting states, Android opt-in action, and Robolectric
-fault/regression tests. All inspection outcomes retain both keys, ciphertext,
-plaintext V1 and user-owned selected history; no automatic restoration or
-key retirement. No freshness/replay witness or physical Galaxy S23 Ultra proof.
-Premerge Android APK, full inherited 46-job matrix, main finalizer and
-immutable hash are STILL REQUIRED. Do not mark CP-0009M durable prematurely.
-Next after durable CP-0009M: CP-0009N recovery choice/retirement-readiness.
-CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.

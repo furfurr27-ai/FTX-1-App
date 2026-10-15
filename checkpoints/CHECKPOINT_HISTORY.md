@@ -792,3 +792,17 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38435267578.
 Evidence: research/android/CP-0009L_EXPLICIT_ENCRYPTED_KEY_ROTATION.md.
+
+
+## CP-0009M — read-only encrypted archive candidate inspection
+
+Parent: CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION. Original and rotated encrypted V2 files are
+independently authenticated and canonical-receipt validated on explicit
+inspection only. Missing files, lost keys, unreadable ciphertext, matching and
+conflicting authenticated canonical archives have explicit states.
+No automatic winner/restore, key retirement, erase, downgrade or replay proof.
+Robolectric cases, Android APK and inherited CI verified. Hardware remains
+untested; CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 38817185203.
+Evidence: research/android/CP-0009M_ARCHIVE_CONFLICT_INSPECTION.md.

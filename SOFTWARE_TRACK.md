@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION
+CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,14 +25,14 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009M — rotated archive conflict inspection and key retirement safety
+CP-0009N — explicit archive recovery choice and retirement-readiness review
 
-CP-0009L added explicit first-rotation encrypted COPY using a distinct
-Keystore alias, staged authenticated readback and exclusive link creation.
-Original V2/key, unencrypted V1 and synthetic demo constraints remain.
-Robolectric/Android APK verified by CI; no physical Android Keystore,
-filesystem/power-loss, trusted anti-replay, automatic key cutover or
-retirement proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009M implements read-only separately authenticated archive comparison
+and explicit UI; no source is automatically chosen. Missing-key states
+are not mislabeled as tampering. Both Keystore aliases and all files remain.
+Robolectric, APK and inherited CI have been verified; no phone/Keystore,
+filesystem, trusted replay witness, secure erase or radio/account proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -44,12 +44,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009M work in progress — not durable
-
-Implementation branch `cp-0009m-archive-conflict-inspection` adds
-explicit read-only inspection of independently authenticated encrypted
-candidates. Robolectric and APK/full inherited GitHub CI verification,
-PR merge and immutable checkpoint finalizer remain pending.
-Neither archive is automatically preferred; prior encrypted files and
-Keystore aliases are preserved. CP-0003C DEFERRED.

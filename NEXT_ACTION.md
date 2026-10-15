@@ -8,18 +8,10 @@ real accounts/certificates/credentials and manual hardware testing.
 
 ## Next software checkpoint
 
-**CP-0009M — rotated archive conflict inspection and key retirement safety**
+**CP-0009N — explicit archive recovery choice and retirement-readiness review**
 
-CP-0009L created an opt-in distinct-key ROTATED COPY, not automatic active
-key cutover or key retirement. Old V2 and its key remain intact; old V1
-remains plaintext. Next expose competing archive authentication states
-safely, document optional key retirement constraints and test failures.
-Do not claim replay protection or physical Android Keystore proof.
-
-## CP-0009M active unverified branch
-
-Branch `cp-0009m-archive-conflict-inspection` has source code, Android
-read-only inspection UI, test coverage and inherited regression workflows.
-Do not promote without all exact-head PR/push tests, merge, main finalizer,
-and verified immutable manifest/snapshot hashes. After verified CP-0009M,
-continue CP-0009N. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+CP-0009M classified authenticated, missing, unavailable-key and unreadable
+original and rotated encrypted candidates without preference, modification or
+key retirement. Next design explicitly chosen recovery and a NON-EXECUTING
+retirement-readiness checklist with conservative evidence requirements.
+No key deletion, automatic fallback, freshness witness, device/RF proof.
