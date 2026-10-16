@@ -44,3 +44,12 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+
+## CP-0009N work in progress — not durable
+
+Branch `cp-0009n-explicit-archive-recovery-choice`. The separate
+review/select/confirm operations reauthenticate selected originals or
+rotated encrypted candidates and do not auto-pick, write ciphertext
+or retire keys. Old-key retirement readiness is non-executing.
+CI/merged-main snapshot proof not yet verified. CP-0003C DEFERRED.
