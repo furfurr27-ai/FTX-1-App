@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 64"):
+              "targetSdk = 35", "versionCode = 65"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -190,3 +190,28 @@ for required in ("INSPECT ENCRYPTED CANDIDATES (READ ONLY)",
     if required not in archive_kotlin:
         raise SystemExit("CP-0009M Android inspection UX missing: " + required)
 print("CP-0009M read-only inspection / no retirement contract: PASS")
+
+# CP-0009N: explicit candidate selection and revalidation; no key retirement.
+recovery = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRecovery.kt").read_text()
+for required in ("EncryptedRecoveryCandidate", "ORIGINAL_V2", "ROTATED_V2",
+                 "reviewExplicitly()", "recoverToMemoryExplicitly(",
+                 "reviewRetirementReadiness()", "inspector.inspectExplicitly()",
+                 "now == priorReview.inspection", "expected.canonicalSha256 == digest",
+                 "BLOCKED_NON_EXECUTING", "FRESHNESS NOT VERIFIED",
+                 "original.loadEncryptedExplicitly()", "rotated.restoreRotatedExplicitly()"):
+    if required not in recovery:
+        raise SystemExit("CP-0009N explicit recovery guard missing: " + required)
+for forbidden in ("createKeyOnExplicitSave(", "saveEncryptedExplicitly(",
+                  "rotateExplicitly(", "deleteEncryptedExplicitly(",
+                  "deleteRotatedCopyExplicitly(", "deleteEntry(", "Files.move(",
+                  "Files.delete(", "KeyStore.getInstance("):
+    if forbidden in recovery:
+        raise SystemExit("CP-0009N recovery code must not write or retire keys: " + forbidden)
+for required in ("REVIEW AUTHENTICATED RECOVERY OPTIONS",
+                 "REVIEW OLD-KEY RETIREMENT BLOCKERS (READ ONLY)",
+                 "SELECT ", "CONFIRM ", "confirmReviewedRecovery(",
+                 "recoverToMemoryExplicitly(", "recoveryReview = null",
+                 "No files or keys changed.", "FRESHNESS NOT VERIFIED"):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009N two-tap UX / retirement warning missing: " + required)
+print("CP-0009N explicit recovery reauthentication, no key retirement: PASS")
