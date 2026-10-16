@@ -6,7 +6,7 @@ on:
     paths:
       - '.github/workflows/finalize-cp0009n.yml'
       - 'app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRecovery.kt'
-      - 'research/android/CP-0009N_ARCHIVE_CONFLICT_INSPECTION.md'
+      - 'research/android/CP-0009N_EXPLICIT_RECOVERY_CHOICE.md'
   workflow_dispatch:
 
 permissions:
