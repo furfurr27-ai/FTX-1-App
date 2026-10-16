@@ -456,3 +456,18 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+
+## CP-0009N implementation branch — not checkpointed
+
+Current WIP branch `cp-0009n-explicit-archive-recovery-choice` is based on
+durable CP-0009M/v64. Adds independently inspected, deliberately SELECTed
+and CONFIRMed recovery of original or rotated V2 ciphertext into synthetic
+in-memory screen state. Reinspection plus a new authenticated read and
+canonical digest/entry-count check refuse stale choices; no keys or files
+are automatically changed and no plaintext fallback exists. A separate
+read-only old-key retirement checklist always BLOCKED_NON_EXECUTING;
+FRESHNESS NOT VERIFIED. Robolectric, Android APK, complete inherited CI,
+merge, merged-main finalizer and immutable snapshot check remain necessary
+before declaring CP-0009N complete. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+Next after durable CP-0009N: CP-0009O read-only recovery audit trail.

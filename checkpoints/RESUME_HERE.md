@@ -30,3 +30,15 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+
+## CP-0009N WIP handoff — NOT a verified checkpoint
+
+Branch `cp-0009n-explicit-archive-recovery-choice`. CP-0009M/v64
+remains durable until CP-0009N is green and promoted. Source:
+ExplicitEncryptedArchiveRecovery.kt, two Robolectric test classes, Android
+ArchiveHistoryActivity and scripts/finalize_cp0009n.py; workflows:
+cp0009n-explicit-recovery-choice.yml and finalize-cp0009n.yml.
+Inspect live PR and all checks for the exact head, fix failures before
+merge, then verify main finalizer and immutable SHA-256. No real hardware
+or Keystore proof. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

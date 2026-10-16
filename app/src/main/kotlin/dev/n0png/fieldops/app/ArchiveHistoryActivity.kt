@@ -26,6 +26,41 @@ class ArchiveHistoryActivity : Activity() {
     private var encryptedStatus = "Encrypted V2 storage DISABLED; no automatic key generation or restore."
     private val rotationStore by lazy { ExplicitEncryptedArchiveRotation(applicationContext, encryptedStore) }
     private var rotationStatus = "Key-rotation copy is DISABLED. A separate action and new key are required."
+    private val recovery by lazy {
+        ExplicitEncryptedArchiveRecovery(encryptedStore, rotationStore)
+    }
+    private var recoveryReview: EncryptedRecoveryReview? = null
+    private var pendingRecovery: EncryptedRecoveryCandidate? = null
+    private var recoveryStatus = "Recovery choice not reviewed; no candidate auto-selected."
+
+    /** In-memory recovery only; failed authentication does not replace UI data. */
+    private fun confirmReviewedRecovery(candidate: EncryptedRecoveryCandidate) {
+        recoveryStatus = runCatching {
+            check(pendingRecovery == candidate) { "Select this candidate before confirming" }
+            val review = recoveryReview ?: error("Review candidates again before recovery")
+            val selected = recovery.recoverToMemoryExplicitly(review, candidate)
+            state = state.copy(
+                archive = selected,
+                selectedSha256 = null,
+                comparisonBeforeSha256 = null,
+                comparisonAfterSha256 = null,
+                offset = 0,
+            )
+            beforeId = null
+            afterId = null
+            fixtureNumber = maxOf(fixtureNumber, 100)
+            "EXPLICIT " + candidate.name + " recovered to on-screen memory: " +
+                selected.entries.size + " entries. FRESHNESS NOT VERIFIED. " +
+                "No files or keys changed."
+        }.getOrElse {
+            "RECOVERY REJECTED; on-screen history retained, no fallback: " +
+                (it.message ?: "candidate changed or became unavailable")
+        }
+        recoveryReview = null
+        pendingRecovery = null
+        render()
+    }
+
 
     /** Transient rotation-only session. Never Parcelable, Bundle, disk or database. */
     private data class RotationSession(
@@ -227,6 +262,9 @@ class ArchiveHistoryActivity : Activity() {
             "new encrypted file. Existing V2, its key, and V1 plaintext are retained. " +
             "No automatic switching, key retirement or replay protection.")
         message(rotationStatus)
+        message("RECOVERY: separately inspect both encrypted candidates, select ONE " +
+            "authenticated source, then confirm. No automatic choice or trusted recency.")
+        message(recoveryStatus)
         if (!rotationStore.isEnabled()) {
             actionButton("ENABLE ROTATION COPY THIS SESSION") {
                 rotationStore.enableForThisSession()
@@ -234,6 +272,43 @@ class ArchiveHistoryActivity : Activity() {
                 render()
             }
         } else {
+            actionButton("REVIEW AUTHENTICATED RECOVERY OPTIONS") {
+                recoveryReview = null
+                pendingRecovery = null
+                recoveryStatus = runCatching {
+                    val review = recovery.reviewExplicitly()
+                    recoveryReview = review
+                    "Authenticated recovery choices: " +
+                        review.choices.joinToString { it.name } +
+                        ". Relationship: " + review.inspection.relationship.name +
+                        ". FRESHNESS NOT VERIFIED. Select a candidate deliberately."
+                }.getOrElse {
+                    "RECOVERY REVIEW REJECTED; on-screen history retained: " +
+                        (it.message ?: "original/rotated session unavailable")
+                }
+                render()
+            }
+            actionButton("REVIEW OLD-KEY RETIREMENT BLOCKERS (READ ONLY)") {
+                val result = recovery.reviewRetirementReadiness()
+                recoveryStatus = "Old-key retirement: " + result.status +
+                    ". Unmet conditions: " + result.unmetConditions.joinToString("; ") +
+                    ". No key or ciphertext deletion is available here."
+                render()
+            }
+            for (candidate in recoveryReview?.choices.orEmpty()) {
+                actionButton("SELECT " + candidate.name + " FOR IN-MEMORY RECOVERY") {
+                    pendingRecovery = candidate
+                    recoveryStatus = "Selected " + candidate.name +
+                        ". Confirm explicitly to reauthenticate and load on-screen only. " +
+                        "FRESHNESS NOT VERIFIED."
+                    render()
+                }
+                if (pendingRecovery == candidate) {
+                    actionButton("CONFIRM " + candidate.name + " RECOVERY TO MEMORY") {
+                        confirmReviewedRecovery(candidate)
+                    }
+                }
+            }
             actionButton("INSPECT ENCRYPTED CANDIDATES (READ ONLY)") {
                 rotationStatus = runCatching {
                     val report = EncryptedArchiveConflictInspector(
