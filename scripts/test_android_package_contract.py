@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 65"):
+              "targetSdk = 35", "versionCode = 66"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -215,3 +215,28 @@ for required in ("REVIEW AUTHENTICATED RECOVERY OPTIONS",
     if required not in archive_kotlin:
         raise SystemExit("CP-0009N two-tap UX / retirement warning missing: " + required)
 print("CP-0009N explicit recovery reauthentication, no key retirement: PASS")
+
+# CP-0009O: audit may store enum metadata ONLY, no strings, secrets or clocks.
+audit_source = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/SessionRecoveryAuditTrail.kt").read_text()
+for required in ("enum class RecoveryAuditAction", "enum class RecoveryAuditOutcome",
+                 "data class RecoveryAuditEntry(", "SessionRecoveryAuditTrail(",
+                 "capacity: Int = 12", "val ordinal: Int", "ArrayDeque<RecoveryAuditEntry>",
+                 "snapshot(): List<RecoveryAuditEntry>", "fun clear()", "entries.removeFirst()"):
+    if required not in audit_source:
+        raise SystemExit("CP-0009O audit-only contract missing: " + required)
+for forbidden in ("android.content.Context", "SharedPreferences", "File(", "FileOutputStream",
+                  "SQLiteDatabase", "RoomDatabase", "System.currentTimeMillis", "Instant.now(",
+                  "Serializable", "Parcelable", "android.util.Log", "Log.", "HttpURLConnection",
+                  "SecretKey", "MessageDigest", "StringBuilder", "entryCount", "canonicalSha256"):
+    if forbidden in audit_source:
+        raise SystemExit("CP-0009O audit may not store provenance payload/secret/time: " + forbidden)
+for required in ("SESSION-ONLY RECOVERY AUDIT", "CURRENT EXPLICIT RECOVERY SOURCE:",
+                 "FRESHNESS NOT VERIFIED", "SessionRecoveryAuditTrail()",
+                 "recoveryAudit.snapshot()", "recoveryAudit.clear()",
+                 "RecoveryAuditAction.REVIEW", "RecoveryAuditAction.SELECT",
+                 "RecoveryAuditAction.CONFIRM", "RecoveryAuditAction.RETIREMENT_REVIEW",
+                 "RecoveryAuditOutcome.REJECTED", "RecoveryAuditOutcome.BLOCKED",
+                 "invalidateDisplayedRecoveryProvenance()"):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009O Android audit/provenance UX missing: " + required)
+print("CP-0009O nonpersistent typed bounded audit, no payload and explicit provenance: PASS")

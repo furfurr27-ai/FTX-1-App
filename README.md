@@ -467,3 +467,19 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+
+## CP-0009O implementation branch — not checkpointed
+
+Branch `cp-0009o-session-recovery-audit`, verified parent CP-0009N/v65.
+SessionRecoveryAuditTrail stores fixed typed action, candidate and outcome
+only, bounded to 12 and Activity-instance lifetime; no persisted log or
+trusted clock, receipt, hash, error text or secret. Android audit UX shows
+review, select, confirm, failure, blocked old-key retirement and reset.
+Provenance of currently displayed recovered synthetic V2 history is labeled
+ONLY after confirmed recovery, invalidated on later data changes.
+FRESHNESS NOT VERIFIED and no auto key retirement remain. Full push/PR
+Robolectric, installable Android APK, inherited Kotlin host regressions,
+main finalizer and immutable SHA-256 proof are REQUIRED before promotion.
+No real S23, FTX-1 RF/CAT, Keystore or account proof; CP-0003C DEFERRED.
+After durable CP-0009O move to CP-0009P audit lifecycle hardening.

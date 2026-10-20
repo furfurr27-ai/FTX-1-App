@@ -32,6 +32,19 @@ class ArchiveHistoryActivity : Activity() {
     private var recoveryReview: EncryptedRecoveryReview? = null
     private var pendingRecovery: EncryptedRecoveryCandidate? = null
     private var recoveryStatus = "Recovery choice not reviewed; no candidate auto-selected."
+    // Activity-instance only: deliberately absent from RotationSession and Bundle.
+    private val recoveryAudit = SessionRecoveryAuditTrail()
+    private var currentRecoverySource: EncryptedRecoveryCandidate? = null
+
+    private fun audit(
+        action: RecoveryAuditAction,
+        outcome: RecoveryAuditOutcome,
+        candidate: EncryptedRecoveryCandidate? = null,
+    ) = recoveryAudit.record(action, outcome, candidate)
+
+    private fun invalidateDisplayedRecoveryProvenance() {
+        currentRecoverySource = null
+    }
 
     /** In-memory recovery only; failed authentication does not replace UI data. */
     private fun confirmReviewedRecovery(candidate: EncryptedRecoveryCandidate) {
@@ -49,10 +62,13 @@ class ArchiveHistoryActivity : Activity() {
             beforeId = null
             afterId = null
             fixtureNumber = maxOf(fixtureNumber, 100)
+            currentRecoverySource = candidate
+            audit(RecoveryAuditAction.CONFIRM, RecoveryAuditOutcome.ACCEPTED, candidate)
             "EXPLICIT " + candidate.name + " recovered to on-screen memory: " +
                 selected.entries.size + " entries. FRESHNESS NOT VERIFIED. " +
                 "No files or keys changed."
         }.getOrElse {
+            audit(RecoveryAuditAction.CONFIRM, RecoveryAuditOutcome.REJECTED, candidate)
             "RECOVERY REJECTED; on-screen history retained, no fallback: " +
                 (it.message ?: "candidate changed or became unavailable")
         }
@@ -101,6 +117,7 @@ class ArchiveHistoryActivity : Activity() {
 
     /** Explicit caller-owned synthetic input, never radio/network/store access. */
     private fun addSyntheticCapture() {
+        invalidateDisplayedRecoveryProvenance()
         val utc = 1_791_590_400_000L + fixtureNumber * 60_000L
         fixtureNumber++
         val picture = PropagationOperatingPictureService(
@@ -110,6 +127,7 @@ class ArchiveHistoryActivity : Activity() {
     }
 
     private fun dispatch(action: PropagationArchiveWorkspaceAction) {
+        invalidateDisplayedRecoveryProvenance()
         state = api.apply(state, action)
         if (state.archive.entries.none { it.id == beforeId }) beforeId = null
         if (state.archive.entries.none { it.id == afterId }) afterId = null
@@ -147,6 +165,7 @@ class ArchiveHistoryActivity : Activity() {
                     if (restored == null) {
                         "No saved local report archive exists."
                     } else {
+                        invalidateDisplayedRecoveryProvenance()
                         state = state.copy(
                             archive = restored,
                             selectedSha256 = null,
@@ -218,6 +237,7 @@ class ArchiveHistoryActivity : Activity() {
                     if (restored == null) {
                         "No saved encrypted V2 file. No key was created."
                     } else {
+                        invalidateDisplayedRecoveryProvenance()
                         state = state.copy(
                             archive = restored,
                             selectedSha256 = null,
@@ -254,6 +274,9 @@ class ArchiveHistoryActivity : Activity() {
             }
             actionButton("DISABLE ENCRYPTED ARCHIVE SESSION") {
                 encryptedStore.disableForThisSession()
+                audit(RecoveryAuditAction.SESSION_DISABLED, RecoveryAuditOutcome.ACCEPTED)
+                recoveryReview = null
+                pendingRecovery = null
                 encryptedStatus = "Encrypted session disabled; saved files and Keystore keys retained."
                 render()
             }
@@ -265,6 +288,22 @@ class ArchiveHistoryActivity : Activity() {
         message("RECOVERY: separately inspect both encrypted candidates, select ONE " +
             "authenticated source, then confirm. No automatic choice or trusted recency.")
         message(recoveryStatus)
+        message("CURRENT EXPLICIT RECOVERY SOURCE: " +
+            (currentRecoverySource?.name ?: "NONE / changed since reviewed recovery") +
+            ". Independently authenticated local V2 archive, not station provenance. " +
+            "FRESHNESS NOT VERIFIED.")
+        title("SESSION-ONLY RECOVERY AUDIT", 15)
+        message("Ephemeral, bounded, untrusted and cleared when this Activity is recreated. " +
+            "No archive payload, hashes, paths, timestamps or error text recorded.")
+        recoveryAudit.snapshot().forEach { entry ->
+            message("Action " + entry.ordinal + ": " + entry.action.name +
+                " | " + (entry.candidate?.name ?: "NO_CANDIDATE") +
+                " | " + entry.outcome.name)
+        }
+        actionButton("CLEAR SESSION RECOVERY AUDIT") {
+            recoveryAudit.clear()
+            render()
+        }
         if (!rotationStore.isEnabled()) {
             actionButton("ENABLE ROTATION COPY THIS SESSION") {
                 rotationStore.enableForThisSession()
@@ -278,11 +317,13 @@ class ArchiveHistoryActivity : Activity() {
                 recoveryStatus = runCatching {
                     val review = recovery.reviewExplicitly()
                     recoveryReview = review
+                    audit(RecoveryAuditAction.REVIEW, RecoveryAuditOutcome.ACCEPTED)
                     "Authenticated recovery choices: " +
                         review.choices.joinToString { it.name } +
                         ". Relationship: " + review.inspection.relationship.name +
                         ". FRESHNESS NOT VERIFIED. Select a candidate deliberately."
                 }.getOrElse {
+                    audit(RecoveryAuditAction.REVIEW, RecoveryAuditOutcome.REJECTED)
                     "RECOVERY REVIEW REJECTED; on-screen history retained: " +
                         (it.message ?: "original/rotated session unavailable")
                 }
@@ -290,6 +331,7 @@ class ArchiveHistoryActivity : Activity() {
             }
             actionButton("REVIEW OLD-KEY RETIREMENT BLOCKERS (READ ONLY)") {
                 val result = recovery.reviewRetirementReadiness()
+                audit(RecoveryAuditAction.RETIREMENT_REVIEW, RecoveryAuditOutcome.BLOCKED)
                 recoveryStatus = "Old-key retirement: " + result.status +
                     ". Unmet conditions: " + result.unmetConditions.joinToString("; ") +
                     ". No key or ciphertext deletion is available here."
@@ -298,6 +340,7 @@ class ArchiveHistoryActivity : Activity() {
             for (candidate in recoveryReview?.choices.orEmpty()) {
                 actionButton("SELECT " + candidate.name + " FOR IN-MEMORY RECOVERY") {
                     pendingRecovery = candidate
+                    audit(RecoveryAuditAction.SELECT, RecoveryAuditOutcome.ACCEPTED, candidate)
                     recoveryStatus = "Selected " + candidate.name +
                         ". Confirm explicitly to reauthenticate and load on-screen only. " +
                         "FRESHNESS NOT VERIFIED."
@@ -343,6 +386,7 @@ class ArchiveHistoryActivity : Activity() {
                     if (restored == null) {
                         "No rotated encrypted copy exists; no key generated."
                     } else {
+                        invalidateDisplayedRecoveryProvenance()
                         state = state.copy(
                             archive = restored,
                             selectedSha256 = null,
@@ -373,6 +417,9 @@ class ArchiveHistoryActivity : Activity() {
             }
             actionButton("DISABLE ROTATION COPY SESSION") {
                 rotationStore.disableForThisSession()
+                audit(RecoveryAuditAction.SESSION_DISABLED, RecoveryAuditOutcome.ACCEPTED)
+                recoveryReview = null
+                pendingRecovery = null
                 rotationStatus = "Rotation copy session disabled; keys and files retained."
                 render()
             }
