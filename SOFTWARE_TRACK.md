@@ -45,3 +45,13 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+
+## CP-0009O work in progress — not durable
+
+Branch `cp-0009o-session-recovery-audit` preserves CP-0009N parent;
+adds ephemeral metadata-only, bounded recovery event log and visible
+candidate source without station or trusted recency claim. No writes,
+key retirement, account/hardware proof. Await exact-head GitHub push and
+PR checks, merge and immutable main snapshot proof.
+CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
