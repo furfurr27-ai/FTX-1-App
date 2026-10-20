@@ -1,24 +1,24 @@
 {
-  "project_version": "v65-explicit-encrypted-archive-recovery-choice",
-  "latest_checkpoint": "CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE",
-  "phase": "Explicit reviewed encrypted archive recovery host-tested; device/RF deferred",
-  "test_status": "GREEN CI: explicit recovery Robolectric=PASS, stale-selection/lost-key tests=PASS, APK=PASS, inherited=PASS; finalizer 39392390679",
+  "project_version": "v66-session-recovery-audit-provenance",
+  "latest_checkpoint": "CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE",
+  "phase": "Session-only recovery audit and source provenance software-tested; device/RF deferred",
+  "test_status": "GREEN CI: session audit Robolectric=PASS, Activity provenance/recreation=PASS, APK=PASS, inherited=PASS; finalizer 39451532632",
   "completed": [
-    "Explicit review/select/confirm of authenticated original or rotated V2 recovery into memory",
-    "Fresh reinspection plus canonical digest and entry-count check reject changed evidence",
-    "Robolectric tests both choices, changes, missing keys, deleted copies and session opt-ins",
-    "Android two-tap recovery and blocked nonexecuting old-key retirement checklist",
+    "Bounded typed only in-memory audit of recovery review, choice, confirm, rejected and blocked retirement",
+    "Activity-visible original/rotated provenance labeled only after confirmed successful recovery",
+    "Robolectric tests FIFO capacity, detached snapshot, clear/recreate and failure metadata-only audit",
+    "Original V1/V2/key paths unchanged, freshness unverified, no automatic key retirement",
     "Real Android debug APK and inherited synthetic Kotlin/Robolectric host regressions succeeded"
   ],
   "blockers": [
     "OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction",
     "CP-0004A/B/C hardware checkpoints incomplete",
-    "No key retirement, trusted freshness witness or physical Galaxy S23 Ultra/Keystore/hard-link/RF/CAT/USB/account proof"
+    "No persistent/trusted audit, key retirement or physical Galaxy S23 Ultra/Keystore/hard-link/RF/CAT/USB/account proof"
   ],
   "next_actions": [
-    "CP-0009O: read-only recovery audit trail and provenance UX, GitHub/CI-only",
+    "CP-0009P: audit lifecycle and provenance consistency hardening, GitHub/CI-only",
     "Preserve APK artifact build plus all inherited host regression gates",
     "CP-0003C remains DEFERRED; skip manual hardware/account validation"
   ],
-  "updated_utc": "2026-10-20T08:20:55+00:00"
+  "updated_utc": "2026-10-20T15:49:50+00:00"
 }

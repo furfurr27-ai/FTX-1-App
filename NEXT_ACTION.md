@@ -8,23 +8,13 @@ real accounts/certificates/credentials and manual hardware testing.
 
 ## Next software checkpoint
 
-**CP-0009O — read-only recovery audit trail and provenance UX**
+**CP-0009P — audit lifecycle and provenance consistency hardening**
 
-CP-0009N added explicitly inspected, named and confirmed in-memory
-recovery choices using the original/rotated existing AES-GCM key.
-Re-inspection and canonical reauthentication reject stale or lost-key
-choices; neither old file nor key is ever retired or auto-selected.
-Next implement a nonpersistent, non-sensitive read-only audit trail of
-explicit choices and failure outcomes. No trusted freshness witness.
-CP-0003C stays DEFERRED; physical phone/radio checkpoints stay incomplete.
-
-
-## CP-0009O WIP implementation — not verified
-
-Branch `cp-0009o-session-recovery-audit`. Implemented bounded typed-only,
-nonpersistent session audit of recovery actions and results with explicit
-current source label. PR must first pass exact-head push and PR complete
-Android APK, Robolectric and inherited host CI. Then merge and require
-merged-main finalize-cp0009o.yml 46/46 and immutable manifest/snapshot
-SHA-256 matching LATEST.json. CP-0009P next only AFTER completion.
-CP-0003C remains DEFERRED and CP-0004A/B/C incomplete.
+CP-0009O added a bounded, instance-owned, metadata-only recovery audit,
+clear-on-request and clear-on-Activity-recreation; it labels only selected
+original/rotated V2 after explicitly confirmed in-memory recovery.
+No archive text/hashes/keys or time is logged; FRESHNESS NOT VERIFIED.
+Next strengthen lifecycle/provenance consistency across screen changes,
+without persistent audit records or key retirement. Preserve every
+inherited Android/host gate and immutable checkpoint proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.

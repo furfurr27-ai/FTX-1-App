@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE
+CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,15 +25,14 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009O — read-only recovery audit trail and provenance UX
+CP-0009P — audit lifecycle and provenance consistency hardening
 
-CP-0009N provides separate review/select/confirm user gestures to
-recover either independently authenticated archive to in-memory
-synthetic UI state. Reinspection and canonical digest validation
-reject changes/lost keys. Old keys/files stay; retirement checklist
-always BLOCKED_NON_EXECUTING. Robolectric/Android APK/inherited CI
-pass; no physical device, filesystem, CAT/audio/RF or trusted
-freshness evidence. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009O session-only typed bounded audit, explicit source label
+and automatic provenance invalidation are Robolectric/Android APK
+and inherited Kotlin CI verified. No persistent log, trusted
+timestamp/anti-replay, Android physical Keystore or radio proof.
+Original V1/V2 and keys remain; no key retirement. CP-0003C
+DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -45,13 +44,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-
-## CP-0009O work in progress — not durable
-
-Branch `cp-0009o-session-recovery-audit` preserves CP-0009N parent;
-adds ephemeral metadata-only, bounded recovery event log and visible
-candidate source without station or trusted recency claim. No writes,
-key retirement, account/hardware proof. Await exact-head GitHub push and
-PR checks, merge and immutable main snapshot proof.
-CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.

@@ -821,3 +821,20 @@ CP-0003C DEFERRED and CP-0004A/B/C incomplete.
 
 Finalizer: 39392390679.
 Evidence: research/android/CP-0009N_EXPLICIT_RECOVERY_CHOICE.md.
+
+
+## CP-0009O — session-only recovery audit provenance
+
+Parent: CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE. The explicit encrypted recovery path now
+records bounded, typed, nonpersistent action/outcome/candidate metadata,
+including rejected review, selected source, confirmed recovery,
+failed confirm, and blocked old-key retirement inspection. New Activity
+or explicit audit clear resets the log. Source label is invalidated on
+synthetic capture, workspace action and other restores; freshness remains
+unverified. No key/file/secret/payload logging, secure erase, automatic
+archive preference, trusted witness or real hardware proof.
+Robolectric, Android APK and complete inherited host CI PASS.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 39451532632.
+Evidence: research/android/CP-0009O_SESSION_RECOVERY_AUDIT.md.
