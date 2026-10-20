@@ -806,3 +806,18 @@ untested; CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 38817185203.
 Evidence: research/android/CP-0009M_ARCHIVE_CONFLICT_INSPECTION.md.
+
+
+## CP-0009N — explicit reviewed in-memory encrypted recovery
+
+Parent: CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION. Two deliberate user actions SELECT and
+CONFIRM an authenticated original or rotated V2 candidate following
+explicit review; both sessions enabled. Full reinspection plus fresh
+authenticated load with digest/entry-count comparison refuse changed
+evidence without fallback. No write/retirement/erase or automatic winner.
+Old V1/V2 and both Keystore aliases stay. Robolectric, APK and inherited
+GitHub CI succeeded; no real hardware, Keystore or RF proof.
+CP-0003C DEFERRED and CP-0004A/B/C incomplete.
+
+Finalizer: 39392390679.
+Evidence: research/android/CP-0009N_EXPLICIT_RECOVERY_CHOICE.md.

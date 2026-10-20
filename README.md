@@ -39,38 +39,50 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION
+**Latest verified checkpoint:** CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE
 
-Parent durable checkpoint: CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION / v63.
+Parent durable checkpoint: CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION / v64.
 
-CP-0009M adds opt-in READ-ONLY authenticated inspection of original encrypted
-V2 and separate rotated V2 archive candidates. Existing distinct-key archive
-stores authenticate independently; existing canonical receipts are decoded.
-Candidates are classified as MISSING, AUTHENTICATED, KEY_UNAVAILABLE, or
-UNREADABLE, without mistaking authentication failure for proven corruption.
-Two authenticated canonical archives are checked for equality, yielding
-MATCHING_AUTHENTICATED or CONFLICTING_AUTHENTICATED; otherwise status remains
-INDETERMINATE or BOTH_MISSING.
+CP-0009N adds explicit, two-step in-memory recovery from independently
+authenticated original/rotated V2 encrypted archive candidates. Both
+separate opt-in sessions must be enabled. Inspection yields only
+AUTHENTICATED candidate choices, while preserving CP-0009M missing,
+key-unavailable, unreadable, equal and conflicting candidate diagnostics.
+The user must separately SELECT an original or rotated candidate and
+CONFIRM the same candidate. Before any UI replacement, the service
+re-inspects BOTH candidates and reauthenticates/re-decodes the selected
+copy using its existing key, then verifies the prior canonical digest
+and entry count. Stale/changed/invalid choices leave on-screen history
+unchanged and never automatically fall back to other V2 or plaintext V1.
 
-Android provides an explicit inspection button requiring BOTH encrypted and
-rotation sessions enabled. No inspection action creates keys, writes files,
-restores archive UI state, selects a winner, deletes the original V2/V1,
-deletes the rotated copy, retires aliases, or attempts secure erase.
-A missing/unavailable key does not trigger replacement. All results continue
-to say FRESHNESS NOT VERIFIED and BLOCKED_NON_EXECUTING for old-key
-retirement. Even authenticated matching ciphertext content cannot establish
-recency without an independent trusted monotonic witness. This is a
-non-executing retirement safety policy, not a key-retirement implementation.
+The chosen archive is loaded into synthetic in-memory display state ONLY.
+No archive files are written/deleted/replaced, no new keys provisioned,
+no keys retired, and no copy automatically preferred. Original V2,
+rotated V2 and V1 plaintext files remain in their existing storage.
+Separate existing opt-in restore/delete buttons are preserved. This
+guard improves explicit choice/failure behavior, not cryptographic recency:
+FRESHNESS NOT VERIFIED. Authentic older ciphertext is still replayable.
+There is no independent trusted monotonic witness or station provenance.
 
-Robolectric tests cover equal copies, conflicting canonical archives,
-missing files, lost old/new keys, tampered candidate tags, absent opt-ins,
-no automatic fallback, and unchanged ciphertext. The Android demo remains
-synthetic-only. Real Galaxy S23 Ultra Keystore, filesystem hard links,
-power-loss durability, CAT/USB/audio/RF, FTX-1 hardware, LoTW accounts and
-certificates remain UNTESTED. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+A separate READ-ONLY retirement-readiness checklist always returns
+BLOCKED_NON_EXECUTING. It identifies missing rollback-resistant freshness
+proof, separately verified backup/authorization, actual target device and
+filesystem/Keystore validation, uncertain flash secure deletion, and
+independent V1/V2 retention decisions. It does not retire any keys.
+
+Robolectric software-key tests cover both candidate choices, matching and
+conflicting valid archives, changed ciphertext, missing key, file deletion,
+session opt-ins, unchanged ciphertext and display failure isolation.
+Android Activity tests verify explicit review controls and retirement
+warnings. Real Galaxy S23 Ultra, FTX-1 CAT/USB/audio/RF, Keystore
+filesystem/hard-link/power-loss and credentials/account tests remain
+incomplete. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Host/CI gates:
 
+- CP-0009N explicit recovery, stale-selection refusal Robolectric: **PASS**.
+- CP-0009N Android review/retirement UI and APK packaging: **PASS**.
+- CP-0009N full inherited Kotlin/Android host regression matrix: **PASS**.
 - CP-0009M read-only archive inspection and conflict Robolectric tests: **PASS**.
 - CP-0009M Android opt-in/no retirement UX and APK packaging: **PASS**.
 - CP-0009M complete inherited GitHub Actions software matrix: **PASS**.
@@ -150,24 +162,24 @@ Host/CI gates:
 
 Evidence:
 
-- app/src/main/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictInspector.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictInspectorTest.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/EncryptedArchiveConflictActivityTest.kt
-- research/android/CP-0009M_ARCHIVE_CONFLICT_INSPECTION.md
-- .github/workflows/cp0009m-archive-conflict-inspection.yml
-- .github/workflows/finalize-cp0009m.yml
-- CP-0009M merged-main finalizer run: 38817185203
+- app/src/main/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRecovery.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/ExplicitEncryptedArchiveRecoveryTest.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/ExplicitArchiveRecoveryActivityTest.kt
+- research/android/CP-0009N_EXPLICIT_RECOVERY_CHOICE.md
+- .github/workflows/cp0009n-explicit-recovery-choice.yml
+- .github/workflows/finalize-cp0009n.yml
+- CP-0009N merged-main finalizer run: 39392390679
 
 ### Evidence boundary
 
-Only software-key Robolectric/JVM/Android build evidence. Authentication is not
-freshness, station provenance, device security, secure erase, or RF validation.
-No key retirement executor, file deletion, automatic copy preference, or
-trusted replay witness has been implemented by CP-0009M.
+JVM and Robolectric software-key recovery-choice simulations, Android APK,
+and inherited host CI only. Revalidation cannot prove trusted freshness or
+protect against genuine replay; no physical hardware or secure erase proof.
+Key retirement remains a non-executing blocked policy.
 
 ### Inherited verified ancestry
 
-CP-0009L-EXPLICIT_ENCRYPTED_KEY_ROTATION and every earlier immutable checkpoint remain intact.
+CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION and all prior immutable checkpoints remain intact.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -191,7 +203,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009N — explicit archive recovery choice and retirement-readiness review
+**Active software track:** CP-0009O — read-only recovery audit trail and provenance UX
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -416,7 +428,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION
+- Current Git source baseline: CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -429,16 +441,15 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009N — explicit archive recovery choice and retirement-readiness review.**
+**CP-0009O — read-only recovery audit trail and provenance UX.**
 
-1. Design safe, EXPLICIT user selection for independently authenticated
-   recovery candidates without silently preferring older/rotated content.
-2. Provide a non-executing retirement-readiness checklist; old key, V1/V2
-   and rotated ciphertext may not be destroyed without separate evidence
-   and authorization. Do not implement automatic key retirement or erase.
-3. Preserve full host/Android APK and Robolectric regression CI, immutable
-   snapshot proof, and visible FRESHNESS NOT VERIFIED warning.
-4. CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
+1. Add nonpersistent, read-only audit trail for user review, choice, rejection
+   and in-memory recovery outcomes, without logging private archive payloads.
+2. Make explicitly chosen candidate provenance clear, retaining all existing
+   authentication, stale-inspection failure and FRESHNESS NOT VERIFIED warnings.
+3. Preserve full Android APK, Kotlin/Robolectric, inherited CI and immutable
+   snapshot proof. Do NOT automatically retire or erase any key/file.
+4. CP-0003C DEFERRED; CP-0004A/B/C remain incomplete.
 
 ## README maintenance contract
 
@@ -456,18 +467,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-
-## CP-0009N implementation branch — not checkpointed
-
-Current WIP branch `cp-0009n-explicit-archive-recovery-choice` is based on
-durable CP-0009M/v64. Adds independently inspected, deliberately SELECTed
-and CONFIRMed recovery of original or rotated V2 ciphertext into synthetic
-in-memory screen state. Reinspection plus a new authenticated read and
-canonical digest/entry-count check refuse stale choices; no keys or files
-are automatically changed and no plaintext fallback exists. A separate
-read-only old-key retirement checklist always BLOCKED_NON_EXECUTING;
-FRESHNESS NOT VERIFIED. Robolectric, Android APK, complete inherited CI,
-merge, merged-main finalizer and immutable snapshot check remain necessary
-before declaring CP-0009N complete. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
-Next after durable CP-0009N: CP-0009O read-only recovery audit trail.

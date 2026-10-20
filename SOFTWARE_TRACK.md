@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009M-ENCRYPTED_ARCHIVE_CONFLICT_INSPECTION
+CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,14 +25,15 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009N — explicit archive recovery choice and retirement-readiness review
+CP-0009O — read-only recovery audit trail and provenance UX
 
-CP-0009M implements read-only separately authenticated archive comparison
-and explicit UI; no source is automatically chosen. Missing-key states
-are not mislabeled as tampering. Both Keystore aliases and all files remain.
-Robolectric, APK and inherited CI have been verified; no phone/Keystore,
-filesystem, trusted replay witness, secure erase or radio/account proof.
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009N provides separate review/select/confirm user gestures to
+recover either independently authenticated archive to in-memory
+synthetic UI state. Reinspection and canonical digest validation
+reject changes/lost keys. Old keys/files stay; retirement checklist
+always BLOCKED_NON_EXECUTING. Robolectric/Android APK/inherited CI
+pass; no physical device, filesystem, CAT/audio/RF or trusted
+freshness evidence. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -44,12 +45,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-
-## CP-0009N work in progress — not durable
-
-Branch `cp-0009n-explicit-archive-recovery-choice`. The separate
-review/select/confirm operations reauthenticate selected originals or
-rotated encrypted candidates and do not auto-pick, write ciphertext
-or retire keys. Old-key retirement readiness is non-executing.
-CI/merged-main snapshot proof not yet verified. CP-0003C DEFERRED.

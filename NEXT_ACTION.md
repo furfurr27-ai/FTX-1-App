@@ -8,21 +8,12 @@ real accounts/certificates/credentials and manual hardware testing.
 
 ## Next software checkpoint
 
-**CP-0009N — explicit archive recovery choice and retirement-readiness review**
+**CP-0009O — read-only recovery audit trail and provenance UX**
 
-CP-0009M classified authenticated, missing, unavailable-key and unreadable
-original and rotated encrypted candidates without preference, modification or
-key retirement. Next design explicitly chosen recovery and a NON-EXECUTING
-retirement-readiness checklist with conservative evidence requirements.
-No key deletion, automatic fallback, freshness witness, device/RF proof.
-
-
-## Active CP-0009N WIP — not yet verified
-
-Branch `cp-0009n-explicit-archive-recovery-choice`: implement two-step,
-explicit, in-memory recovery using authenticated original/rotated V2
-candidate review. Run all exact-head push and PR CI (including Android
-APK, Robolectric and inherited tests), merge after green, run main
-CP-0009N finalizer, validate manifest and immutable snapshot SHA-256.
-Do not mark complete before that evidence. Next CP-0009O.
-CP-0003C remains DEFERRED.
+CP-0009N added explicitly inspected, named and confirmed in-memory
+recovery choices using the original/rotated existing AES-GCM key.
+Re-inspection and canonical reauthentication reject stale or lost-key
+choices; neither old file nor key is ever retired or auto-selected.
+Next implement a nonpersistent, non-sensitive read-only audit trail of
+explicit choices and failure outcomes. No trusted freshness witness.
+CP-0003C stays DEFERRED; physical phone/radio checkpoints stay incomplete.
