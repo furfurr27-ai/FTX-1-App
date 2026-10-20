@@ -30,3 +30,16 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+
+## CP-0009O WIP branch — unverified
+
+Branch `cp-0009o-session-recovery-audit`, durable parent CP-0009N/v65.
+New session audit, Android provenance UX, Robolectric tests and full
+GitHub/CI plus immutable finalizer prepared. Continue by inspecting
+actual PR, ALL exact-head checks, Android APK, host regressions and
+premerge snapshot dry-run; fix failures, then merge, main finalizer,
+LATEST/CURRENT_STATE/RESUME_HERE/manifest/snapshot SHA-256 verification.
+Never claim durable before completing that evidence. No durable clock,
+anti-replay proof, key retirement or physical device/radio test.
+CP-0003C remains DEFERRED; CP-0004A/B/C incomplete.
