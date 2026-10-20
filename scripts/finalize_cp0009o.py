@@ -7,7 +7,7 @@ import re
 root = pathlib.Path(".")
 run_id = os.environ["FINALIZE_RUN_ID"]
 checkpoint = "CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE"
-parent = "CP-0009O-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE"
+parent = "CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE"
 next_label = "CP-0009P — audit lifecycle and provenance consistency hardening"
 
 def replace_once(value, pattern, replacement, name):
