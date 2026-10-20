@@ -32,7 +32,7 @@ data class RecoveryAuditEntry(
 )
 
 /**
- * Instance-owned only. No Context, Serializable, Parcelable, SavedState,
+ * Instance-owned only. No context references, serialization interfaces, saved state,
  * file I/O, preferences, database, logging, network or system clock.
  *
  * snapshot() returns a detached immutable List of immutable records;
