@@ -91,7 +91,7 @@ readme = replace_once(readme, r"\*\*Active software track:\*\* [^\n]+",
 readme = re.sub(r"- Current Git source baseline: [^\n]+",
     "- Current Git source baseline: " + checkpoint, readme, count=1)
 readme = replace_once(readme,
-    r"## Current exact next action\\n.*?\\n## README maintenance contract",
+    r"## Current exact next action\n.*?\n## README maintenance contract",
 """## Current exact next action
 
 **""" + next_label + """.**
@@ -104,8 +104,8 @@ readme = replace_once(readme,
 4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## README maintenance contract""", "README exact next action")
-readme = re.sub(r"\\n## CP-0009P implementation branch — not checkpointed\\n[\\s\\S]*$",
-    "\\n", readme)
+readme = re.sub(r"\n## CP-0009P implementation branch — not checkpointed\n[\s\S]*$",
+    "\n", readme)
 readme_path.write_text(readme.rstrip() + "\n")
 
 (root / "NEXT_ACTION.md").write_text("""# NEXT ACTION — FTX-1 FieldOps
