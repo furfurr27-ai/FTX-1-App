@@ -461,3 +461,20 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+## CP-0009Q implementation branch — not checkpointed
+
+**WIP ONLY** on `cp-0009q-recovery-consent-failure-ux` from immutable
+CP-0009P/v67. Adds source-specific consent after deliberate SELECT,
+explicit CANCEL RECOVERY SELECTION, fixed typed-only audit record,
+conservative failure notice without raw exception text, and new
+Robolectric tests for cancel, confirmed recovery and corrupted
+ciphertext. All V1/V2 encrypted storage/key mechanisms remain unchanged.
+No automatic fallback, file/key deletion, station proof or trusted
+recency; **FRESHNESS NOT VERIFIED**.
+
+Do not promote until **exact-head** push and PR 46/46 CI, Android debug
+APK and premerge snapshot dry-run are GREEN; then merge, run merged-main
+CP-0009Q finalizer 46/46 and independently recompute immutable snapshot
+SHA-256 against manifest and LATEST.json. Next after durable: CP-0009R.
+CP-0003C DEFERRED; CP-0004A/B/C remain hardware/account blocked.
