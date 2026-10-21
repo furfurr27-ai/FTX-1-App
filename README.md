@@ -484,3 +484,14 @@ Android API35 APK tests, premerge checkpoint dry run, merged-main finalizer
 46/46 and independently SHA-256 verified immutable tar/manifest before
 calling CP-0009P durable. CP-0003C remains DEFERRED; CP-0004A/B/C
 hardware checkpoints incomplete. Next after durable CP-0009P: CP-0009Q.
+
+### CP-0009P validation repair — still WIP
+
+The prior branch CI exposed Robolectric software-key setup omissions
+and a spurious OPTIONS_INVALIDATED event on a deliberate re-review.
+Production activity keeps AndroidKeystore providers; tests now use an
+`app/src/test` subclass that provides explicit-save-only software keys.
+Repeated deliberate REVIEW supersedes stale selection without faking a
+disk-mutation event. Archive mutations still invalidate review tokens.
+No real phone Keystore validation; CP-0003C remains DEFERRED.
+Promote only after the new exact-head CI and immutable checkpoint proof.
