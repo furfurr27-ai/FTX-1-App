@@ -73,3 +73,33 @@ No physical Galaxy S23 Ultra Keystore, hard-link/power-loss, FTX-1 CAT,
 USB audio, RF, LoTW account/certificate or trustworthy freshness witness
 is tested. CP-0003C is **DEFERRED** until owner explicitly requests
 `resume CP-0003C`; CP-0004A/B/C remain incomplete.
+
+## CI failure diagnosis and repair — 2026-10-21
+
+Exact-head `a95989bbcd83aaee4239e4204bbf82ac412bcbd4`
+had 44 successful inherited jobs but Android Robolectric failures:
+three CP-0009P lifecycle tests failed at setup/save line 49, and the
+CP-0009O audit test failed on post-clear re-review line 60. On host
+Robolectric, a real Android Keystore-backed key is not a valid assumption
+for a test that explicitly saves ciphertext. Production must continue
+to use AndroidKeyStore, not software-generated fixed keys.
+
+Fix: `ArchiveHistoryActivity` exposes two protected overridable
+provider accessors with production AndroidKeystoreArchiveKeyProvider and
+AndroidKeystoreRotatedArchiveKeyProvider defaults, no intent/UI setting.
+A subclass in `app/src/test/` alone supplies software SecretKeySpec AES
+keys, lazily created ONLY by explicit save for offline Robolectric
+archive-flow tests. No such fixture is compiled into the installable
+APK. Test subclass covers successful save, review, confirmed recovery,
+storage-evidence mutation, deletion and Android recreation using
+software-only cryptography. This does not demonstrate Android hardware
+Keystore availability on Galaxy S23.
+
+Repeated deliberate REVIEW now supersedes prior in-memory selection
+without spuriously emitting an OPTIONS_INVALIDATED storage-mutation event;
+the single new REVIEW event is audited. A real disk evidence mutation
+still emits OPTIONS_INVALIDATED and requires a new review/selection.
+
+Neither repair proves device key hardware, actual RF or trusted
+cryptographic recency. Re-run exact-head Android, push/PR CI, full main
+finalizer and immutable snapshot SHA-256 before promotion.
