@@ -12,6 +12,7 @@ enum class RecoveryAuditAction {
     REVIEW,
     SELECT,
     CONFIRM,
+    CANCEL_SELECTION,
     RETIREMENT_REVIEW,
     SESSION_DISABLED,
     OPTIONS_INVALIDATED,
