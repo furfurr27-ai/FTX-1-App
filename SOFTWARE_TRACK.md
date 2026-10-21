@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE
+CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,14 +25,15 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009P — audit lifecycle and provenance consistency hardening
+CP-0009Q — recovery consent and failure UX hardening
 
-CP-0009O session-only typed bounded audit, explicit source label
-and automatic provenance invalidation are Robolectric/Android APK
-and inherited Kotlin CI verified. No persistent log, trusted
-timestamp/anti-replay, Android physical Keystore or radio proof.
-Original V1/V2 and keys remain; no key retirement. CP-0003C
-DEFERRED; CP-0004A/B/C incomplete.
+CP-0009P verified audit choice invalidation on disk changes, review
+clearing on disable, authenticated source kept across navigation but
+cleared after archive replacement, and failed-load preservation.
+Robolectric and Android APK/Kotlin CI pass. Session audit remains
+nonpersistent and typed. No physical S23, Keystore, CAT/RF, freshness
+witness or key retirement proof. CP-0003C DEFERRED, CP-0004A/B/C
+incomplete.
 
 ## Resume rule
 
@@ -44,14 +45,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-
-## CP-0009P work in progress — not durable
-
-Branch `cp-0009p-audit-lifecycle-consistency`, durable parent
-CP-0009O/v66. UI provenance follows *displayed bytes*, not archive
-disk existence; stale reviewed choices clear on evidence changes,
-session disable and actual display change. No raw data in audit.
-Await exact-head push/PR Android/Robolectric/inherited CI and merged-main
-finalizer with independently verified immutable SHA-256. No physical
-radio/account/device testing. CP-0003C DEFERRED.

@@ -838,3 +838,20 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 39451532632.
 Evidence: research/android/CP-0009O_SESSION_RECOVERY_AUDIT.md.
+
+
+## CP-0009P — recovery audit lifecycle consistency
+
+Parent: CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE. Encrypted file copy save/migrate/delete/
+rotation and disabled sessions invalidate stale reviewed candidate
+choices. Navigation preserving archive contents retains current
+recovered source label; synthetic/new archive bytes invalidate it.
+Failed or null restores preserve on-screen history and provenance.
+Audit remains bounded, typed-only, session-only and cleared on
+Activity recreation. FRESHNESS NOT VERIFIED; no automatic fallback,
+key retirement, secure erase, durable witness or physical hardware
+tests. All Android APK/Robolectric/inherited Kotlin CI GREEN.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 39648399244.
+Evidence: research/android/CP-0009P_AUDIT_LIFECYCLE_CONSISTENCY.md.

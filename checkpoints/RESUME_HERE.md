@@ -1,24 +1,24 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE**
-Project version: `v66-session-recovery-audit-provenance`
-Phase: **Session-only recovery audit and source provenance software-tested; device/RF deferred**
-Test status: **GREEN CI: session audit Robolectric=PASS, Activity provenance/recreation=PASS, APK=PASS, inherited=PASS; finalizer 39451532632**
+Latest verified checkpoint: **CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY**
+Project version: `v67-audit-lifecycle-provenance-consistency`
+Phase: **Recovery option invalidation and display provenance consistency host-tested; device/RF deferred**
+Test status: **GREEN CI: stale-review provenance Robolectric=PASS, Android APK=PASS, inherited=PASS; finalizer 39648399244**
 
 ## What is complete in this checkpoint
-- Bounded typed only in-memory audit of recovery review, choice, confirm, rejected and blocked retirement
-- Activity-visible original/rotated provenance labeled only after confirmed successful recovery
-- Robolectric tests FIFO capacity, detached snapshot, clear/recreate and failure metadata-only audit
-- Original V1/V2/key paths unchanged, freshness unverified, no automatic key retirement
+- Stale encrypted recovery review and selection invalidated on ciphertext operations or session disable
+- Authenticated displayed source kept during paging/selection and cleared on archive replacement
+- Robolectric tests source preservation, synthetic replacement, null restores and Activity recreation
+- Typed bounded transient audit, V1/V2/key paths unchanged; no freshness witness or retirement
 - Real Android debug APK and inherited synthetic Kotlin/Robolectric host regressions succeeded
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction
 - CP-0004A/B/C hardware checkpoints incomplete
-- No persistent/trusted audit, key retirement or physical Galaxy S23 Ultra/Keystore/hard-link/RF/CAT/USB/account proof
+- No persistent audit, trusted freshness witness, key retirement or physical S23 Ultra/Keystore/RF/CAT/USB proof
 
 ## Continue with these exact actions
-1. CP-0009P: audit lifecycle and provenance consistency hardening, GitHub/CI-only
+1. CP-0009Q: recovery consent and failure UX hardening, GitHub/CI-only
 2. Preserve APK artifact build plus all inherited host regression gates
 3. CP-0003C remains DEFERRED; skip manual hardware/account validation
 
@@ -30,27 +30,3 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
-
-
-## CP-0009P work in progress — unverified
-
-Branch `cp-0009p-audit-lifecycle-consistency`. Durable parent CP-0009O.
-Source: ArchiveHistoryActivity, SessionRecoveryAuditTrail and new
-RecoveryAuditLifecycleConsistencyTest, packaging contract and CI.
-Full exact-head push/PR CI, premerge snapshot dry-run, then merge,
-main finalizer and immutable SHA-256 matching LATEST/manifest required.
-Do not call CP-0009P durable until all gates pass. No key retirement,
-secure deletion, trusted replay freshness or physical S23/FTX-1 RF.
-CP-0003C DEFERRED, CP-0004A/B/C incomplete.
-
-### CP-0009P failure recovery
-
-Earlier CI head `a95989bbcd83aaee4239e4204bbf82ac412bcbd4`
-FAILED four Robolectric tests; production APK compiled but host
-tests could not save with AndroidKeyStore and repeat REVIEW audit was
-misclassified as disk mutation. Subsequent branch code supplies
-test-only software AES provider via protected production-default
-Keystore accessors and corrects re-review audit. Do not count earlier
-failed CI as proof. Validate exact new head 46/46 push and PR,
-APK build, merged-main 46/46 finalizer, and independently check snapshot
-SHA-256 before calling durable. CP-0003C DEFERRED.

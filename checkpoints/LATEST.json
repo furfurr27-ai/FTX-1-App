@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE",
-  "created_utc": "2026-10-20T15:49:50+00:00",
-  "manifest": "checkpoints/manifests/CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE.json",
-  "snapshot": "checkpoints/snapshots/CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE.tar.gz",
-  "snapshot_sha256": "8c05d5dab0c913acda1b089814dc376e866c980494a3d30bda61d2085707cd1f"
+  "checkpoint_id": "CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY",
+  "created_utc": "2026-10-21T18:01:53+00:00",
+  "manifest": "checkpoints/manifests/CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY.json",
+  "snapshot": "checkpoints/snapshots/CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY.tar.gz",
+  "snapshot_sha256": "1e8188c2bf770da35d2590987929ec0bc0d104028776f1f4d708736b955221bc"
 }

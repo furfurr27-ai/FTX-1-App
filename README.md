@@ -39,40 +39,38 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE
+**Latest verified checkpoint:** CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY
 
-Parent durable checkpoint: CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE / v65.
+Parent durable checkpoint: CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE / v66.
 
-CP-0009O adds a bounded, session-only RECOVERY AUDIT TRAIL for the
-explicit authenticated encrypted V2 archive review/select/confirm flow.
-Typed closed enum actions/outcomes/candidate labels and sequence ordinals
-are the only stored metadata. A fixed 12-entry FIFO cap (maximum 64),
-detached read-only snapshots, clear control and Activity-instance-only
-lifetime prevent accumulation or persistence. No credentials, archive
-payload, callsign, file path, hash, time, exception text, account detail
-or other arbitrary string is stored; no DB, file, preferences, Android
-saved state, Logcat or network output. Activity recreation resets audit.
+CP-0009P hardens explicit encrypted archive choice and display-source
+consistency. File evidence mutation, rotated-copy changes, delete, or
+encrypted/rotation session disable invalidates previously reviewed
+candidates and forces another explicit review. No stale CONFIRM remains
+visible after those user actions. Canonical reinspection/authentication
+and two distinct SELECT and CONFIRM steps are preserved.
 
-Android displays review ACCEPTED/REJECTED, SELECT, CONFIRM
-ACCEPTED/REJECTED, retirement review BLOCKED, and disable session
-events as user-visible, ephemeral records. It identifies original or
-rotated authenticated local V2 **only after successful explicit
-recovery**. A synthetic capture, workspace action or other explicit
-restore invalidates the current displayed recovery provenance.
-Authentication is not transmitter/station provenance or trusted
-monotonic freshness: FRESHNESS NOT VERIFIED remains visible.
+Successfully authenticated in-memory source labels survive paging and
+selection/comparison that do not change the archive. Synthetic capture,
+workspace archive mutation or separate V1/V2 restore replaces in-memory
+bytes and invalidates that source. Failed/null reads leave existing
+on-screen data and source unchanged. Activity recreation clears the
+session audit and source claim, never asserting unverified provenance.
+Disk writes or deletes do not erase already displayed in-memory history.
 
-CP-0009N's original/rotated independent authentication, source
-reinspection, SHA-256 canonical equality verification, stale-source
-refusal and two-tap confirmation remain intact. Original V1 plaintext,
-both encrypted V2 copies, their Keystore keys, synthetic demo-only
-history and all separate opt-ins remain. No archive is automatically
-preferred, no secure flash wipe or key retirement is implemented.
-Old-key retirement remains BLOCKED_NON_EXECUTING. CP-0003C is DEFERRED,
-CP-0004A/B/C hardware checkpoints incomplete.
+The bounded typed audit adds OPTIONS_INVALIDATED/CLEARED and
+DISPLAY_REPLACED/ACCEPTED without logging payloads, callsigns, error
+messages, key aliases, file paths, digests, dates, tokens, passwords,
+session IDs or clock values. No persistent file/DB/Bundle/log/network
+audit, key retirement, implicit fallback, anti-replay counter or secure
+flash wipe. FRESHNESS NOT VERIFIED; older authenticated V2 replay is
+still possible. Old-key retirement remains BLOCKED_NON_EXECUTING.
 
 Host/CI gates:
 
+- CP-0009P review invalidation after source evidence changes: **PASS**.
+- CP-0009P Activity navigation/replacement/recreation tests: **PASS**.
+- CP-0009P Android APK, inherited Kotlin/host regressions: **PASS**.
 - CP-0009O typed bounded session audit Robolectric tests: **PASS**.
 - CP-0009O Android nonpersistent audit and current provenance UX: **PASS**.
 - CP-0009O API35 APK and complete inherited Kotlin host regressions: **PASS**.
@@ -158,24 +156,25 @@ Host/CI gates:
 
 Evidence:
 
+- app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
 - app/src/main/kotlin/dev/n0png/fieldops/app/SessionRecoveryAuditTrail.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/SessionRecoveryAuditTrailTest.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/SessionRecoveryAuditActivityTest.kt
-- research/android/CP-0009O_SESSION_RECOVERY_AUDIT.md
-- .github/workflows/cp0009o-session-recovery-audit.yml
-- .github/workflows/finalize-cp0009o.yml
-- CP-0009O merged-main finalizer run: 39451532632
+- app/src/test/kotlin/dev/n0png/fieldops/app/RecoveryAuditLifecycleConsistencyTest.kt
+- scripts/test_android_package_contract.py
+- research/android/CP-0009P_AUDIT_LIFECYCLE_CONSISTENCY.md
+- .github/workflows/cp0009p-audit-lifecycle-consistency.yml
+- .github/workflows/finalize-cp0009p.yml
+- CP-0009P merged-main finalizer: 39648399244
 
 ### Evidence boundary
 
-Only JVM/Robolectric software-key/archive and Android build validation.
-The audit is not tamper-proof, persistent, cryptographically signed,
-a reliable clock or trusted recency witness; no physical device
-Keystore, filesystem, radio/RF/account or secure deletion proof exists.
+Host Android API35 synthetic/Robolectric/software-key and built APK
+only. No real S23 Ultra/Keystore/storage, FTX-1 CAT/USB/audio/RF,
+LoTW credentials, trusted recency or key retirement proof.
+CP-0003C DEFERRED; CP-0004A/B/C hardware checkpoints incomplete.
 
 ### Inherited verified ancestry
 
-CP-0009N-EXPLICIT_ENCRYPTED_ARCHIVE_RECOVERY_CHOICE and all preceding immutable checkpoints remain intact.
+CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE and preceding immutable checkpoints remain intact.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -199,7 +198,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009P — audit lifecycle and provenance consistency hardening
+**Active software track:** CP-0009Q — recovery consent and failure UX hardening
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -424,7 +423,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE
+- Current Git source baseline: CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -437,14 +436,13 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009P — audit lifecycle and provenance consistency hardening.**
+**CP-0009Q — recovery consent and failure UX hardening.**
 
-1. Harden audit lifecycle on session disable, independent restore and
-   synthetic history changes, preserving typed-only privacy boundaries.
-2. Test consistent visible archive provenance after failed recovery
-   and new Activity/configuration recreation without logging any payload.
-3. Preserve full Android APK/Robolectric/inherited CI, immutable
-   snapshot verification and FRESHNESS NOT VERIFIED warnings.
+1. Improve transparent recovery consent and failure UX without claiming
+   cryptographic freshness or physical radio provenance.
+2. Preserve bounded typed-only audit, two-tap reauthentication and
+   BLOCKED_NON_EXECUTING key retirement.
+3. Preserve Android APK/Robolectric, inherited CI and immutable SHA-256.
 4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## README maintenance contract
@@ -463,35 +461,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-
-## CP-0009P implementation branch — not checkpointed
-
-Branch `cp-0009p-audit-lifecycle-consistency`, verified parent CP-0009O/v66.
-Pending reviews/selections are now invalidated on encrypted V2 file
-mutation, rotation copy changes and encrypted/rotation session disable.
-Source of explicitly recovered on-screen V2 stays labeled during paging,
-selection and comparison that preserve archive bytes. Capture, actual
-archive modification or successful standalone restore clears source;
-failed/null standalone restore keeps current display/source. New
-Activity/configuration recreation resets audit and source conservatively.
-Typed bounded audit adds OPTIONS_INVALIDATED and DISPLAY_REPLACED, with
-no paths, hashes, secrets, timestamps, error strings, persistence,
-trusted recency or station-origin proof. Original two-tap fresh inspection
-remains; no key retirement, plaintext downgrade or automatic winner.
-**WIP only:** require full exact-head push/PR 46-job green CI, actual
-Android API35 APK tests, premerge checkpoint dry run, merged-main finalizer
-46/46 and independently SHA-256 verified immutable tar/manifest before
-calling CP-0009P durable. CP-0003C remains DEFERRED; CP-0004A/B/C
-hardware checkpoints incomplete. Next after durable CP-0009P: CP-0009Q.
-
-### CP-0009P validation repair — still WIP
-
-The prior branch CI exposed Robolectric software-key setup omissions
-and a spurious OPTIONS_INVALIDATED event on a deliberate re-review.
-Production activity keeps AndroidKeystore providers; tests now use an
-`app/src/test` subclass that provides explicit-save-only software keys.
-Repeated deliberate REVIEW supersedes stale selection without faking a
-disk-mutation event. Archive mutations still invalidate review tokens.
-No real phone Keystore validation; CP-0003C remains DEFERRED.
-Promote only after the new exact-head CI and immutable checkpoint proof.
