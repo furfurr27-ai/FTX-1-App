@@ -13,7 +13,17 @@ import android.widget.TextView
 import dev.n0png.fieldops.core.propagation.*
 
 /** CP-0009E: archive UI backed by real CP-0009C state, with synthetic-only reports. */
-class ArchiveHistoryActivity : Activity() {
+open class ArchiveHistoryActivity : Activity() {
+    /**
+     * Keystore-only production default. Protected seam allows isolated
+     * Robolectric software-key fixtures without altering Android behavior.
+     * Do not add settings, intents, or runtime UI for key injection.
+     */
+    protected open fun originalArchiveKeyProvider(): EncryptedArchiveKeyProvider =
+        AndroidKeystoreArchiveKeyProvider()
+    protected open fun rotatedArchiveKeyProvider(): EncryptedArchiveKeyProvider =
+        AndroidKeystoreRotatedArchiveKeyProvider()
+
     private val api = PropagationArchiveWorkspaceService
     private var state = api.open(PropagationOfflineArchivePolicy(maxEntries = 12))
     private var beforeId: String? = null
@@ -22,9 +32,13 @@ class ArchiveHistoryActivity : Activity() {
     private lateinit var body: LinearLayout
     private val localStore by lazy { OptInArchiveStore(applicationContext) }
     private var localStatus = "Local archive storage is DISABLED. No automatic save or restore."
-    private val encryptedStore by lazy { OptInEncryptedArchiveStore(applicationContext) }
+    private val encryptedStore by lazy {
+        OptInEncryptedArchiveStore(applicationContext, originalArchiveKeyProvider())
+    }
     private var encryptedStatus = "Encrypted V2 storage DISABLED; no automatic key generation or restore."
-    private val rotationStore by lazy { ExplicitEncryptedArchiveRotation(applicationContext, encryptedStore) }
+    private val rotationStore by lazy {
+        ExplicitEncryptedArchiveRotation(applicationContext, encryptedStore, rotatedArchiveKeyProvider())
+    }
     private var rotationStatus = "Key-rotation copy is DISABLED. A separate action and new key are required."
     private val recovery by lazy {
         ExplicitEncryptedArchiveRecovery(encryptedStore, rotationStore)
@@ -343,7 +357,10 @@ class ArchiveHistoryActivity : Activity() {
             }
         } else {
             actionButton("REVIEW AUTHENTICATED RECOVERY OPTIONS") {
-                invalidateRecoveryOptions()
+                // Deliberate re-review supersedes the previous review token.
+                // It is itself audited as REVIEW, not as a disk mutation.
+                recoveryReview = null
+                pendingRecovery = null
                 recoveryStatus = runCatching {
                     val review = recovery.reviewExplicitly()
                     recoveryReview = review
