@@ -10,7 +10,7 @@ on:
       - 'build.gradle.kts'
       - 'scripts/test_android_package_contract.py'
       - 'scripts/finalize_cp0009q.py'
-      - '.github/workflows/cp0009q-audit-lifecycle-consistency.yml'
+      - '.github/workflows/cp0009q-recovery-consent-failure-ux.yml'
       - '.github/workflows/finalize-cp0009q.yml'
       - 'scripts/test_encrypted_archive_migration_contract.sh'
       - 'core/src/test/kotlin/**'
