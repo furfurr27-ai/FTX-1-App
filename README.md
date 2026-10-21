@@ -463,3 +463,24 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+
+## CP-0009P implementation branch — not checkpointed
+
+Branch `cp-0009p-audit-lifecycle-consistency`, verified parent CP-0009O/v66.
+Pending reviews/selections are now invalidated on encrypted V2 file
+mutation, rotation copy changes and encrypted/rotation session disable.
+Source of explicitly recovered on-screen V2 stays labeled during paging,
+selection and comparison that preserve archive bytes. Capture, actual
+archive modification or successful standalone restore clears source;
+failed/null standalone restore keeps current display/source. New
+Activity/configuration recreation resets audit and source conservatively.
+Typed bounded audit adds OPTIONS_INVALIDATED and DISPLAY_REPLACED, with
+no paths, hashes, secrets, timestamps, error strings, persistence,
+trusted recency or station-origin proof. Original two-tap fresh inspection
+remains; no key retirement, plaintext downgrade or automatic winner.
+**WIP only:** require full exact-head push/PR 46-job green CI, actual
+Android API35 APK tests, premerge checkpoint dry run, merged-main finalizer
+46/46 and independently SHA-256 verified immutable tar/manifest before
+calling CP-0009P durable. CP-0003C remains DEFERRED; CP-0004A/B/C
+hardware checkpoints incomplete. Next after durable CP-0009P: CP-0009Q.
