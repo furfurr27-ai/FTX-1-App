@@ -44,3 +44,14 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+
+## CP-0009P work in progress — not durable
+
+Branch `cp-0009p-audit-lifecycle-consistency`, durable parent
+CP-0009O/v66. UI provenance follows *displayed bytes*, not archive
+disk existence; stale reviewed choices clear on evidence changes,
+session disable and actual display change. No raw data in audit.
+Await exact-head push/PR Android/Robolectric/inherited CI and merged-main
+finalizer with independently verified immutable SHA-256. No physical
+radio/account/device testing. CP-0003C DEFERRED.
