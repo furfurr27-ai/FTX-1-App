@@ -56,7 +56,7 @@ class RecoveryAuditLifecycleConsistencyTest {
     }
 
     @Test fun evidenceMutationInvalidatesPendingSelectAndNeverAutomaticallyFallsBack() {
-        Robolectric.buildActivity(ArchiveHistoryActivity::class.java).setup().use {
+        Robolectric.buildActivity(SoftwareKeyArchiveHistoryActivity::class.java).setup().use {
             val a = it.get()
             prepare(a)
             reviewSelect(a)
@@ -76,7 +76,7 @@ class RecoveryAuditLifecycleConsistencyTest {
     }
 
     @Test fun navigationPreservesAuthenticatedDisplaySourceButMutationAndRecreationClearIt() {
-        val runner = Robolectric.buildActivity(ArchiveHistoryActivity::class.java).setup()
+        val runner = Robolectric.buildActivity(SoftwareKeyArchiveHistoryActivity::class.java).setup()
         try {
             var a = runner.get()
             prepare(a)
@@ -106,7 +106,7 @@ class RecoveryAuditLifecycleConsistencyTest {
     }
 
     @Test fun deletingSourceFileRetainsDisplayedSourceButInvalidatesChoice() {
-        Robolectric.buildActivity(ArchiveHistoryActivity::class.java).setup().use {
+        Robolectric.buildActivity(SoftwareKeyArchiveHistoryActivity::class.java).setup().use {
             val a=it.get()
             prepare(a)
             reviewSelect(a)
