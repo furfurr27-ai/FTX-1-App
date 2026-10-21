@@ -170,11 +170,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with: {fetch-depth: 0}
-      - name: Promote CP-0009O authenticated rotation copy state
+      - name: Promote CP-0009P recovery audit lifecycle state
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
         run: python3 scripts/finalize_cp0009p.py
-      - name: Create and verify immutable CP-0009O snapshot
+      - name: Create and verify immutable CP-0009P snapshot
         env:
           FINALIZE_RUN_ID: ${{ github.run_id }}
         run: |
