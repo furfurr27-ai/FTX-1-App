@@ -30,3 +30,15 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+
+## CP-0009P work in progress — unverified
+
+Branch `cp-0009p-audit-lifecycle-consistency`. Durable parent CP-0009O.
+Source: ArchiveHistoryActivity, SessionRecoveryAuditTrail and new
+RecoveryAuditLifecycleConsistencyTest, packaging contract and CI.
+Full exact-head push/PR CI, premerge snapshot dry-run, then merge,
+main finalizer and immutable SHA-256 matching LATEST/manifest required.
+Do not call CP-0009P durable until all gates pass. No key retirement,
+secure deletion, trusted replay freshness or physical S23/FTX-1 RF.
+CP-0003C DEFERRED, CP-0004A/B/C incomplete.
