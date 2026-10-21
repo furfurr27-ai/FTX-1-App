@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 66"):
+              "targetSdk = 35", "versionCode = 67"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -240,3 +240,27 @@ for required in ("SESSION-ONLY RECOVERY AUDIT", "CURRENT EXPLICIT RECOVERY SOURC
     if required not in archive_kotlin:
         raise SystemExit("CP-0009O Android audit/provenance UX missing: " + required)
 print("CP-0009O nonpersistent typed bounded audit, no payload and explicit provenance: PASS")
+
+# CP-0009P: no stale review selection or provenance claim following mutation.
+for required in ("fun invalidateRecoveryOptions()", "fun invalidateDisplayedRecoveryProvenance()",
+                 "val originalArchive = state.archive", "state.archive != originalArchive",
+                 "RecoveryAuditAction.OPTIONS_INVALIDATED", "RecoveryAuditAction.DISPLAY_REPLACED",
+                 "RecoveryAuditOutcome.CLEARED", "recoveryReview = null",
+                 "pendingRecovery = null", "recoveryAudit.snapshot()",
+                 "CURRENT EXPLICIT RECOVERY SOURCE:", "FRESHNESS NOT VERIFIED"):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009P lifecycle/provenance guard missing: " + required)
+for label in ("SAVE ENCRYPTED COPY OF CURRENT HISTORY",
+              "MIGRATE VALIDATED LOCAL V1 TO ENCRYPTED COPY",
+              "DELETE ENCRYPTED V2 FILE ONLY",
+              "CREATE DISTINCT-KEY ENCRYPTED COPY",
+              "DELETE ROTATED COPY ONLY",
+              "DISABLE ENCRYPTED ARCHIVE SESSION",
+              "DISABLE ROTATION COPY SESSION"):
+    start = archive_kotlin.find('actionButton("' + label + '")')
+    if start < 0 or "invalidateRecoveryOptions()" not in archive_kotlin[start:start+290]:
+        raise SystemExit("CP-0009P mutation/disable must invalidate review: " + label)
+for required in ("OPTIONS_INVALIDATED", "DISPLAY_REPLACED"):
+    if required not in audit_source:
+        raise SystemExit("CP-0009P typed audit action missing: " + required)
+print("CP-0009P stale-review invalidation, archive-only source changes, typed audit: PASS")

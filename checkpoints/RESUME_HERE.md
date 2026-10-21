@@ -30,3 +30,27 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+
+## CP-0009P work in progress — unverified
+
+Branch `cp-0009p-audit-lifecycle-consistency`. Durable parent CP-0009O.
+Source: ArchiveHistoryActivity, SessionRecoveryAuditTrail and new
+RecoveryAuditLifecycleConsistencyTest, packaging contract and CI.
+Full exact-head push/PR CI, premerge snapshot dry-run, then merge,
+main finalizer and immutable SHA-256 matching LATEST/manifest required.
+Do not call CP-0009P durable until all gates pass. No key retirement,
+secure deletion, trusted replay freshness or physical S23/FTX-1 RF.
+CP-0003C DEFERRED, CP-0004A/B/C incomplete.
+
+### CP-0009P failure recovery
+
+Earlier CI head `a95989bbcd83aaee4239e4204bbf82ac412bcbd4`
+FAILED four Robolectric tests; production APK compiled but host
+tests could not save with AndroidKeyStore and repeat REVIEW audit was
+misclassified as disk mutation. Subsequent branch code supplies
+test-only software AES provider via protected production-default
+Keystore accessors and corrects re-review audit. Do not count earlier
+failed CI as proof. Validate exact new head 46/46 push and PR,
+APK build, merged-main 46/46 finalizer, and independently check snapshot
+SHA-256 before calling durable. CP-0003C DEFERRED.

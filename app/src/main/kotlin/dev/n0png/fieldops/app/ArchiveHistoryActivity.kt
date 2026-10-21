@@ -13,7 +13,17 @@ import android.widget.TextView
 import dev.n0png.fieldops.core.propagation.*
 
 /** CP-0009E: archive UI backed by real CP-0009C state, with synthetic-only reports. */
-class ArchiveHistoryActivity : Activity() {
+open class ArchiveHistoryActivity : Activity() {
+    /**
+     * Keystore-only production default. Protected seam allows isolated
+     * Robolectric software-key fixtures without altering Android behavior.
+     * Do not add settings, intents, or runtime UI for key injection.
+     */
+    protected open fun originalArchiveKeyProvider(): EncryptedArchiveKeyProvider =
+        AndroidKeystoreArchiveKeyProvider()
+    protected open fun rotatedArchiveKeyProvider(): EncryptedArchiveKeyProvider =
+        AndroidKeystoreRotatedArchiveKeyProvider()
+
     private val api = PropagationArchiveWorkspaceService
     private var state = api.open(PropagationOfflineArchivePolicy(maxEntries = 12))
     private var beforeId: String? = null
@@ -22,9 +32,13 @@ class ArchiveHistoryActivity : Activity() {
     private lateinit var body: LinearLayout
     private val localStore by lazy { OptInArchiveStore(applicationContext) }
     private var localStatus = "Local archive storage is DISABLED. No automatic save or restore."
-    private val encryptedStore by lazy { OptInEncryptedArchiveStore(applicationContext) }
+    private val encryptedStore by lazy {
+        OptInEncryptedArchiveStore(applicationContext, originalArchiveKeyProvider())
+    }
     private var encryptedStatus = "Encrypted V2 storage DISABLED; no automatic key generation or restore."
-    private val rotationStore by lazy { ExplicitEncryptedArchiveRotation(applicationContext, encryptedStore) }
+    private val rotationStore by lazy {
+        ExplicitEncryptedArchiveRotation(applicationContext, encryptedStore, rotatedArchiveKeyProvider())
+    }
     private var rotationStatus = "Key-rotation copy is DISABLED. A separate action and new key are required."
     private val recovery by lazy {
         ExplicitEncryptedArchiveRecovery(encryptedStore, rotationStore)
@@ -42,8 +56,34 @@ class ArchiveHistoryActivity : Activity() {
         candidate: EncryptedRecoveryCandidate? = null,
     ) = recoveryAudit.record(action, outcome, candidate)
 
+    /**
+     * CP-0009P: invalidate candidates whenever disk evidence might change.
+     * Never silently reuse old UI review/selection following writes/deletes.
+     * Current *displayed* source survives file mutation until display changes.
+     */
+    private fun invalidateRecoveryOptions() {
+        if (recoveryReview != null || pendingRecovery != null) {
+            audit(RecoveryAuditAction.OPTIONS_INVALIDATED, RecoveryAuditOutcome.CLEARED)
+            recoveryStatus = "Recovery options invalidated; REVIEW AGAIN. " +
+                "FRESHNESS NOT VERIFIED."
+        }
+        recoveryReview = null
+        pendingRecovery = null
+    }
+
+    /** Only replace source provenance when archive bytes actually change. */
     private fun invalidateDisplayedRecoveryProvenance() {
+        val hadSource = currentRecoverySource != null
+        val hadOptions = recoveryReview != null || pendingRecovery != null
+        if (hadSource) {
+            audit(RecoveryAuditAction.DISPLAY_REPLACED, RecoveryAuditOutcome.ACCEPTED)
+        }
         currentRecoverySource = null
+        invalidateRecoveryOptions()
+        if (hadOptions || hadSource) {
+            recoveryStatus = "On-screen archive changed; previous review/source invalidated. " +
+                "FRESHNESS NOT VERIFIED."
+        }
     }
 
     /** In-memory recovery only; failed authentication does not replace UI data. */
@@ -127,8 +167,11 @@ class ArchiveHistoryActivity : Activity() {
     }
 
     private fun dispatch(action: PropagationArchiveWorkspaceAction) {
-        invalidateDisplayedRecoveryProvenance()
+        val originalArchive = state.archive
         state = api.apply(state, action)
+        // Paging, selecting, comparing and focus actions do NOT alter archive
+        // contents and must not erase an authenticated display-source label.
+        if (state.archive != originalArchive) invalidateDisplayedRecoveryProvenance()
         if (state.archive.entries.none { it.id == beforeId }) beforeId = null
         if (state.archive.entries.none { it.id == afterId }) afterId = null
         render()
@@ -211,6 +254,7 @@ class ArchiveHistoryActivity : Activity() {
             }
         } else {
             actionButton("SAVE ENCRYPTED COPY OF CURRENT HISTORY") {
+                invalidateRecoveryOptions()
                 encryptedStatus = runCatching {
                     encryptedStore.saveEncryptedExplicitly(state.archive)
                     "Saved AES-GCM encrypted V2 copy. Existing plaintext V1 was not deleted."
@@ -219,6 +263,7 @@ class ArchiveHistoryActivity : Activity() {
                 render()
             }
             actionButton("MIGRATE VALIDATED LOCAL V1 TO ENCRYPTED COPY") {
+                invalidateRecoveryOptions()
                 encryptedStatus = runCatching {
                     check(localStore.isEnabled()) {
                         "Enable plaintext V1 local storage separately before explicit migration"
@@ -265,6 +310,7 @@ class ArchiveHistoryActivity : Activity() {
                 render()
             }
             actionButton("DELETE ENCRYPTED V2 FILE ONLY") {
+                invalidateRecoveryOptions()
                 encryptedStatus = if (encryptedStore.deleteEncryptedExplicitly()) {
                     "Encrypted V2 file deleted; V1 plaintext unchanged. Not a secure wipe."
                 } else {
@@ -274,9 +320,8 @@ class ArchiveHistoryActivity : Activity() {
             }
             actionButton("DISABLE ENCRYPTED ARCHIVE SESSION") {
                 encryptedStore.disableForThisSession()
+                invalidateRecoveryOptions()
                 audit(RecoveryAuditAction.SESSION_DISABLED, RecoveryAuditOutcome.ACCEPTED)
-                recoveryReview = null
-                pendingRecovery = null
                 encryptedStatus = "Encrypted session disabled; saved files and Keystore keys retained."
                 render()
             }
@@ -312,6 +357,8 @@ class ArchiveHistoryActivity : Activity() {
             }
         } else {
             actionButton("REVIEW AUTHENTICATED RECOVERY OPTIONS") {
+                // Deliberate re-review supersedes the previous review token.
+                // It is itself audited as REVIEW, not as a disk mutation.
                 recoveryReview = null
                 pendingRecovery = null
                 recoveryStatus = runCatching {
@@ -370,6 +417,7 @@ class ArchiveHistoryActivity : Activity() {
                 render()
             }
             actionButton("CREATE DISTINCT-KEY ENCRYPTED COPY") {
+                invalidateRecoveryOptions()
                 rotationStatus = runCatching {
                     rotationStore.rotateExplicitly()
                     "Created authenticated separate rotation copy; original V2/key retained. " +
@@ -407,6 +455,7 @@ class ArchiveHistoryActivity : Activity() {
                 render()
             }
             actionButton("DELETE ROTATED COPY ONLY") {
+                invalidateRecoveryOptions()
                 rotationStatus = if (rotationStore.deleteRotatedCopyExplicitly()) {
                     "Deleted rotated encrypted copy only. Original V2/key and V1 left untouched. " +
                         "Not secure erase."
@@ -417,9 +466,8 @@ class ArchiveHistoryActivity : Activity() {
             }
             actionButton("DISABLE ROTATION COPY SESSION") {
                 rotationStore.disableForThisSession()
+                invalidateRecoveryOptions()
                 audit(RecoveryAuditAction.SESSION_DISABLED, RecoveryAuditOutcome.ACCEPTED)
-                recoveryReview = null
-                pendingRecovery = null
                 rotationStatus = "Rotation copy session disabled; keys and files retained."
                 render()
             }

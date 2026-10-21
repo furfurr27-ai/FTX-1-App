@@ -14,6 +14,8 @@ enum class RecoveryAuditAction {
     CONFIRM,
     RETIREMENT_REVIEW,
     SESSION_DISABLED,
+    OPTIONS_INVALIDATED,
+    DISPLAY_REPLACED,
     CLEAR,
 }
 
