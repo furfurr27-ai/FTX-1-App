@@ -264,3 +264,31 @@ for required in ("OPTIONS_INVALIDATED", "DISPLAY_REPLACED"):
     if required not in audit_source:
         raise SystemExit("CP-0009P typed audit action missing: " + required)
 print("CP-0009P stale-review invalidation, archive-only source changes, typed audit: PASS")
+
+
+# CP-0009Q: consent content must stay outside typed-only audit.
+consent_source = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/RecoveryConsentUx.kt").read_text()
+for required in ("object RecoveryConsentUx", "selectionConsent(",
+                 "CURRENT ON-SCREEN", "FRESHNESS NOT VERIFIED",
+                 "NOT proof of station or RF provenance",
+                 "CANCEL RECOVERY SELECTION", "RECOVERY REJECTED;",
+                 "REVIEW AGAIN"):
+    if required not in consent_source:
+        raise SystemExit("CP-0009Q consent/failure UX missing: " + required)
+for required in ("RecoveryConsentUx.selectionConsent(candidate)",
+                 "RecoveryConsentUx.REJECTED",
+                 "RecoveryConsentUx.CANCELLED",
+                 "RecoveryAuditAction.CANCEL_SELECTION",
+                 'actionButton("CANCEL RECOVERY SELECTION")',
+                 'actionButton("CONFIRM " + candidate.name + " RECOVERY TO MEMORY")'):
+    if required not in archive_kotlin:
+        raise SystemExit("CP-0009Q explicit consent/cancel/confirm guard missing: " + required)
+if "CANCEL_SELECTION" not in audit_source:
+    raise SystemExit("CP-0009Q closed typed audit lacks CANCEL_SELECTION")
+for forbidden in ("android.content.Context", "SecretKey", "File(", "System.currentTimeMillis",
+                  "Log.", "MessageDigest", "SharedPreferences", "Serializable", "Parcelable"):
+    if forbidden in consent_source:
+        raise SystemExit("CP-0009Q consent renderer must remain side-effect free: " + forbidden)
+if "versionCode = 68" not in appgradle.read_text():
+    raise SystemExit("CP-0009Q APK versionCode 68 expected")
+print("CP-0009Q explicit consent, safe failure, cancel and typed-only audit: PASS")
