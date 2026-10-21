@@ -45,3 +45,14 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
+
+## CP-0009Q work in progress — not durable
+
+Branch `cp-0009q-recovery-consent-failure-ux`; immutable parent CP-0009P.
+Explicit REVIEW → SELECT → consent/cancel/CONFIRM preserves fresh
+reauthentication; cancellation never modifies archive bytes and failed
+confirmation preserves source/history with safe error text. Test-only
+software AES fixture is excluded from packaged APK; production keeps
+AndroidKeyStore. Await current-head CI, main finalizer and verified
+immutable snapshot before promotion. No physical radio/Keystore proof.
+CP-0003C remains DEFERRED, CP-0004A/B/C incomplete.
