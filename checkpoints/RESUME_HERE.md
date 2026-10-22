@@ -30,3 +30,15 @@ python3 scripts/verify_checkpoint.py --root . --latest
 ```
 
 Do not redo completed work unless verification fails or a newer requirement explicitly invalidates it.
+
+## CP-0009Q WIP — unverified
+
+Branch `cp-0009q-recovery-consent-failure-ux` implementing explicit
+source-specific consent, cancel-selection typed audit and sanitized
+recovery rejection. Immutable parent CP-0009P remains latest VERIFIED.
+New Robolectric tests plus all inherited Kotlin/Android/APK gates and
+premerge snapshot dry-run are mandatory on the exact branch head.
+Do not merge/publish as durable without complete green CI, main
+finalizer and independently checked snapshot SHA-256. No Android
+physical Keystore, radio CAT/audio/RF or account testing.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.

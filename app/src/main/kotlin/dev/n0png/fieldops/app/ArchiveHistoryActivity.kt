@@ -109,8 +109,7 @@ open class ArchiveHistoryActivity : Activity() {
                 "No files or keys changed."
         }.getOrElse {
             audit(RecoveryAuditAction.CONFIRM, RecoveryAuditOutcome.REJECTED, candidate)
-            "RECOVERY REJECTED; on-screen history retained, no fallback: " +
-                (it.message ?: "candidate changed or became unavailable")
+            RecoveryConsentUx.REJECTED
         }
         recoveryReview = null
         pendingRecovery = null
@@ -394,6 +393,15 @@ open class ArchiveHistoryActivity : Activity() {
                     render()
                 }
                 if (pendingRecovery == candidate) {
+                    title("EXPLICIT RECOVERY CONSENT", 15)
+                    message(RecoveryConsentUx.selectionConsent(candidate))
+                    actionButton("CANCEL RECOVERY SELECTION") {
+                        pendingRecovery = null
+                        audit(RecoveryAuditAction.CANCEL_SELECTION, RecoveryAuditOutcome.CLEARED,
+                            candidate)
+                        recoveryStatus = RecoveryConsentUx.CANCELLED
+                        render()
+                    }
                     actionButton("CONFIRM " + candidate.name + " RECOVERY TO MEMORY") {
                         confirmReviewedRecovery(candidate)
                     }
