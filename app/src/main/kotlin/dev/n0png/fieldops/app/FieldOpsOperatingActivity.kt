@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
@@ -244,6 +246,7 @@ open class FieldOpsOperatingActivity : Activity() {
             contentDescription = "Remote callsign"
             isSingleLine = true
             setText(model.draftCall)
+            addTextChangedListener(draftWatcher { model.draftCall = it })
         }
         val freq = EditText(this).apply {
             hint = "Frequency in MHz (e.g. 7.075)"
@@ -252,6 +255,7 @@ open class FieldOpsOperatingActivity : Activity() {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or
                 android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
             setText(model.draftFrequencyMhz)
+            addTextChangedListener(draftWatcher { model.draftFrequencyMhz = it })
         }
         root.addView(call)
         root.addView(freq)
@@ -311,6 +315,15 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("ACCOUNT & CRYPTO SAFETY",
             "CP-0003C LoTW account validation is DEFERRED. " +
                 "Encrypted archive freshness is not verified; keys are not retired automatically.")
+    }
+
+    /** Keep unsaved user input through navigation and configuration changes. */
+    private fun draftWatcher(change: (String) -> Unit) = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            change(s?.toString().orEmpty())
+        }
+        override fun afterTextChanged(s: Editable?) {}
     }
 
     private fun disabledAction(label: String) {
