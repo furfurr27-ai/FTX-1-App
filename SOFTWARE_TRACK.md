@@ -23,16 +23,43 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 Skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue with the next checkpoint that can be completed entirely through GitHub/CI. Deferred checkpoints remain incomplete.
 
-## Active software checkpoint
+## Finite software release track
 
-CP-0009R — recovery accessibility and failure-path coverage
+**Owner-completion override after CP-0009Q:** no speculative CP-0009R
+recovery-accessibility micro-checkpoint. Use the acceptance-gapped
+`RELEASE_ACCEPTANCE_MATRIX.md` to close original P0–P3 software
+requirements, then stop after a durable software release candidate.
 
-CP-0009Q verified deliberate source-specific consent and cancel,
-safe generic rejection, retained display/provenance on failure, typed
-session-only CANCEL_SELECTION and no automatic fallback. Host
-Robolectric and Android APK/inherited Kotlin CI pass. No physical S23,
-Keystore, CAT/RF, freshness witness or key retirement proof.
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+### Immediate integration gap / next checkpoint
+
+**CP-0009R — integrated Android operating navigation and shared services**
+is the next acceptance target, **not** a verified checkpoint.
+
+- `MainActivity` remains an archive-only developer shell; the debug
+  APK has no complete DIGI, APRS, MAP, LOG, AWARDS, CW/SSB or RADIO
+  operating flow. Host-only engines and research must not be counted
+  as installed APK operation.
+- Integrate existing production-tested core components into Android
+  with truthful disconnected state and no live RF, working navigation,
+  shared app state and lifecycle/accessible tests.
+- Continue with remaining P0–P3 gap closure only; required P2/P3
+  families remain missing in current source.
+- Each milestone must include meaningful source/tests, exact-head CI,
+  premerge proof, merged-main finalizer and independent SHA-256 of
+  immutable snapshot. Final RC has reproducible integrated APK,
+  acceptance matrix and installation/field-test instructions.
+- No CP checkpoint after the software RC except for a verified
+  requirement bug, safety/security issue, physical integration failure
+  or new owner requirement.
+
+### Completed checkpoint
+
+CP-0009Q-RECOVERY_CONSENT_FAILURE_UX / v68;
+durable main `6c660d087fcdea4ae149b6dfe1b5b956d6edbf97`.
+Finalizer `39722428140` 46/46 success; independent snapshot
+`06a3d160b082ad3cea19dce2caf7af84c73630e4b362bec6614474dbd1fd463f`
+matches both manifest and LATEST. CP-0003C remains DEFERRED;
+CP-0004A/B/C remain physically unverified.
 
 ## Resume rule
 
