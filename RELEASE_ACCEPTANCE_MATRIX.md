@@ -2,7 +2,7 @@
 
 **Scope owner:** Chris / N0PNG. **Target:** Yaesu FTX-1/FTX-1F and Samsung Galaxy S23 Ultra only.
 
-**Audit basis:** GitHub merge `705243e489974f2e6627909832781d3d5eafb010` (PR #68; CP-0009Q merged but not necessarily finalized when this audit was drafted), and the checked source tree. The prior durable state at audit was CP-0009P / v67. Refresh this header after CP-0009Q's finalizer becomes durable; do not treat this branch as another completed checkpoint.
+**Audit basis:** GitHub CP-0009Q durable main `6c660d087fcdea4ae149b6dfe1b5b956d6edbf97` / `v68-recovery-consent-failure-ux` after PR #68; merged-main [finalizer 39722428140](https://github.com/furfurr27-ai/FTX-1-App/actions/runs/39722428140) 46/46. Independently rehashed 1,045,640 snapshot bytes: `06a3d160b082ad3cea19dce2caf7af84c73630e4b362bec6614474dbd1fd463f`, matching manifest and `LATEST.json`. Source-tree classification was based on the PR #68 merge (`705243e489974f2e6627909832781d3d5eafb010`); finalizer changed checkpoint documents only.
 
 **Purpose:** fixed original P0–P3 requirements and a finite release gate. A checked host test of a library is NOT proof that the installed APK exposes or uses it. A successful Android APK build is NOT proof of radio operation. Unknown evidence is marked unknown, not pass.
 
@@ -50,8 +50,8 @@
 
 ## Finite execution order and release stop condition
 
-1. **Finish CP-0009Q properly**: confirm PR #68 exact-head 46/46 matrices, merge SHA, main-only finalizer 46/46, latest immutable tar SHA-256 matched independently against manifest and LATEST. Do not pre-declare durability.
-2. **First post-CP-0009Q software acceptance task:** replace the archive-only launcher with a coherent, initially non-transmitting FieldOps navigation/session shell that integrates **actual existing** core services, exposes truthful status and safe disabled hardware-dependent actions, and has instrumented/Robolectric navigation + state tests. Make the next checkpoint close this measurable P3 gap, **not** another unsolicited archive micro-checkpoint.
+1. **CP-0009Q complete**: PR #68 exact-head 46/46 push and PR matrices, merged-main finalizer 46/46 and independently verified snapshot SHA-256 all PASS. Preserve this immutable baseline.
+2. **First post-CP-0009Q software acceptance task (CP-0009R integration target):** replace the archive-only launcher with a coherent, initially non-transmitting FieldOps navigation/session shell that integrates **actual existing** core services, exposes truthful status and safe disabled hardware-dependent actions, and has instrumented/Robolectric navigation + state tests. Make the next checkpoint close this measurable P3 gap, **not** another unsolicited archive micro-checkpoint.
 3. Integrate tested FT family/JS8/WSPR/APRS and radio/audio interfaces with real mode screens and simulated source data clearly identified, maintaining no RF transmit until device safety sign-off. Convert modes, logger, awards and propagation to coherent workflows with explicit acceptance vectors.
 4. Implement missing CW/SSB and the specified P2/P3 modes; maintain realistic licensing and interoperability evidence. Complete offline, lifecycle, privacy and navigation tests. Group development into acceptance-oriented checkpoints, not one per helper class.
 5. Produce final **software release candidate** only when every CI-closable gap above is satisfied, an installable integrated APK has a verified SHA-256, and source/CI/evidence/release instructions are durable.
@@ -63,4 +63,4 @@
 
 Every subsequent acceptance-focused PR should update affected rows with: precise source path(s), exact test run/link and vector, Android UI integration result, remaining gap, hardware/account proof, and software status. Avoid numerical percent-complete guesses: completed components do not measure weighted operational completeness. Never mark `ACCEPTED_SOFTWARE` based only on a contract, a compiled file or a simulated screenshot.
 
-This is a **draft source-inspection audit** until merged and verified. It neither changes CP-0009Q checkpoint evidence nor purports to supersede GitHub's latest durable checkpoint.
+This is a **source-inspection acceptance audit**. It does not modify CP-0009Q's immutable checkpoint, claim device testing, or constitute a new completed engineering checkpoint. Its classifications must be revised only from direct production-source and test evidence.
