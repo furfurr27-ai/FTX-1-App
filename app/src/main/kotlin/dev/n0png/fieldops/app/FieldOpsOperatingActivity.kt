@@ -155,7 +155,7 @@ open class FieldOpsOperatingActivity : Activity() {
     private fun render() {
         val scroll = ScrollView(this).apply {
             setFillViewport(true)
-            setBackgroundColor(background)
+            setBackgroundColor(this@FieldOpsOperatingActivity.background)
         }
         root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
