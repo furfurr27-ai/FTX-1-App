@@ -26,6 +26,7 @@ import dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
 import dev.n0png.fieldops.core.logbook.ManualQsoInput
 import dev.n0png.fieldops.core.logbook.ManualQsoMode
 import dev.n0png.fieldops.core.logbook.OperatingSession
+import dev.n0png.fieldops.core.logbook.QsoLocationSnapshot
 import dev.n0png.fieldops.core.logbook.QsoRadioContext
 import dev.n0png.fieldops.core.logbook.SequentialQsoIdSource
 import java.math.BigDecimal
@@ -56,6 +57,9 @@ open class FieldOpsOperatingActivity : Activity() {
         var manualMode = ManualQsoMode.SSB
         var draftCall = ""
         var draftFrequencyMhz = ""
+        var draftSent = ""
+        var draftReceived = ""
+        var draftRemoteGrid = ""
         var logMessage = "No contacts recorded in this in-memory session."
         var showAdif = false
 
@@ -75,12 +79,23 @@ open class FieldOpsOperatingActivity : Activity() {
             // No radio tune or transmit: frequency is user-entered QSO metadata.
             return try {
                 val record = logger.logManual(
-                    ManualQsoInput(call = call, mode = manualMode),
+                    ManualQsoInput(
+                        call = call,
+                        mode = manualMode,
+                        rstSent = draftSent.trim().ifEmpty { null },
+                        rstRcvd = draftReceived.trim().ifEmpty { null },
+                        remoteLocation = QsoLocationSnapshot(
+                            gridSquare = draftRemoteGrid.trim().ifEmpty { null },
+                        ),
+                    ),
                     operatingSession,
                     QsoRadioContext(frequencyHz = hz, radioMode = manualMode.adifMode),
                 )
                 logMessage = "Saved in memory: QSO #${record.id} ${record.call} ${record.mode}. Not sent to LoTW."
                 draftCall = ""
+                draftSent = ""
+                draftReceived = ""
+                draftRemoteGrid = ""
                 showAdif = false
                 true
             } catch (_: IllegalArgumentException) {
@@ -257,8 +272,32 @@ open class FieldOpsOperatingActivity : Activity() {
             setText(model.draftFrequencyMhz)
             addTextChangedListener(draftWatcher { model.draftFrequencyMhz = it })
         }
+        val sent = EditText(this).apply {
+            hint = "RST sent (optional)"
+            contentDescription = "RST sent"
+            isSingleLine = true
+            setText(model.draftSent)
+            addTextChangedListener(draftWatcher { model.draftSent = it })
+        }
+        val received = EditText(this).apply {
+            hint = "RST received (optional)"
+            contentDescription = "RST received"
+            isSingleLine = true
+            setText(model.draftReceived)
+            addTextChangedListener(draftWatcher { model.draftReceived = it })
+        }
+        val grid = EditText(this).apply {
+            hint = "Remote grid square (optional)"
+            contentDescription = "Remote grid square"
+            isSingleLine = true
+            setText(model.draftRemoteGrid)
+            addTextChangedListener(draftWatcher { model.draftRemoteGrid = it })
+        }
         root.addView(call)
         root.addView(freq)
+        root.addView(sent)
+        root.addView(received)
+        root.addView(grid)
         action("MANUAL MODE: ${model.manualMode.adifMode} (SWITCH)") {
             model.draftCall = call.text.toString()
             model.draftFrequencyMhz = freq.text.toString()
