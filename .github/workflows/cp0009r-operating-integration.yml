@@ -196,7 +196,7 @@ jobs:
           python3 scripts/create_checkpoint.py \
             --root . \
             --id CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION \
-            --parent CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY \
+            --parent CP-0009Q-RECOVERY_CONSENT_FAILURE_UX \
             --summary "Premerge Android operating navigation and shared logbook awards" \
             --phase "Premerge dry-run only" \
             --test-status "PREMERGE_DRY_RUN"
@@ -204,5 +204,5 @@ jobs:
           grep -Fq "RELEASE_ACCEPTANCE_MATRIX.md" README.md
           grep -Fq 'CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION' README.md
           grep -Fq 'FT8/FT4/FT2' NEXT_ACTION.md
-          grep -Fq 'CP-0003C is **DEFERRED**' NEXT_ACTION.md
+          grep -Fq 'CP-0003C is DEFERRED' NEXT_ACTION.md
           git diff --check
