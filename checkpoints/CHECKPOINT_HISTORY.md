@@ -874,3 +874,18 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 39722428140.
 Evidence: research/android/CP-0009Q_RECOVERY_CONSENT_FAILURE_UX.md.
+
+
+## CP-0009R — integrated Android operating navigation
+
+Parent CP-0009Q/v68. Launcher uses shared canonical mode metadata,
+in-memory FastQsoLogger/ADIF/AwardsCenter and map projection across
+OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO workspaces. Manual CW/SSB
+QSOs are an actual local-only operating workflow; not RF proof.
+Android Robolectric checks source-backed navigation, log records,
+invalid input and rotation/fresh process boundary; APK/inherited
+CI green. No new permissions, USB/CAT/audio/PTT, LoTW upload,
+device proof, or persistent QSO claims.
+
+Finalizer: 39870937975.
+Evidence: research/android/CP-0009R_OPERATING_INTEGRATION.md.

@@ -1,26 +1,26 @@
 # RESUME HERE — FTX-1 FieldOps
 
-Latest verified checkpoint: **CP-0009Q-RECOVERY_CONSENT_FAILURE_UX**
-Project version: `v68-recovery-consent-failure-ux`
-Phase: **Explicit recovery consent and conservative failure UX host-tested; device/RF deferred**
-Test status: **GREEN CI: recovery consent/failure Robolectric=PASS, Android APK=PASS, inherited=PASS; finalizer 39722428140**
+Latest verified checkpoint: **CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION**
+Project version: `v69-android-operating-navigation-integration`
+Phase: **Integrated offline Android operating workspaces host-tested; device/RF deferred**
+Test status: **GREEN CI: Android navigation/QSO/awards Robolectric=PASS, APK=PASS, inherited=PASS; finalizer 39870937975**
 
 ## What is complete in this checkpoint
-- Candidate-specific consent after REVIEW and SELECT, explicit CANCEL_SELECTION audit event
-- Cryptographic reinspection, canonical digest checks and confirm-only in-memory replacement preserved
-- Robolectric tests cancellation, successful consent, and tampered-ciphertext rejection
-- Failed recovery retains display/provenance and suppresses untrusted exception messages
-- Actual Android debug APK plus inherited synthetic Kotlin/Robolectric gates succeeded
+- Seven-section Android operating navigation and real shared canonical core profile state
+- Manual in-memory CW/SSB logbook, ADIF and Awards Center integration
+- Android Robolectric tests for navigation, invalid frequency, QSO, rotation and locked TX
+- Preserved synthetic encrypted archive recovery and inherited Kotlin software regression
+- Android debug APK with no USB/audio/CAT/PTT/LoTW permissions
 
 ## Known blockers / red items
 - OWNER OVERRIDE: CP-0003C DEFERRED; do not resume without explicit instruction
 - CP-0004A/B/C hardware checkpoints incomplete
-- No persistent audit, trusted freshness witness, key retirement or physical S23 Ultra/Keystore/RF/CAT/USB proof
+- Digital modems and physical FTX-1 CAT/audio/RF absent from integrated app; logbook is memory-only
 
 ## Continue with these exact actions
-1. CP-0009R: recovery accessibility and failure-path coverage, GitHub/CI-only
-2. Preserve APK artifact build plus all inherited host regression gates
-3. CP-0003C remains DEFERRED; skip manual hardware/account validation
+1. Integrate FT8/FT4/FT2 native DSP and radio-safe Android RX workflow with golden vectors
+2. Then close all original P0-P3 release acceptance matrix software gaps; stop after final RC
+3. CP-0003C remains DEFERRED and CP-0004A/B/C physically unverified
 
 ## Verification before continuing
 Run:

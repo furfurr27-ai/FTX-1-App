@@ -39,142 +39,55 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009Q-RECOVERY_CONSENT_FAILURE_UX
+**Latest verified checkpoint:** CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION
 
-Parent durable checkpoint: CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY / v67.
+Parent durable checkpoint: CP-0009Q-RECOVERY_CONSENT_FAILURE_UX / v68.
 
-CP-0009Q improves explicit consent and conservative failure handling
-on a separately selected authenticated encrypted recovery candidate.
-Only a distinct CONFIRM action re-inspects and reauthenticates both
-candidate views and validates the canonical selected digest before
-replacing on-screen memory. A new CANCEL RECOVERY SELECTION action
-clears the pending choice without disk writes, key changes or an
-implicit fallback. The selected source is displayed in the consent
-message, alongside the warning that unsaved in-memory changes can
-be lost. No automatic candidate choice is made.
+CP-0009R replaces the launcher-only developer presentation with
+integrated, non-transmitting OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO
+navigation. The canonical DigitalModes profiles, FastQsoLogger,
+AdifCodec, AwardsCenterApplicationService and award map projection
+now feed the installed Android Activity. Users can manually log
+CW/SSB contacts in volatile memory and see the same records in ADIF
+and local award projections. No local QSO disk persistence, LoTW
+submissions, USB/CAT/PTT, receiver decoding or RF operation.
 
-Rejected confirmation never replaces the displayed archive/source,
-never reports raw exception text, and requires deliberate REVIEW AGAIN.
-Explicit CANCEL_SELECTION/CLEARED is a fixed enum-only audit event.
-The bounded session-only audit still contains no archive payload,
-path, hash, key, account, timestamp, error strings, storage, logcat
-or network persistence. Original V1/V2 files and keys are unchanged.
-FRESHNESS NOT VERIFIED; authenticated older ciphertext may be replayed.
-No station/RF provenance, key retirement or secure erase is implied.
+Android Robolectric verifies navigation, core-backed QSOs, rejected
+invalid input, disabled TX, shared awards/ADIF views and
+configuration-change retention versus fresh-process loss.
+Existing archive/recovery and inherited core regression tests
+remain in the verified software matrix. The actual Android v69
+APK is packaged in Actions artifacts.
 
 Host/CI gates:
 
-- CP-0009Q explicit source-specific consent/cancel Robolectric: **PASS**.
-- CP-0009Q changed-ciphertext rejection and view retention: **PASS**.
-- CP-0009Q Android APK and inherited Kotlin/host regressions: **PASS**.
-- CP-0009P review invalidation after source evidence changes: **PASS**.
-- CP-0009P Activity navigation/replacement/recreation tests: **PASS**.
-- CP-0009P Android APK, inherited Kotlin/host regressions: **PASS**.
-- CP-0009O typed bounded session audit Robolectric tests: **PASS**.
-- CP-0009O Android nonpersistent audit and current provenance UX: **PASS**.
-- CP-0009O API35 APK and complete inherited Kotlin host regressions: **PASS**.
-- CP-0009N explicit recovery, stale-selection refusal Robolectric: **PASS**.
-- CP-0009N Android review/retirement UI and APK packaging: **PASS**.
-- CP-0009N full inherited Kotlin/Android host regression matrix: **PASS**.
-- CP-0009M read-only archive inspection and conflict Robolectric tests: **PASS**.
-- CP-0009M Android opt-in/no retirement UX and APK packaging: **PASS**.
-- CP-0009M complete inherited GitHub Actions software matrix: **PASS**.
-- CP-0009L encrypted rotation software-key Robolectric failure isolation: **PASS**.
-- CP-0009L separate Android opt-in and no-downgrade UX: **PASS**.
-- CP-0009L actual Android APK packaging and complete inherited host CI: **PASS**.
-- CP-0009K no-write key lifecycle/replay classification tests: **PASS**.
-- CP-0009K Android freshness warning and no-rotation static checks: **PASS**.
-- CP-0009K real Android debug APK and Robolectric regressions: **PASS**.
-- CP-0009J AES-GCM authenticated V2 envelope and corruption tests: **PASS**.
-- CP-0009J Robolectric explicit encrypted store and failure-isolation: **PASS**.
-- CP-0009J Android opt-in encrypted/legacy UI and actual APK artifact: **PASS**.
-- CP-0009I fail-closed non-executing migration planner host tests: **PASS**.
-- CP-0009I original canonical archive integrity and bounds: **PASS**.
-- CP-0009I Android APK/Robolectric and inherited host matrix: **PASS**.
-- CP-0009H simulated precommit failure and corrupt overwrite protection: **PASS**.
-- CP-0009H Robolectric archive recovery UX: **PASS**.
-- CP-0009H Android debug APK/aapt/ZIP/artifact: **PASS**.
-- CP-0009G bounded canonical archive envelope host integrity tests: **PASS**.
-- CP-0009G Robolectric explicit opt-in private-store/restore/failure tests: **PASS**.
-- CP-0009G no-permission Android APK build/aapt/ZIP/artifact: **PASS**.
-- CP-0009F Robolectric API 35 Android Activity navigation tests: **PASS**.
-- CP-0009F rotation-only storage-boundary static contract: **PASS**.
-- CP-0009F actual debug APK packaging/aapt/ZIP/Actions artifact: **PASS**.
-- CP-0009E APK containing real canonical Kotlin core/ArchiveHistoryActivity: **PASS**.
-- CP-0009E Android manifest, no-permission and synthetic-only wiring audit: **PASS**.
-- CP-0009D actual APK ZIP, aapt package and launcher, artifact upload: **PASS**.
-- CP-0009C canonical archive history actions/receipts regression: **PASS**.
-- CP-0009D Android assembleDebug real APK build and artifact inspection: **PASS**.
-- CP-0009D offline-only AndroidManifest/launcher safety contract: **PASS**.
-- CP-0009D Gradle wrapper pinned source object verification: **PASS**.
-- CP-0009D static Android packaging prerequisites: **PRESENT** (not itself a build).
-- CP-0009C archive selection workspace host tests: **PASS**.
-- CP-0009C static Android APK packaging prerequisite audit: **NOT READY (verified gap)**.
-- CP-0009B offline propagation report archive/store contract: **PASS**.
-- CP-0009A propagation workspace-to-offline-history integration: **PASS**.
-- CP-0008Z offline historical interaction/accessibility contract: **PASS**.
-- CP-0008Y offline comparison display integration: **PASS**.
-- CP-0008X bounded offline comparison presentation paging: **PASS**.
-- CP-0008W offline comparison presentation read model: **PASS**.
-- CP-0008V offline comparison import and inspection boundary: **PASS**.
-- CP-0008U offline comparison export decode validation: **PASS**.
-- CP-0008T offline comparison canonical export: **PASS**.
-- CP-0008S offline imported report inspection and comparison: **PASS**.
-- CP-0008R propagation offline report import boundary: **PASS**.
-- CP-0008Q propagation offline report decode and validation: **PASS**.
-- CP-0008P propagation offline report serialization: **PASS**.
-- CP-0008O propagation offline report payload: **PASS**.
-- CP-0008N propagation read-model consistency diagnostics: **PASS**.
-- CP-0008M propagation operating-picture composition: **PASS**.
-- CP-0008L propagation source-status presentation: **PASS**.
-- CP-0008K refresh-state persistence: **PASS**.
-- CP-0008J propagation runtime composition: **67/67 PASS**.
-- CP-0008I concrete public HTTPS transport: **70/70 PASS**.
-- CP-0008H public propagation transport adapters: **98/98 PASS**.
-- CP-0008G propagation refresh coordinator: **112/112 PASS**.
-- CP-0008F propagation projection: **79/79 PASS**.
-- CP-0008E propagation aggregation/offline cache: **101/101 PASS**.
-- CP-0008D PSK Reporter heard-path adapter: **168/168 PASS**.
-- CP-0008C GloTEC ionospheric adapter: **87/87 PASS**.
-- CP-0008B NOAA SWPC adapter: **53/53 PASS**.
-- CP-0008A propagation intelligence foundation: **154/154 PASS**.
-- CP-0007C production U.S. state geometry pack: **363/363 PASS**.
-- CP-0007B award geometry providers/offline pack contract: **102/102 PASS**.
-- CP-0007A award-area map projection: **96/96 PASS**.
-- CP-0006G extended official award catalog/grid evaluator: **96/96 PASS**.
-- CP-0006F Awards Center application service: **64/64 PASS**.
-- CP-0006E award evidence persistence/import: **92/92 PASS**.
-- CP-0006D Awards Center projection: **114/114 PASS**.
-- CP-0006C award target/composite evaluator: **77/77 PASS**.
-- CP-0006B base official award catalog: **115/115 PASS**.
-- CP-0006A award evaluator: **67/67 PASS**.
-- CP-0005B manual/digital LoTW queue: **47/47 PASS**.
-- CP-0005A universal QSO/logger: **78/78 PASS**.
-- CP-0003B LoTW transaction: **53/53 PASS**.
-- Inherited core: **42,062 PASS**.
+- CP-0009R integrated Android operating navigation/real local QSO workflow: **PASS**.
+- CP-0009R Android disabled CAT/PTT/LoTW and lifecycle tests: **PASS**.
+- CP-0009R Android APK and inherited Kotlin/host regressions: **PASS**.
 
 Evidence:
 
-- app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
-- app/src/main/kotlin/dev/n0png/fieldops/app/SessionRecoveryAuditTrail.kt
-- app/src/main/kotlin/dev/n0png/fieldops/app/RecoveryConsentUx.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/RecoveryConsentUxTest.kt
+- app/src/main/kotlin/dev/n0png/fieldops/app/FieldOpsOperatingActivity.kt
+- app/src/main/java/dev/n0png/fieldops/app/MainActivity.java
+- app/src/test/kotlin/dev/n0png/fieldops/app/FieldOpsOperatingActivityTest.kt
 - scripts/test_android_package_contract.py
-- research/android/CP-0009Q_RECOVERY_CONSENT_FAILURE_UX.md
-- .github/workflows/cp0009q-recovery-consent-failure-ux.yml
-- .github/workflows/finalize-cp0009q.yml
-- CP-0009Q merged-main finalizer: 39722428140
+- research/android/CP-0009R_OPERATING_INTEGRATION.md
+- RELEASE_ACCEPTANCE_MATRIX.md
+- .github/workflows/cp0009r-operating-integration.yml
+- .github/workflows/finalize-cp0009r.yml
+- CP-0009R merged-main finalizer: 39870937975
 
 ### Evidence boundary
 
-Host Android API35 synthetic/Robolectric/software-key and built APK
-only. No real S23 Ultra/Keystore/storage, FTX-1 CAT/USB/audio/RF,
-LoTW credentials, trusted recency or key retirement proof.
-CP-0003C DEFERRED; CP-0004A/B/C hardware checkpoints incomplete.
+This checkpoint connects offline-safe Android navigation and local
+in-memory logging/awards, not native mode providers or physical
+S23 Ultra/FTX-1 USB/CAT/audio/RF. CP-0003C DEFERRED,
+CP-0004A/B/C incomplete. FRESHNESS NOT VERIFIED; no archive
+key retirement, auto fallback or LoTW account/certificate proof.
 
 ### Inherited verified ancestry
 
-CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY and preceding immutable checkpoints remain intact.
+CP-0009Q and preceding immutable checkpoints remain intact.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -198,7 +111,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** finite P0–P3 release integration; next acceptance checkpoint CP-0009R (operating navigation and shared-service wiring)
+**Active software track:** finite P0–P3 integration, next FT-family RX software acceptance gap
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -453,26 +366,14 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009R — Android operating navigation and shared-service integration.**
-
-CP-0009Q is durable, but the launcher still identifies itself as a
-packaging-only shell, opens only the archive Activity, and lacks usable
-mode-specific operating workspaces. The original P0–P3 scope, rather than
-a speculative archive-recovery micro-checkpoint, controls next work.
-
-1. Use `RELEASE_ACCEPTANCE_MATRIX.md` to drive acceptance. First close
-   the concrete Android navigation/session integration gap: a coherent
-   offline-safe OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO entry structure,
-   truthful disabled hardware-dependent actions, and production use of
-   an existing host-tested service (not a simulated service labeled live).
-2. Implement real navigation and state/lifecycle/regression tests,
-   with installation APK and all inherited CI gates, before any merge.
-3. Then work through remaining modes, radio/audio integration, logger,
-   awards, maps and end-to-end simulated workflows, updating the
-   matrix as each requirement becomes integrated and tested.
-4. Preserve CP-0003C DEFERRED and CP-0004A/B/C incomplete; no RF,
-   certificate/account or device validation claims. At the final
-   software RC gate, STOP initiating optional new checkpoints.
+**FT8/FT4/FT2 software operating integration** is the next
+acceptance gap, with native DSP vectors, safe audio/decoder session
+and UI integration. Use RELEASE_ACCEPTANCE_MATRIX.md rather than
+generating a recovery hardening or optional mode checkpoint.
+Build software-only simulated workflows, prohibit live RF until
+CP-0004A/B/C physical validation, and preserve CP-0003C DEFERRED.
+Close every original P0–P3 gap before one final software release
+candidate. Once verified, STOP optional checkpoint creation.
 
 ## README maintenance contract
 

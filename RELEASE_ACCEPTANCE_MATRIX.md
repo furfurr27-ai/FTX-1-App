@@ -8,6 +8,31 @@
 
 **Acceptance codes:** `HOST_PARTIAL` = component exists with some host/CI evidence but is not integrated in production Android; `APP_PARTIAL` = observable Android functionality but incomplete scope/synthetic inputs; `MISSING` = no suitable production implementation located; `HARDWARE_BLOCKED` = software work must still be done as feasible, but final real-device proof needs hardware/account; `ACCEPTED_SOFTWARE` = complete software behavior AND integrated tests with durable checkpoint evidence. No original P0–P3 row is currently established as `ACCEPTED_SOFTWARE` for a finished FieldOps operating environment.
 
+## CP-0009R integrated evidence
+
+CP-0009R / v69 finalizer 39870937975 integrates
+`app/src/main/kotlin/dev/n0png/fieldops/app/FieldOpsOperatingActivity.kt`
+into the launcher. Robolectric tests
+`FieldOpsOperatingActivityTest.kt` verify real user-entered
+CW/SSB QSO creation through `FastQsoLogger`, ADIF export preview,
+shared Awards Center projection, mode profiles, navigation, fresh
+session loss versus rotation, and locked transmitter controls.
+This changes the following acceptance dispositions **only**:
+
+- Android home/navigation: PARTIALLY INTEGRATED — OPS/DIGI/APRS/MAP/
+  LOG/AWARDS/RADIO navigable; actual live operating engines absent.
+- CW/SSB logbook: PARTIALLY INTEGRATED — manual QSO/ADIF works
+  in RAM; device/radio and durable DB remain unfinished.
+- Awards: PARTIALLY INTEGRATED — the actual projection consumes the
+  shared RAM logbook; imported confirmation/persistence gaps remain.
+- Digital mode UI: PARTIALLY INTEGRATED — mode timing metadata only,
+  with RX/TX disabled and no linked providers.
+- Map: PARTIALLY INTEGRATED — awardMapLayers() uses real service;
+  no interactive geospatial renderer or live source.
+
+No previously marked unmet P0–P3 software requirement is
+considered fully accepted by this checkpoint.
+
 ## Primary integration evidence
 
 1. `app/src/main/java/dev/n0png/fieldops/app/MainActivity.java`: the launcher self-identifies as a packaging-only developer shell. It opens `ArchiveHistoryActivity` and explicitly states no operating FT8/FT4/JS8/WSPR/CW/SSB/LoTW workflows.

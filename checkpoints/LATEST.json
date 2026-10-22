@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009Q-RECOVERY_CONSENT_FAILURE_UX",
-  "created_utc": "2026-10-22T04:33:12+00:00",
-  "manifest": "checkpoints/manifests/CP-0009Q-RECOVERY_CONSENT_FAILURE_UX.json",
-  "snapshot": "checkpoints/snapshots/CP-0009Q-RECOVERY_CONSENT_FAILURE_UX.tar.gz",
-  "snapshot_sha256": "06a3d160b082ad3cea19dce2caf7af84c73630e4b362bec6614474dbd1fd463f"
+  "checkpoint_id": "CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION",
+  "created_utc": "2026-10-22T23:21:45+00:00",
+  "manifest": "checkpoints/manifests/CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION.json",
+  "snapshot": "checkpoints/snapshots/CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION.tar.gz",
+  "snapshot_sha256": "d3cb5d6f8ab0f9dbe76cffe6164bae968310bbf391e04a877a38eeb750bfd97c"
 }
