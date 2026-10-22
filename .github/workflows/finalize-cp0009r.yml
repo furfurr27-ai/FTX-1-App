@@ -183,9 +183,9 @@ jobs:
             --root . \
             --id CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION \
             --parent CP-0009Q-RECOVERY_CONSENT_FAILURE_UX \
-            --summary "Android operating navigation with real in-memory QSO, ADIF and awards" \\
-            --phase "Integrated offline Android operating workspaces host-tested; device/RF deferred" \\
-            --test-status "GREEN CI: Android navigation/QSO/awards Robolectric=PASS, APK=PASS, inherited=PASS; finalizer $FINALIZE_RUN_ID" \\
+            --summary "Android operating navigation with real in-memory QSO, ADIF and awards" \
+            --phase "Integrated offline Android operating workspaces host-tested; device/RF deferred" \
+            --test-status "GREEN CI: Android navigation/QSO/awards Robolectric=PASS, APK=PASS, inherited=PASS; finalizer $FINALIZE_RUN_ID" \
             --completed "Seven-section Android operating navigation and real shared canonical core profile state" \
             --completed "Manual in-memory CW/SSB logbook, ADIF and Awards Center integration" \
             --completed "Android Robolectric tests for navigation, invalid frequency, QSO, rotation and locked TX" \
