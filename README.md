@@ -161,7 +161,7 @@ Evidence:
 - app/src/test/kotlin/dev/n0png/fieldops/app/RecoveryConsentUxTest.kt
 - scripts/test_android_package_contract.py
 - research/android/CP-0009Q_RECOVERY_CONSENT_FAILURE_UX.md
-- .github/workflows/cp0009q-audit-lifecycle-consistency.yml
+- .github/workflows/cp0009q-recovery-consent-failure-ux.yml
 - .github/workflows/finalize-cp0009q.yml
 - CP-0009Q merged-main finalizer: 39722428140
 
@@ -198,9 +198,26 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009R — recovery accessibility and failure-path coverage
+**Active software track:** finite P0–P3 release integration; next acceptance checkpoint CP-0009R (operating navigation and shared-service wiring)
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
+
+## Finite release acceptance rule
+
+The agreed product is bounded by the original P0–P3 scope, tracked in
+`RELEASE_ACCEPTANCE_MATRIX.md`. FT8, FT4, FT2, JS8, WSPR, APRS, CW/SSB,
+RTTY, PSK31/63, Olivia, MFSK, Contestia, DominoEX, THOR,
+Hellschreiber and MT63 must each receive an evidence-backed final
+disposition. SSTV, qFT8-specific LQ8/LQ4 and unspecified mode families
+are optional future research, not reasons to delay release or start P4.
+
+Stop software checkpoints after an installable, integrated, CI-verified
+release-candidate APK with reproducible SHA-256, current source,
+acceptance/evidence matrix, operating instructions and a bounded list
+of physical/account sign-off items is durably verified. Later changes
+require an actual acceptance defect, security/PTT issue, device
+integration failure, or explicit owner instruction. A compiled
+archive/library contract alone never counts as an operational feature.
 
 ## Engineering rules
 
@@ -436,14 +453,26 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009R — recovery accessibility and failure-path coverage.**
+**CP-0009R — Android operating navigation and shared-service integration.**
 
-1. Improve accessibility of explicit recovery warnings and consent
-   presentation without weakening authentication or altering stored keys.
-2. Exercise failed recovery paths and cancel/review state with more UI
-   tests, preserving typed-only audit and FRESHNESS NOT VERIFIED.
-3. Preserve APK/Robolectric/inherited CI and immutable snapshot proof.
-4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009Q is durable, but the launcher still identifies itself as a
+packaging-only shell, opens only the archive Activity, and lacks usable
+mode-specific operating workspaces. The original P0–P3 scope, rather than
+a speculative archive-recovery micro-checkpoint, controls next work.
+
+1. Use `RELEASE_ACCEPTANCE_MATRIX.md` to drive acceptance. First close
+   the concrete Android navigation/session integration gap: a coherent
+   offline-safe OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO entry structure,
+   truthful disabled hardware-dependent actions, and production use of
+   an existing host-tested service (not a simulated service labeled live).
+2. Implement real navigation and state/lifecycle/regression tests,
+   with installation APK and all inherited CI gates, before any merge.
+3. Then work through remaining modes, radio/audio integration, logger,
+   awards, maps and end-to-end simulated workflows, updating the
+   matrix as each requirement becomes integrated and tested.
+4. Preserve CP-0003C DEFERRED and CP-0004A/B/C incomplete; no RF,
+   certificate/account or device validation claims. At the final
+   software RC gate, STOP initiating optional new checkpoints.
 
 ## README maintenance contract
 
