@@ -138,6 +138,26 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun malformedGridNeverEntersAuthoritativeLogbookOrAwards() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "LOG")
+            field(a, "Remote callsign").setText("K1ABC")
+            field(a, "Frequency in MHz (e.g. 7.075)").setText("14.074")
+            field(a, "Remote grid square (optional)").setText("NOT_A_GRID")
+            tap(a, "SAVE MANUAL QSO")
+            assertTrue(text(a).contains("NOT SAVED: enter a valid Maidenhead grid"))
+            tap(a, "OPS")
+            assertTrue(text(a).contains("0 manual QSOs"))
+            tap(a, "LOG")
+            field(a, "Remote grid square (optional)").setText("FN31")
+            tap(a, "SAVE MANUAL QSO")
+            assertTrue(text(a).contains("Saved in memory: QSO #1 K1ABC SSB"))
+            tap(a, "SHOW ADIF FROM REAL LOGBOOK")
+            assertTrue(text(a).contains("<GRIDSQUARE:4>FN31"))
+        }
+    }
+
     @Test fun unsavedDraftSurvivesTabChangeAndRotationWithoutSavingAContact() {
         val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
         val a = controller.get()
