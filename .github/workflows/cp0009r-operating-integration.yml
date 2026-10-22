@@ -201,7 +201,7 @@ jobs:
             --phase "Premerge dry-run only" \
             --test-status "PREMERGE_DRY_RUN"
           python3 scripts/verify_checkpoint.py --root . --latest
-          grep -Fq "RELEASE_ACCEPTANCE_MATRIX.md" README.md
+          test -s RELEASE_ACCEPTANCE_MATRIX.md
           grep -Fq 'CP-0009R-ANDROID_OPERATING_NAVIGATION_INTEGRATION' README.md
           grep -Fq 'FT8/FT4/FT2' NEXT_ACTION.md
           grep -Fq 'CP-0003C is DEFERRED' NEXT_ACTION.md
