@@ -1,7 +1,7 @@
 {
-  "checkpoint_id": "CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY",
-  "created_utc": "2026-10-21T18:01:53+00:00",
-  "manifest": "checkpoints/manifests/CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY.json",
-  "snapshot": "checkpoints/snapshots/CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY.tar.gz",
-  "snapshot_sha256": "1e8188c2bf770da35d2590987929ec0bc0d104028776f1f4d708736b955221bc"
+  "checkpoint_id": "CP-0009Q-RECOVERY_CONSENT_FAILURE_UX",
+  "created_utc": "2026-10-22T04:33:12+00:00",
+  "manifest": "checkpoints/manifests/CP-0009Q-RECOVERY_CONSENT_FAILURE_UX.json",
+  "snapshot": "checkpoints/snapshots/CP-0009Q-RECOVERY_CONSENT_FAILURE_UX.tar.gz",
+  "snapshot_sha256": "06a3d160b082ad3cea19dce2caf7af84c73630e4b362bec6614474dbd1fd463f"
 }

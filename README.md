@@ -39,35 +39,34 @@ Target operating modes include:
 
 ## Verified durable baseline
 
-**Latest verified checkpoint:** CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY
+**Latest verified checkpoint:** CP-0009Q-RECOVERY_CONSENT_FAILURE_UX
 
-Parent durable checkpoint: CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE / v66.
+Parent durable checkpoint: CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY / v67.
 
-CP-0009P hardens explicit encrypted archive choice and display-source
-consistency. File evidence mutation, rotated-copy changes, delete, or
-encrypted/rotation session disable invalidates previously reviewed
-candidates and forces another explicit review. No stale CONFIRM remains
-visible after those user actions. Canonical reinspection/authentication
-and two distinct SELECT and CONFIRM steps are preserved.
+CP-0009Q improves explicit consent and conservative failure handling
+on a separately selected authenticated encrypted recovery candidate.
+Only a distinct CONFIRM action re-inspects and reauthenticates both
+candidate views and validates the canonical selected digest before
+replacing on-screen memory. A new CANCEL RECOVERY SELECTION action
+clears the pending choice without disk writes, key changes or an
+implicit fallback. The selected source is displayed in the consent
+message, alongside the warning that unsaved in-memory changes can
+be lost. No automatic candidate choice is made.
 
-Successfully authenticated in-memory source labels survive paging and
-selection/comparison that do not change the archive. Synthetic capture,
-workspace archive mutation or separate V1/V2 restore replaces in-memory
-bytes and invalidates that source. Failed/null reads leave existing
-on-screen data and source unchanged. Activity recreation clears the
-session audit and source claim, never asserting unverified provenance.
-Disk writes or deletes do not erase already displayed in-memory history.
-
-The bounded typed audit adds OPTIONS_INVALIDATED/CLEARED and
-DISPLAY_REPLACED/ACCEPTED without logging payloads, callsigns, error
-messages, key aliases, file paths, digests, dates, tokens, passwords,
-session IDs or clock values. No persistent file/DB/Bundle/log/network
-audit, key retirement, implicit fallback, anti-replay counter or secure
-flash wipe. FRESHNESS NOT VERIFIED; older authenticated V2 replay is
-still possible. Old-key retirement remains BLOCKED_NON_EXECUTING.
+Rejected confirmation never replaces the displayed archive/source,
+never reports raw exception text, and requires deliberate REVIEW AGAIN.
+Explicit CANCEL_SELECTION/CLEARED is a fixed enum-only audit event.
+The bounded session-only audit still contains no archive payload,
+path, hash, key, account, timestamp, error strings, storage, logcat
+or network persistence. Original V1/V2 files and keys are unchanged.
+FRESHNESS NOT VERIFIED; authenticated older ciphertext may be replayed.
+No station/RF provenance, key retirement or secure erase is implied.
 
 Host/CI gates:
 
+- CP-0009Q explicit source-specific consent/cancel Robolectric: **PASS**.
+- CP-0009Q changed-ciphertext rejection and view retention: **PASS**.
+- CP-0009Q Android APK and inherited Kotlin/host regressions: **PASS**.
 - CP-0009P review invalidation after source evidence changes: **PASS**.
 - CP-0009P Activity navigation/replacement/recreation tests: **PASS**.
 - CP-0009P Android APK, inherited Kotlin/host regressions: **PASS**.
@@ -158,12 +157,13 @@ Evidence:
 
 - app/src/main/kotlin/dev/n0png/fieldops/app/ArchiveHistoryActivity.kt
 - app/src/main/kotlin/dev/n0png/fieldops/app/SessionRecoveryAuditTrail.kt
-- app/src/test/kotlin/dev/n0png/fieldops/app/RecoveryAuditLifecycleConsistencyTest.kt
+- app/src/main/kotlin/dev/n0png/fieldops/app/RecoveryConsentUx.kt
+- app/src/test/kotlin/dev/n0png/fieldops/app/RecoveryConsentUxTest.kt
 - scripts/test_android_package_contract.py
-- research/android/CP-0009P_AUDIT_LIFECYCLE_CONSISTENCY.md
-- .github/workflows/cp0009p-audit-lifecycle-consistency.yml
-- .github/workflows/finalize-cp0009p.yml
-- CP-0009P merged-main finalizer: 39648399244
+- research/android/CP-0009Q_RECOVERY_CONSENT_FAILURE_UX.md
+- .github/workflows/cp0009q-audit-lifecycle-consistency.yml
+- .github/workflows/finalize-cp0009q.yml
+- CP-0009Q merged-main finalizer: 39722428140
 
 ### Evidence boundary
 
@@ -174,7 +174,7 @@ CP-0003C DEFERRED; CP-0004A/B/C hardware checkpoints incomplete.
 
 ### Inherited verified ancestry
 
-CP-0009O-SESSION_RECOVERY_AUDIT_PROVENANCE and preceding immutable checkpoints remain intact.
+CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY and preceding immutable checkpoints remain intact.
 
 ## Execution tracks and hardware-gated deferrals
 
@@ -198,7 +198,7 @@ CP-0003C is **DEFERRED**. Do not return to CP-0003C until the owner explicitly s
 
 While this rule is active, skip any checkpoint that requires the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation. Continue forward to the next checkpoint that can be completed entirely through GitHub/CI. Skipping a gated checkpoint never means it passed.
 
-**Active software track:** CP-0009Q — recovery consent and failure UX hardening
+**Active software track:** CP-0009R — recovery accessibility and failure-path coverage
 
 Skipping a hardware-gated checkpoint in the execution order does **not** imply it passed. The next software checkpoint may use the latest verified durable software baseline as its parent while carrying the skipped hardware checkpoints forward as explicit blockers.
 
@@ -423,7 +423,7 @@ The verified CP-0001 text/source tree has now been restored to GitHub `main`.
 - GitHub restore commit: `722de2e7b744b67a77ffa05a25b1b70f933871ab`
 - Restore workflow: **PASS**; the CP-0001 recovery workflow is now manual-only and requires explicit `RESTORE_CP0001` confirmation
 - Reassembled source-transport archive SHA-256: `125026544bb75c8089b14f8fbbcdba131d755ad7599427bb7495acd717e3cbf2`
-- Current Git source baseline: CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY
+- Current Git source baseline: CP-0009Q-RECOVERY_CONSENT_FAILURE_UX
 - Original external checkpoint package verification before import: **PASS, 157 file hashes**
 
 The Git checkout contains the recovered source/text/checkpoint metadata, including `checkpoints/LATEST.json`, `checkpoints/CURRENT_STATE.json`, `checkpoints/RESUME_HERE.md`, and `research/github/SOURCE_PINS.tsv`.
@@ -436,13 +436,13 @@ The repository is currently **public**. Never commit credentials, private keys, 
 
 ## Current exact next action
 
-**CP-0009Q — recovery consent and failure UX hardening.**
+**CP-0009R — recovery accessibility and failure-path coverage.**
 
-1. Improve transparent recovery consent and failure UX without claiming
-   cryptographic freshness or physical radio provenance.
-2. Preserve bounded typed-only audit, two-tap reauthentication and
-   BLOCKED_NON_EXECUTING key retirement.
-3. Preserve Android APK/Robolectric, inherited CI and immutable SHA-256.
+1. Improve accessibility of explicit recovery warnings and consent
+   presentation without weakening authentication or altering stored keys.
+2. Exercise failed recovery paths and cancel/review state with more UI
+   tests, preserving typed-only audit and FRESHNESS NOT VERIFIED.
+3. Preserve APK/Robolectric/inherited CI and immutable snapshot proof.
 4. CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## README maintenance contract
@@ -461,20 +461,3 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
-
-## CP-0009Q implementation branch — not checkpointed
-
-**WIP ONLY** on `cp-0009q-recovery-consent-failure-ux` from immutable
-CP-0009P/v67. Adds source-specific consent after deliberate SELECT,
-explicit CANCEL RECOVERY SELECTION, fixed typed-only audit record,
-conservative failure notice without raw exception text, and new
-Robolectric tests for cancel, confirmed recovery and corrupted
-ciphertext. All V1/V2 encrypted storage/key mechanisms remain unchanged.
-No automatic fallback, file/key deletion, station proof or trusted
-recency; **FRESHNESS NOT VERIFIED**.
-
-Do not promote until **exact-head** push and PR 46/46 CI, Android debug
-APK and premerge snapshot dry-run are GREEN; then merge, run merged-main
-CP-0009Q finalizer 46/46 and independently recompute immutable snapshot
-SHA-256 against manifest and LATEST.json. Next after durable: CP-0009R.
-CP-0003C DEFERRED; CP-0004A/B/C remain hardware/account blocked.

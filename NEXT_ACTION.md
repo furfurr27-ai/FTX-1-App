@@ -8,14 +8,14 @@ real accounts/certificates/credentials and manual hardware testing.
 
 ## Next software checkpoint
 
-**CP-0009Q — recovery consent and failure UX hardening**
+**CP-0009R — recovery accessibility and failure-path coverage**
 
-CP-0009P clears pending recovery candidates if original/rotated
-ciphertext evidence might change or an encrypted session is disabled.
-Successful reviewed recovery source survives UI paging/selection but
-not replacement by synthetic or separately restored archive bytes.
-Null/failed load leaves prior view untouched. Audit remains in memory,
-typed-only, bounded, with no timestamp, key, path or payload.
-Next improve consent/failure presentation; keep FRESHNESS NOT VERIFIED,
-the two-step original/rotated reauthentication and blocked retirement.
-CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+CP-0009Q adds a source-specific consent notice only after deliberate
+REVIEW and SELECT, warns about loss of unsaved on-screen changes and
+valid older ciphertext replay, and offers explicit CANCEL without
+restoring or changing files/keys. Failed confirmation displays a safe
+non-diagnostic rejection, retains on-screen data/source, prevents
+automatic fallback and requires REVIEW AGAIN. Typed bounded audit
+adds CANCEL_SELECTION only; no secrets, paths, hashes, errors or
+timestamps persist. Next address accessibility and additional
+failure-path tests. CP-0003C DEFERRED; CP-0004A/B/C incomplete.

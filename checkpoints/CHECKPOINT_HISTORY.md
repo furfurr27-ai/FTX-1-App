@@ -855,3 +855,22 @@ CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 Finalizer: 39648399244.
 Evidence: research/android/CP-0009P_AUDIT_LIFECYCLE_CONSISTENCY.md.
+
+
+## CP-0009Q — recovery consent and failure UX
+
+Parent: CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY. Explicit consent is shown only after
+review and selection of one authenticated original/rotated V2 candidate.
+The notice warns about replacement of in-memory history and loss of
+unsaved changes, lack of trusted freshness, and no station provenance.
+An explicit CANCEL_SELECTION clears choice with fixed typed-only
+audit metadata; failed CONFIRM retains data/source, removes stale
+choices and shows a sanitized recovery rejection without fallback.
+Robolectric tests cover both consent sources, cancel without file
+writes, independent confirmation and tampered ciphertext rejection.
+Android APK and inherited host CI GREEN; no trusted freshness,
+key retirement, secure erase or physical hardware proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
+
+Finalizer: 39722428140.
+Evidence: research/android/CP-0009Q_RECOVERY_CONSENT_FAILURE_UX.md.

@@ -4,7 +4,7 @@ This file exists to prevent hardware/account checkpoints from stalling unrelated
 
 ## Latest verified durable parent
 
-CP-0009P-AUDIT_LIFECYCLE_PROVENANCE_CONSISTENCY
+CP-0009Q-RECOVERY_CONSENT_FAILURE_UX
 
 ## Deferred but incomplete hardware/account work
 
@@ -25,15 +25,14 @@ Skip any checkpoint requiring the phone, radio, real credentials/certificates, r
 
 ## Active software checkpoint
 
-CP-0009Q — recovery consent and failure UX hardening
+CP-0009R — recovery accessibility and failure-path coverage
 
-CP-0009P verified audit choice invalidation on disk changes, review
-clearing on disable, authenticated source kept across navigation but
-cleared after archive replacement, and failed-load preservation.
-Robolectric and Android APK/Kotlin CI pass. Session audit remains
-nonpersistent and typed. No physical S23, Keystore, CAT/RF, freshness
-witness or key retirement proof. CP-0003C DEFERRED, CP-0004A/B/C
-incomplete.
+CP-0009Q verified deliberate source-specific consent and cancel,
+safe generic rejection, retained display/provenance on failure, typed
+session-only CANCEL_SELECTION and no automatic fallback. Host
+Robolectric and Android APK/inherited Kotlin CI pass. No physical S23,
+Keystore, CAT/RF, freshness witness or key retirement proof.
+CP-0003C DEFERRED; CP-0004A/B/C incomplete.
 
 ## Resume rule
 
@@ -45,14 +44,3 @@ On interruption or a new chat:
 4. do not call deferred hardware work complete;
 5. complete and checkpoint the active software objective before opening another software feature branch.
 6. skip any checkpoint requiring the phone, radio, real credentials/certificates, real accounts, RF testing, or other manual hardware validation and continue to the next GitHub/CI-only checkpoint;
-
-## CP-0009Q work in progress — not durable
-
-Branch `cp-0009q-recovery-consent-failure-ux`; immutable parent CP-0009P.
-Explicit REVIEW → SELECT → consent/cancel/CONFIRM preserves fresh
-reauthentication; cancellation never modifies archive bytes and failed
-confirmation preserves source/history with safe error text. Test-only
-software AES fixture is excluded from packaged APK; production keeps
-AndroidKeyStore. Await current-head CI, main finalizer and verified
-immutable snapshot before promotion. No physical radio/Keystore proof.
-CP-0003C remains DEFERRED, CP-0004A/B/C incomplete.
