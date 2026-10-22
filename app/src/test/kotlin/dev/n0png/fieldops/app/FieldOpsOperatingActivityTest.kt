@@ -129,6 +129,25 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun unsavedDraftSurvivesTabChangeAndRotationWithoutSavingAContact() {
+        val controller = Robolectric.buildActivity(MainActivity::class.java).setup()
+        val a = controller.get()
+        tap(a, "LOG")
+        field(a, "Remote callsign").setText("W1AW")
+        field(a, "Frequency in MHz (e.g. 7.075)").setText("14.074")
+        tap(a, "AWARDS")
+        tap(a, "LOG")
+        assertEquals("W1AW", field(a, "Remote callsign").text.toString())
+        assertEquals("14.074", field(a, "Frequency in MHz (e.g. 7.075)").text.toString())
+        controller.configurationChange()
+        assertEquals("W1AW", field(controller.get(), "Remote callsign").text.toString())
+        assertEquals("14.074",
+            field(controller.get(), "Frequency in MHz (e.g. 7.075)").text.toString())
+        tap(controller.get(), "OPS")
+        assertTrue(text(controller.get()).contains("0 manual QSOs"))
+        controller.pause().stop().destroy()
+    }
+
     @Test fun launcherStillNavigatesToPrivateSyntheticArchive() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
