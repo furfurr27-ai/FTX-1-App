@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 68"):
+              "targetSdk = 35", "versionCode = 69"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -289,6 +289,28 @@ for forbidden in ("android.content.Context", "SecretKey", "File(", "System.curre
                   "Log.", "MessageDigest", "SharedPreferences", "Serializable", "Parcelable"):
     if forbidden in consent_source:
         raise SystemExit("CP-0009Q consent renderer must remain side-effect free: " + forbidden)
-if "versionCode = 68" not in appgradle.read_text():
-    raise SystemExit("CP-0009Q APK versionCode 68 expected")
+if "versionCode = 69" not in appgradle.read_text():
+    raise SystemExit("CP-0009R APK versionCode 69 expected")
 print("CP-0009Q explicit consent, safe failure, cancel and typed-only audit: PASS")
+
+# CP-0009R integrated navigation must wire actual logbook/award and mode
+# metadata services; no hidden RF, Account or persistence permissions.
+operating = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/FieldOpsOperatingActivity.kt").read_text()
+for required in (
+    "FieldOpsOperatingActivity : Activity()",
+    "FastQsoLogger(", "InMemoryLogbookRepository()", "AwardsCenterApplicationService(",
+    "DigitalModes.profile(", "AdifCodec.export(", "logManual(", "awardMapLayers()",
+    "onRetainNonConfigurationInstance()", "START RX — NOT CONNECTED",
+    "PTT / TRANSMIT — LOCKED", "No LoTW uploads",
+    "FRESH PROCESS LOSES MANUAL QSOs", "NOT SAVED:"
+):
+    if required not in operating:
+        raise SystemExit("CP-0009R Android integrated workspace missing: " + required)
+for forbidden in ("UsbManager", "AudioRecord(", "AudioTrack(", "startService(",
+                  "requestPermissions(", "HttpURLConnection", "DatagramSocket",
+                  "KeyStore.getInstance(", "TX1;", "TX0;"):
+    if forbidden in operating:
+        raise SystemExit("CP-0009R unsafe or unsupported device integration: " + forbidden)
+if "extends FieldOpsOperatingActivity" not in text:
+    raise SystemExit("CP-0009R launcher does not open integrated operating Activity")
+print("CP-0009R canonical logbook/awards/mode navigation and RF lockout: PASS")
