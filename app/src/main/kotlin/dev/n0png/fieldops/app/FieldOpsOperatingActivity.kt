@@ -69,6 +69,13 @@ open class FieldOpsOperatingActivity : Activity() {
                 logMessage = "NOT SAVED: enter a nonblank callsign using letters, digits and /."
                 return false
             }
+            val locator = draftRemoteGrid.trim().uppercase()
+            if (locator.isNotEmpty() &&
+                !locator.matches(Regex("[A-R]{2}(?:[0-9]{2}(?:[A-X]{2}(?:[0-9]{2})?)?)?"))
+            ) {
+                logMessage = "NOT SAVED: enter a valid Maidenhead grid (2, 4, 6 or 8 characters)."
+                return false
+            }
             val hz = try {
                 BigDecimal(draftFrequencyMhz.trim())
                     .multiply(BigDecimal("1000000")).longValueExact()
@@ -85,7 +92,7 @@ open class FieldOpsOperatingActivity : Activity() {
                         rstSent = draftSent.trim().ifEmpty { null },
                         rstRcvd = draftReceived.trim().ifEmpty { null },
                         remoteLocation = QsoLocationSnapshot(
-                            gridSquare = draftRemoteGrid.trim().ifEmpty { null },
+                            gridSquare = locator.ifEmpty { null },
                         ),
                     ),
                     operatingSession,
