@@ -10,3 +10,24 @@ This project is presently for one private Galaxy S23 Ultra and is not intended f
 - qFT8: used only for behavioral comparison because the complete source is not publicly available.
 
 Do not publish a compiled FieldOps APK until all bundled native-code notices and corresponding-source obligations have been reviewed.
+
+## CP-0009S pinned native-source import / distribution hold
+
+FieldOps now vendors the minimum FT-family decoder/encoder and JNI DSP glue
+from `patrickrb/FT8AF` at immutable commit
+`c2f63e8b37fcd484fd2eb2049494425dd2414971`.
+That repository identifies the embedded `kgoba/ft8_lib` revision as
+`6f528128ee3ebf4d08ba2313f6c5d3913eda5608`.
+The checked-in sources and explicit notices are under
+`app/src/main/cpp/third_party/ft8af`, including `LICENSE.FT8AF`,
+`ft8_lib/LICENSE`, and `ft8_lib/fft/COPYING`.
+
+**License discrepancy requiring review before public distribution:**
+the upstream GitHub repository presently presents its root LICENSE as MIT,
+whereas `https://ft8af.app/download` states GPL-3.0 for the complete
+application. Those facts do NOT establish that a downstream binary bundle
+may be marketed as MIT-only or redistributed without GPL review. Preserve
+all notices, source pins, per-file notices and corresponding-source obligations.
+No distribution approval is claimed. FieldOps deliberately does **not**
+vendor FT8AF/libusb USB audio, Hamlib or its PTT/radio control path; the
+local CMake target compiles FT8/FT4/FT2 DSP and JNI only.
