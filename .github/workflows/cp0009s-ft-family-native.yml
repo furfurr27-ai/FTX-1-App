@@ -1,0 +1,61 @@
+name: FT-family source-built ARM64 decoder integration
+
+on:
+  push:
+    branches: [cp-0009s-ft-family-offline-rx-integration]
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'android/compat/**'
+      - 'android/pipeline/src/main/kotlin/dev/n0png/fieldops/android/dsp/FtFamilyNativeEngine.kt'
+      - 'scripts/audit_ft8_native_abi.py'
+      - 'scripts/test_ft8_from_source_golden.sh'
+      - 'scripts/verify_ft8_native_apk.py'
+      - '.github/workflows/cp0009s-ft-family-native.yml'
+      - 'research/android/CP-0009S_FT_FAMILY_RX_INTEGRATION.md'
+      - 'research/LICENSE_PROVENANCE.md'
+
+permissions:
+  contents: read
+
+jobs:
+  native-golden:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile real upstream FT8 channel encoder and run immutable golden vectors
+        run: bash scripts/test_ft8_from_source_golden.sh
+
+  arm64-apk:
+    needs: native-golden
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v5
+        with: {distribution: temurin, java-version: '17'}
+      - name: Install Android 35 and pinned NDK/CMake
+        run: |
+          set -euo pipefail
+          SDK_MANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -path '*/bin/sdkmanager' | sort -V | tail -1)"
+          test -n "$SDK_MANAGER"
+          "$SDK_MANAGER" --install "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+      - name: Build native ARM64 APK and run Android Robolectric
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleDebug :app:testDebugUnitTest
+      - name: Validate ARM64 ELF, native JNI exports and APK identity
+        run: |
+          set -euo pipefail
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          python3 scripts/verify_android_apk_artifact.py "$APK"
+          python3 scripts/verify_ft8_native_apk.py "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep -Fq "package: name='dev.n0png.fieldops'"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fieldops-ft-family-native-arm64-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+          if-no-files-found: error
