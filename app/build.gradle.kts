@@ -8,6 +8,7 @@ plugins {
 android {
     namespace = "dev.n0png.fieldops.app"
     compileSdk = 35
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "dev.n0png.fieldops"
