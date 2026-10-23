@@ -17,6 +17,22 @@ public class Ft8Message {
     public int r_flag;
     public int report;
     public int score;
+    // The current FT8AF from-source JNI obtains ALL of these fields with
+    // GetFieldID. Their absence would raise NoSuchFieldError before decoding,
+    // even if the native library loaded successfully.
+    public int messageHash;
+    public long callFromHash10;
+    public long callFromHash12;
+    public long callFromHash22;
+    public long callToHash10;
+    public long callToHash12;
+    public long callToHash22;
+    public int rtty_tu;
+    public String rtty_state = "";
+    public int eu_serial;
+    public String arrl_class = "";
+    public String arrl_rac = "";
+    public String dx_call_to2 = "";
     public int signalFormat;
     public int snr;
     public float time_sec;

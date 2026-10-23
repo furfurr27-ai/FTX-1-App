@@ -233,6 +233,16 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("SELECTED ${model.mode.name}",
             "Cycle: ${profile.cycleMillis} ms • workflow: ${profile.workflow}. " +
                 "RX decoding, audio capture and TX remain unavailable in this APK.")
+        if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            val nativePresent = FtFamilyNativeAvailability.probe()
+            panel("FT-FAMILY 48 kHz / 12 kHz RX ENGINE",
+                if (nativePresent)
+                    "Native FT8AF library loadable. Shared 48 kHz to UTC slot decoder path is compiled; " +
+                        "input capture is NOT connected, and device/RF validation is still absent."
+                else
+                    "Production Java/JNI adapter compiled, but libft8af.so is not packaged. " +
+                        "Native FT8/FT4/FT2 decoding is UNAVAILABLE; no synthetic fallback.")
+        }
         disabledAction("START RX — NOT CONNECTED")
         disabledAction("ARM TX — HARDWARE VALIDATION REQUIRED")
     }
