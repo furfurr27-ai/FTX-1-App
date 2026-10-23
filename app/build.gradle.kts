@@ -15,6 +15,8 @@ android {
         targetSdk = 35
         versionCode = 69
         versionName = "0.69.0-cp0009r"
+        // FieldOps is a single-device Galaxy S23 Ultra target.
+        ndk { abiFilters += "arm64-v8a" }
     }
 
     sourceSets.getByName("main").java.srcDir(rootProject.file("core/src/main/kotlin"))
@@ -22,6 +24,13 @@ android {
     // than duplicating/rewriting its JNI bridge in the Android application.
     sourceSets.getByName("main").java.srcDir(rootProject.file("android/compat/src/main/java"))
     sourceSets.getByName("main").java.srcDir(layout.buildDirectory.dir("generated/ft-family-kotlin"))
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 
     testOptions {
         unitTests.isIncludeAndroidResources = true
