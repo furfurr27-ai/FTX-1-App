@@ -10,12 +10,12 @@ s = java.read_text()
 types = {"Z":"boolean", "I":"int", "F":"float", "J":"long",
          "Ljava/lang/String;":"String"}
 public = {name: typ for typ,name in re.findall(
-    r"\\bpublic\\s+(boolean|int|float|long|String)\\s+(\\w+)\\b", s)}
+    r"\bpublic\s+(boolean|int|float|long|String)\s+(\w+)\b", s)}
 need = {}
 for src in ("ft8_decode_jni.cpp", "ft2_decode_jni.cpp"):
     text = (native / src).read_text()
     for name, sig in re.findall(
-        r'GetFieldID\\(c,\\s*"([^"]+)",\\s*"([^"]+)"\\)', text):
+        r'GetFieldID\(c,\s*"([^"]+)",\s*"([^"]+)"\)', text):
         expected = types.get(sig)
         if expected is None:
             raise SystemExit(f"Unreviewed JNI signature {src} {name} {sig}")
@@ -35,6 +35,6 @@ required = ("InitDecoder", "InitDecoderFt2", "DecoderMonitorPressFloat",
             "DecoderFt2FindSync", "DecoderFt8Analysis",
             "DecoderFt2Analysis", "DeleteDecoder", "DeleteDecoderFt2")
 for method in required:
-    if not re.search(r"\\bnative\\s+\\w+\\s+" + method + r"\\s*\\(",listener):
+    if not re.search(r"\bnative\s+\w+\s+" + method + r"\s*\(",listener):
         raise SystemExit(f"FieldOps JNI Java method missing: {method}")
 print("FT-family Java decoder JNI method surface present: PASS")
