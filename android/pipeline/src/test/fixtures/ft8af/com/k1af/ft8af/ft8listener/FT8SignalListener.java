@@ -8,10 +8,14 @@ import com.k1af.ft8af.Ft8Message;
  */
 public final class FT8SignalListener {
     public static String lastInitMode = "";
+    public static String lastDecoderApi = "";
+    public static int lastProtocol = -1;
     public static int deleteCount = 0;
 
     public long InitDecoder(long slotStartUtcMillis, int sampleRate, int samples, boolean isFt8) {
         lastInitMode = isFt8 ? "FT8" : "FT4";
+        lastDecoderApi = "InitDecoder";
+        lastProtocol = isFt8 ? 1 : 0;
         return isFt8 ? 8L : 4L;
     }
 
@@ -31,6 +35,8 @@ public final class FT8SignalListener {
     public long InitDecoderFt2(long slotStartUtcMillis, int sampleRate, int samples, int protocol) {
         if (protocol != 0 && protocol != 2) throw new IllegalArgumentException("Unknown FT-family protocol");
         lastInitMode = protocol == 0 ? "FT4" : "FT2";
+        lastDecoderApi = "InitDecoderFt2";
+        lastProtocol = protocol;
         return protocol == 0 ? 4L : 2L;
     }
 
