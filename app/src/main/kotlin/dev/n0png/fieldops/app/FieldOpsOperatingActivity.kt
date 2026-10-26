@@ -16,6 +16,7 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.n0png.fieldops.android.dsp.FtFamilyNativeEngine
 import dev.n0png.fieldops.core.awards.AwardsCenterApplicationService
 import dev.n0png.fieldops.core.awards.InMemoryAwardEvidenceRepository
 import dev.n0png.fieldops.core.digital.DigitalMode
@@ -40,6 +41,7 @@ import java.math.BigDecimal
  * No USB, CAT, audio, network, PTT or transmitter path is instantiated here.
  */
 open class FieldOpsOperatingActivity : Activity() {
+    private companion object { const val OPEN_OFFLINE_WAV = 7129 }
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
     private class UiSession {
@@ -62,6 +64,9 @@ open class FieldOpsOperatingActivity : Activity() {
         var draftRemoteGrid = ""
         var logMessage = "No contacts recorded in this in-memory session."
         var showAdif = false
+        var offlineDecodeBusy = false
+        var offlineDecodeStatus = "No offline recording decoded."
+        var offlineDecodeLines: List<String> = emptyList()
 
         fun saveManual(): Boolean {
             val call = draftCall.trim().uppercase()
@@ -150,6 +155,54 @@ open class FieldOpsOperatingActivity : Activity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    @Deprecated("Android document result callback")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode != OPEN_OFFLINE_WAV || resultCode != RESULT_OK) return
+        val uri = data?.data ?: return
+        val session = model
+        if (session.offlineDecodeBusy ||
+            session.mode !in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) return
+        val selected = session.mode
+        session.offlineDecodeBusy = true
+        session.offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
+        session.offlineDecodeLines = emptyList()
+        render()
+        val resolver = applicationContext.contentResolver
+        Thread({
+            val result = runCatching {
+                check(FtFamilyNativeAvailability.probe()) { "Native decoder unavailable" }
+                val input = resolver.openInputStream(uri)
+                    ?: throw IllegalArgumentException("Could not open selected WAV")
+                input.use { FtFamilyOfflineWav.decode(it, selected, FtFamilyNativeEngine()) }
+            }
+            runOnUiThread {
+                session.offlineDecodeBusy = false
+                result.fold(
+                    onSuccess = { decodes ->
+                        session.offlineDecodeStatus =
+                            "${selected.name}: ${decodes.size} decoded entries from user-selected WAV. " +
+                            "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
+                            "NO QSO automatically logged or transmitted."
+                        session.offlineDecodeLines = decodes.take(40).map { item ->
+                            "${item.audioHz ?: "?"} Hz | ${item.snrDb ?: "?"} dB | " +
+                                item.text.take(200)
+                        }
+                    },
+                    onFailure = { error ->
+                        session.offlineDecodeStatus =
+                            if (error is IllegalArgumentException)
+                                "OFFLINE RX REJECTED: ${error.message?.take(140)}"
+                            else
+                                "OFFLINE RX FAILED: native decoder or recording unavailable."
+                        session.offlineDecodeLines = emptyList()
+                    },
+                )
+                if (!isFinishing && !isDestroyed && model === session) render()
+            }
+        }, "FieldOps-Offline-FT-Family-RX").apply { isDaemon = true }.start()
     }
 
     private fun render() {
@@ -242,6 +295,23 @@ open class FieldOpsOperatingActivity : Activity() {
                 else
                     "Production Java/JNI adapter compiled, but libft8af.so is not packaged. " +
                         "Native FT8/FT4/FT2 decoding is UNAVAILABLE; no synthetic fallback.")
+        }
+        if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            panel("RECORDED-WAV RECEIVE / FILE ONLY",
+                "Requires a single 12 kHz, mono, 16-bit PCM WAV slot. " +
+                    "Recording time and source are unverified. Decoded text is NOT logged as a QSO.")
+            if (!model.offlineDecodeBusy) {
+                action("OPEN OFFLINE WAV FILE (NO RF)") {
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "*/*"
+                    }
+                    @Suppress("DEPRECATION")
+                    startActivityForResult(intent, OPEN_OFFLINE_WAV)
+                }
+            }
+            panel("OFFLINE DECODE RESULT", model.offlineDecodeStatus)
+            model.offlineDecodeLines.forEach { panel("DECODED WAV / UNVERIFIED", it) }
         }
         disabledAction("START RX — NOT CONNECTED")
         disabledAction("ARM TX — HARDWARE VALIDATION REQUIRED")
