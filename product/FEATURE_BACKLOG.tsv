@@ -42,3 +42,7 @@ REF-001	P0	Research	Pinned GitHub amateur-radio reference matrix	IMPLEMENTED
 REF-002	P1	Research	Deep-dive fldigi modem API before provider API freeze	BACKLOG_LOCKED
 REF-003	P1	Research	Deep-dive Wavelog generic award engine patterns	BACKLOG_LOCKED
 REF-004	P1	Research	Deep-dive wfview FTX-safe startup/reconnect queue patterns	BACKLOG_LOCKED
+REV-001	P3	Final Review	Stability crashes, async exceptions and lifecycle leaks audit	DEFERRED_OWNER_TRIGGER
+REV-002	P3	Final Review	Compose-if-present / Android UI performance optimization audit	DEFERRED_OWNER_TRIGGER
+REV-003	P3	Final Review	FTX-1 fail-closed CAT/PTT/TX safety inspection and fault injection	DEFERRED_OWNER_TRIGGER
+REV-004	P3	Final Review	R8 ProGuard release build, packaging and APK hash validation	DEFERRED_OWNER_TRIGGER
