@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 69"):
+              "targetSdk = 35", "versionCode = 70"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -289,8 +289,8 @@ for forbidden in ("android.content.Context", "SecretKey", "File(", "System.curre
                   "Log.", "MessageDigest", "SharedPreferences", "Serializable", "Parcelable"):
     if forbidden in consent_source:
         raise SystemExit("CP-0009Q consent renderer must remain side-effect free: " + forbidden)
-if "versionCode = 69" not in appgradle.read_text():
-    raise SystemExit("CP-0009R APK versionCode 69 expected")
+if "versionCode = 70" not in appgradle.read_text():
+    raise SystemExit("CP-0009S APK versionCode 70 expected")
 print("CP-0009Q explicit consent, safe failure, cancel and typed-only audit: PASS")
 
 # CP-0009R integrated navigation must wire actual logbook/award and mode
