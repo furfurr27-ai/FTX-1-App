@@ -99,3 +99,9 @@ release remains incomplete and physical CP-0004A/B/C proofs are outstanding.
 ## Operator-reviewed FT8/FT4/FT2 manual QSO handoff — pending exact-head CI
 
 The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action that opens the same canonical LOG workspace already used for CW/SSB. The operator must enter frequency/callsign and explicitly confirm **completed two-way** contact before `FastQsoLogger.logManual` writes a MANUAL-provenance FT8/FT4/FT2 record. The entry contributes to the existing ADIF/Awards projection; no decode, CQ or file import can automatically create a QSO, and CAT/PTT/LoTW remain disabled. Robolectric tests cover FT8 manual log, FT4/FT2 mode identity, draft retention and locked TX. This is **not** automated FT QSO sequencing, RF proof, or persistent storage. Full exact-head CI remains required.
+
+## Fast-mode native demodulation regression — pending exact-head CI
+
+- `app/src/test/native/ft8af/test_fast_waveform_decode.c` now exercises actual bundled FT4/FT2 signal processing: fixed 77-bit CQ message → FT4's 105-tone modulation → 12 kHz GFSK waveform at each mode's distinct 48 ms/24 ms symbol period → full 7.5 s/3.75 s receive slot → real monitor, sync search, LDPC and CRC → original message payload. Also checks Costas groups and rejects a silent slot; no synthetic Java decoder is used.
+- `scripts/test_ft_fast_waveform_decode.sh` and the `fast-waveform-host` job make this host verification required before the ARM64 APK job. **This is generated clean-channel / same-library round-trip evidence, NOT an independent FT4/FT2 on-air recording, S23 native JNI execution, live CAT/USB audio, or RF proof.**
+- New exact-head check must pass before this regression is counted as tested. The preceding `b1dfbb1e8ad1f48a7b5fc969bb07b75fbd1dd01b` did pass 28/28 CI including native FT8 recorded truth and APK; modifying the branch supersedes that exact-head acceptance.

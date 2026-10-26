@@ -12,6 +12,7 @@ on:
       - 'scripts/test_ft8_from_source_golden.sh'
       - 'scripts/verify_ft8_native_apk.py'
       - 'scripts/test_ft8_recorded_wav_decode.sh'
+      - 'scripts/test_ft_fast_waveform_decode.sh'
       - 'app/src/test/native/ft8af/**'
       - '.github/workflows/cp0009s-ft-family-native.yml'
       - 'research/android/CP-0009S_FT_FAMILY_RX_INTEGRATION.md'
@@ -37,8 +38,16 @@ jobs:
       - name: Decode SHA-pinned recorded 20m FT8 WAV against jt9 truth
         run: bash scripts/test_ft8_recorded_wav_decode.sh
 
+  fast-waveform-host:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode generated FT4 and FT2 sample-rate-correct audio using production modem DSP
+        run: bash scripts/test_ft_fast_waveform_decode.sh
+
   arm64-apk:
-    needs: [native-golden, recorded-ft8-receive]
+    needs: [native-golden, recorded-ft8-receive, fast-waveform-host]
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
