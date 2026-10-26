@@ -11,6 +11,8 @@ on:
       - 'scripts/audit_ft8_native_abi.py'
       - 'scripts/test_ft8_from_source_golden.sh'
       - 'scripts/verify_ft8_native_apk.py'
+      - 'scripts/test_ft8_recorded_wav_decode.sh'
+      - 'app/src/test/native/ft8af/**'
       - '.github/workflows/cp0009s-ft-family-native.yml'
       - 'research/android/CP-0009S_FT_FAMILY_RX_INTEGRATION.md'
       - 'research/LICENSE_PROVENANCE.md'
@@ -27,8 +29,16 @@ jobs:
       - name: Compile real upstream FT8 channel encoder and run immutable golden vectors
         run: bash scripts/test_ft8_from_source_golden.sh
 
+  recorded-ft8-receive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode SHA-pinned recorded 20m FT8 WAV against jt9 truth
+        run: bash scripts/test_ft8_recorded_wav_decode.sh
+
   arm64-apk:
-    needs: native-golden
+    needs: [native-golden, recorded-ft8-receive]
     runs-on: ubuntu-latest
     timeout-minutes: 50
     steps:
