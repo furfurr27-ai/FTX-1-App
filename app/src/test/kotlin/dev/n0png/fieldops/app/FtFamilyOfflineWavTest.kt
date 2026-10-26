@@ -71,6 +71,30 @@ class FtFamilyOfflineWavTest {
         assertNull(d.lastMode)
     }
 
+    @Test fun rejectAudioOutsideDeclaredRiffContainerBeforeInvokingNativeDecoder() {
+        val decoder = Decoder()
+        val valid = wav(DigitalMode.FT8)
+        // RIFF closes immediately after the data chunk header. The bytes
+        // following that boundary are not part of the declared container.
+        ByteBuffer.wrap(valid).order(ByteOrder.LITTLE_ENDIAN).putInt(4, 36)
+        assertThrows(IllegalArgumentException::class.java) {
+            FtFamilyOfflineWav.decode(ByteArrayInputStream(valid), DigitalMode.FT8, decoder)
+        }
+        assertNull(decoder.lastMode)
+    }
+
+    @Test fun rejectPartialFinalChunkHeaderInsideDeclaredRiff() {
+        val decoder = Decoder()
+        val valid = wav(DigitalMode.FT4)
+        val extra = valid.copyOf(valid.size + 4)
+        ByteBuffer.wrap(extra).order(ByteOrder.LITTLE_ENDIAN)
+            .putInt(4, extra.size - 8)
+        assertThrows(IllegalArgumentException::class.java) {
+            FtFamilyOfflineWav.decode(ByteArrayInputStream(extra), DigitalMode.FT4, decoder)
+        }
+        assertNull(decoder.lastMode)
+    }
+
     @Test fun noJs8OrWsprWavMayUseFtFamilyPath() {
         val d = Decoder()
         assertThrows(IllegalArgumentException::class.java) {

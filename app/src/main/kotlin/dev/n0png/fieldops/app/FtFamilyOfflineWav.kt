@@ -23,16 +23,19 @@ object FtFamilyOfflineWav {
         val b = readBounded(input)
         require(b.size >= 44 && ascii(b, 0, 4) == "RIFF" &&
             ascii(b, 8, 4) == "WAVE") { "Not a RIFF/WAVE file" }
-        require(u32(b, 4) + 8L <= b.size.toLong()) { "Truncated WAVE container" }
+        // Chunk offsets are relative to the declared RIFF container, not the
+        // entire uploaded file. Trailing bytes cannot supply hidden audio.
+        val riffEnd = u32(b, 4) + 8L
+        require(riffEnd <= b.size.toLong()) { "Truncated WAVE container" }
         var pos = 12
         var formatFound = false
         var dataOffset = -1
         var dataSize = 0
-        while (pos + 8 <= b.size) {
+        while (pos.toLong() + 8L <= riffEnd) {
             val kind = ascii(b, pos, 4)
             val len = u32(b, pos + 4)
             val start = pos.toLong() + 8
-            require(len <= b.size.toLong() - start) { "Truncated WAVE chunk" }
+            require(len <= riffEnd - start) { "Truncated WAVE chunk" }
             if (kind == "fmt ") {
                 require(len >= 16) { "Truncated WAVE format" }
                 val off = start.toInt()
@@ -53,8 +56,9 @@ object FtFamilyOfflineWav {
                 dataSize = len.toInt()
             }
             pos = (start + len + (len and 1L)).toInt()
-            require(pos <= b.size) { "Invalid WAVE padding" }
+            require(pos.toLong() <= riffEnd) { "Invalid WAVE padding" }
         }
+        require(pos.toLong() == riffEnd) { "Incomplete WAVE chunk header" }
         require(formatFound && dataOffset >= 0) { "WAVE format or audio missing" }
         val expectedSamples = DigitalModes.profile(mode).cycleMillis.toInt() * 12
         require(dataSize == expectedSamples * 2) {
