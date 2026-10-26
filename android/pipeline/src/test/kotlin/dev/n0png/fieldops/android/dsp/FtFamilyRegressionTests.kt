@@ -21,6 +21,8 @@ object FtFamilyRegressionTests {
         require(mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2))
 
         FT8SignalListener.lastInitMode = ""
+        FT8SignalListener.lastDecoderApi = ""
+        FT8SignalListener.lastProtocol = -1
         FT8SignalListener.deleteCount = 0
         GenerateFT8.lastEncoder = ""
 
@@ -37,7 +39,16 @@ object FtFamilyRegressionTests {
         checkThat(result.text.contains(mode.name), "$mode decode fixture identity missing")
         checkThat(result.audioHz == 1500f, "$mode decode audio frequency mapping changed")
         checkThat(result.snrDb == -12, "$mode decode SNR mapping changed")
-        checkThat(FT8SignalListener.lastInitMode == mode.name, "$mode selected the wrong decoder entry point")
+        checkThat(FT8SignalListener.lastInitMode == mode.name, "$mode selected the wrong native protocol")
+        checkThat(FT8SignalListener.lastDecoderApi ==
+            (if (mode == DigitalMode.FT8) "InitDecoder" else "InitDecoderFt2"),
+            "$mode invoked the wrong FT8AF JNI decoder family")
+        checkThat(FT8SignalListener.lastProtocol == when (mode) {
+            DigitalMode.FT4 -> 0
+            DigitalMode.FT8 -> 1
+            DigitalMode.FT2 -> 2
+            else -> -1
+        }, "$mode selected the wrong native protocol number")
         checkThat(FT8SignalListener.deleteCount == 1, "$mode decoder handle must be deleted exactly once")
 
         val waveform = engine.encode(
