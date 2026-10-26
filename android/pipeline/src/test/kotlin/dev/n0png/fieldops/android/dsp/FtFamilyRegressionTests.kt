@@ -39,6 +39,7 @@ object FtFamilyRegressionTests {
         checkThat(result.text.contains(mode.name), "$mode decode fixture identity missing")
         checkThat(result.audioHz == 1500f, "$mode decode audio frequency mapping changed")
         checkThat(result.snrDb == -12, "$mode decode SNR mapping changed")
+        checkThat(result.decodedSenderCallsign == "K1JT", "$mode structured native sender mismatch")
         checkThat(FT8SignalListener.lastInitMode == mode.name, "$mode selected the wrong native protocol")
         checkThat(FT8SignalListener.lastDecoderApi ==
             (if (mode == DigitalMode.FT8) "InitDecoder" else "InitDecoderFt2"),

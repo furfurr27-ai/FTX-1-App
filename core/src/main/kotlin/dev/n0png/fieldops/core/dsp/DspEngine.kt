@@ -12,6 +12,8 @@ data class DecodeResult(
     val dtSeconds: Float? = null,
     val text: String,
     val raw: ByteArray? = null,
+    // Optional structured native sender; receiving it is NOT a two-way contact.
+    val decodedSenderCallsign: String? = null,
 )
 
 data class EncodeRequest(

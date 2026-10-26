@@ -6,6 +6,8 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import dev.n0png.fieldops.core.digital.DigitalMode
+import dev.n0png.fieldops.core.dsp.DecodeResult
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -245,6 +247,32 @@ class FieldOpsOperatingActivityTest {
         assertTrue(text(ctl.get()).contains("<MODE:3>FT4"))
         assertTrue(text(ctl.get()).contains("<MODE:3>FT2"))
         ctl.pause().stop().destroy()
+    }
+
+    @Test fun offlineDecodedSenderOnlyPrefillsUnverifiedManualDraftWithoutQso() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            val modelField = FieldOpsOperatingActivity::class.java.getDeclaredField("model")
+            modelField.isAccessible = true
+            val model = modelField.get(a)
+            val decodedField = model.javaClass.getDeclaredField("offlineDecodes")
+            decodedField.isAccessible = true
+            decodedField.set(model, listOf(DecodeResult(
+                DigitalMode.FT4, 0L, audioHz = 1500f, text = "K1JT N0PNG FN20",
+                decodedSenderCallsign = "K1JT")))
+            tap(a, "DIGI")
+            tap(a, "REVIEW K1JT IN MANUAL LOG (NO AUTO QSO)")
+            assertTrue(text(a).contains("UNVERIFIED WAV SENDER"))
+            assertTrue(text(a).contains("MANUAL MODE: FT4 (SWITCH)"))
+            assertEquals("K1JT", field(a, "Remote callsign").text.toString())
+            assertEquals("", field(a, "Frequency in MHz (e.g. 7.075)").text.toString())
+            assertEquals("", field(a, "RST sent (optional)").text.toString())
+            assertTrue(text(a).contains("0 records"))
+            tap(a, "OPS")
+            assertTrue(text(a).contains("0 manual QSOs"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
     }
 
     @Test fun launcherStillNavigatesToPrivateSyntheticArchive() {

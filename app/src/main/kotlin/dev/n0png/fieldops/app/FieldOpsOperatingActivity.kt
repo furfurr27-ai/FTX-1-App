@@ -21,6 +21,7 @@ import dev.n0png.fieldops.core.awards.AwardsCenterApplicationService
 import dev.n0png.fieldops.core.awards.InMemoryAwardEvidenceRepository
 import dev.n0png.fieldops.core.digital.DigitalMode
 import dev.n0png.fieldops.core.digital.DigitalModes
+import dev.n0png.fieldops.core.dsp.DecodeResult
 import dev.n0png.fieldops.core.logbook.AdifCodec
 import dev.n0png.fieldops.core.logbook.FastQsoLogger
 import dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
@@ -66,7 +67,7 @@ open class FieldOpsOperatingActivity : Activity() {
         var showAdif = false
         var offlineDecodeBusy = false
         var offlineDecodeStatus = "No offline recording decoded."
-        var offlineDecodeLines: List<String> = emptyList()
+        var offlineDecodes: List<DecodeResult> = emptyList()
 
         fun saveManual(): Boolean {
             val call = draftCall.trim().uppercase()
@@ -168,7 +169,7 @@ open class FieldOpsOperatingActivity : Activity() {
         val selected = session.mode
         session.offlineDecodeBusy = true
         session.offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
-        session.offlineDecodeLines = emptyList()
+        session.offlineDecodes = emptyList()
         render()
         val resolver = applicationContext.contentResolver
         Thread({
@@ -186,10 +187,8 @@ open class FieldOpsOperatingActivity : Activity() {
                             "${selected.name}: ${decodes.size} decoded entries from user-selected WAV. " +
                             "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
                             "NO QSO automatically logged or transmitted."
-                        session.offlineDecodeLines = decodes.take(40).map { item ->
-                            "${item.audioHz ?: "?"} Hz | ${item.snrDb ?: "?"} dB | " +
-                                item.text.take(200)
-                        }
+                        // Preserve bounded native metadata for opt-in operator review.
+                        session.offlineDecodes = decodes.take(40)
                     },
                     onFailure = { error ->
                         session.offlineDecodeStatus =
@@ -197,7 +196,7 @@ open class FieldOpsOperatingActivity : Activity() {
                                 "OFFLINE RX REJECTED: ${error.message?.take(140)}"
                             else
                                 "OFFLINE RX FAILED: native decoder or recording unavailable."
-                        session.offlineDecodeLines = emptyList()
+                        session.offlineDecodes = emptyList()
                     },
                 )
                 if (!isFinishing && !isDestroyed && model === session) render()
@@ -311,7 +310,30 @@ open class FieldOpsOperatingActivity : Activity() {
                 }
             }
             panel("OFFLINE DECODE RESULT", model.offlineDecodeStatus)
-            model.offlineDecodeLines.forEach { panel("DECODED WAV / UNVERIFIED", it) }
+            model.offlineDecodes.forEach { decoded ->
+                panel("DECODED WAV / UNVERIFIED",
+                    "${decoded.audioHz ?: "?"} Hz audio offset | " +
+                        "${decoded.snrDb ?: "?"} dB | " + decoded.text.take(200))
+                val review = FtDecodedStationReview.from(
+                    decoded, model.operatingSession.stationCallsign)
+                if (review != null) {
+                    action("REVIEW ${review.callsign} IN MANUAL LOG (NO AUTO QSO)") {
+                        // A WAV's audio offset is NOT a CAT frequency; clear old
+                        // contact fields so no stale QSO can be accidentally saved.
+                        model.manualMode = review.manualMode
+                        model.draftCall = review.callsign
+                        model.draftFrequencyMhz = ""
+                        model.draftSent = ""
+                        model.draftReceived = ""
+                        model.draftRemoteGrid = ""
+                        model.logMessage =
+                            "UNVERIFIED WAV SENDER ${review.callsign} selected. " +
+                            "NOT LOGGED. Enter real RF frequency and confirm a completed two-way contact before saving."
+                        model.tab = Tab.LOG
+                        render()
+                    }
+                }
+            }
             panel("COMPLETED FT QSO / OPERATOR REVIEW",
                 "Only log a TWO-WAY contact that you independently completed. " +
                     "An offline decode, a CQ or a heard signal alone is NOT a QSO. " +

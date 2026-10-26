@@ -63,6 +63,7 @@ class FtFamilyNativeEngine : WindowedDspEngine {
                     snrDb = msg.snr,
                     dtSeconds = msg.time_sec,
                     text = text,
+                    decodedSenderCallsign = msg.callsignFrom.takeIf { it.isNotBlank() },
                 )
             }
             return results
