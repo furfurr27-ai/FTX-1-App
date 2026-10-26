@@ -57,3 +57,41 @@ real-radio/device RF validation, so CP-0004A/B/C remain hardware-gated.
 its public website calls the whole app GPL-3.0. Both texts are recorded in
 `research/LICENSE_PROVENANCE.md`, with source and notices checked in; a
 redistributable release requires a proper obligation review.
+
+## Additional recorded-audio and Android offline receive acceptance (unverified until CI)
+
+- The upstream pin also supplies `decode_bench.c`, a real host C decoder
+  that shares the selected native monitor/LDPC/synchronization code with the
+  app. `scripts/test_ft8_recorded_wav_decode.sh` compiles the vendored
+  native source and downloads one actual 20-meter WAV from immutable upstream
+  commit `c2f63e8b37fcd484fd2eb2049494425dd2414971`. Before processing,
+  it verifies Git blob SHA-1
+  `820972665a551c93ef5334d1e19a917debdaba45`.
+- The WSJT-X jt9 truth sidecar is pinned at Git blob
+  `3f388c70c844353974a9bb2d6031af444f3c6063`.
+  The test gates on 24 matched independent FT8 decoded messages, not
+  synthesized Java fake-native results, and runs in the new
+  `recorded-ft8-receive` GitHub Actions job.
+- Pinned FT8AF's source explicitly routes FT4 through the same fast decoder
+  ABI as FT2, with native protocol IDs FT4=0, FT8=1, FT2=2.
+  `FtFamilyNativeEngine.kt` and the deterministic host fixture are corrected
+  to dispatch FT4 to `InitDecoderFt2`, `DecoderFt2FindSync`,
+  `DecoderFt2Analysis` and the matching handle teardown; the regression
+  asserts the **exact** entry point and protocol number.
+- `FtFamilyOfflineWav` validates 12 kHz mono 16-bit PCM RIFF/WAVE, requires
+  exactly one slot of the specifically selected FT8/FT4/FT2 mode, caps
+  input at 2 MB, and dispatches the actual native engine. The DIGI workspace
+  exposes a user-selected **file-only** decode operation, with no microphone,
+  USB, CAT, PTT or QSO/LoTW mutation. The WAV has no authenticated UTC
+  timestamp, so all decoded results are explicitly labeled **UNVERIFIED UTC**
+  and are never converted automatically into confirmed contacts.
+- `FtFamilyOfflineWavTest.kt` checks all three mode-specific slot sizes,
+  rejects invalid headers/rates/oversized payloads, and forbids unrelated
+  modes. Android tests use a clearly labeled fixture decoder; the native
+  real-recording test separately establishes actual C modem behavior.
+
+**Remaining:** Current-head CI must pass. The host-side FT8 recording gate
+does not establish FT4/FT2 real-waveform interoperability, Android
+ARM64 JNI execution on real device, phone USB audio rates/routes, live
+decode timing, QSO protocol state or RF-safe transmission. The software
+release remains incomplete and physical CP-0004A/B/C proofs are outstanding.
