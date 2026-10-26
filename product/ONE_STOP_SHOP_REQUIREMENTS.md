@@ -376,3 +376,7 @@ P3 — breadth and polish:
 8. New modem cores require license/provenance review before bundling.
 9. The map must remain useful offline for local log/award layers even when live propagation services are unavailable.
 10. This document is a locked product requirement source and should be checked before declaring a future FieldOps build feature-complete.
+
+## 13. Deferred Final Review Plan — owner-triggered
+
+**Status: NOT STARTED.** The one-time `Final Review Plan` is stored in [`product/FINAL_REVIEW_PLAN.md`](FINAL_REVIEW_PLAN.md) and tracked by [GitHub issue #73](https://github.com/furfurr27-ai/FTX-1-App/issues/73). Run it **only** after Chris explicitly says **"let's initiate the final review"**. It covers stability/exceptions/lifecycle; actual UI performance optimization (Compose only if present); FTX-1 fail-closed radio/PTT safety; and R8/ProGuard release hardening. Apply evidence-backed fixes on a dedicated branch with CI and commits at that time, not now. Preserve current checkpoint order, release acceptance, CP-0003C DEFERRED, CP-0004A/B/C physical gates, and the finite software stop condition. The trigger does not itself authorize real RF transmission or account/credential work.
