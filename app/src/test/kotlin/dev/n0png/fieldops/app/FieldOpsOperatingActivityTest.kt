@@ -73,6 +73,28 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun recordedFileReceiveOpensDocumentOnlyAndNeverArmsTransmitter() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            assertTrue(text(a).contains("RECORDED-WAV RECEIVE / FILE ONLY"))
+            assertTrue(text(a).contains("UNVERIFIED"))
+            assertFalse(button(a, "START RX — NOT CONNECTED").isEnabled)
+            assertFalse(button(a, "ARM TX — HARDWARE VALIDATION REQUIRED").isEnabled)
+            tap(a, "OPEN OFFLINE WAV FILE (NO RF)")
+            val request = Shadows.shadowOf(a).nextStartedActivityForResult
+            assertNotNull(request)
+            assertEquals(Intent.ACTION_OPEN_DOCUMENT, request.intent.action)
+            assertTrue(request.intent.hasCategory(Intent.CATEGORY_OPENABLE))
+            assertEquals("*/*", request.intent.type)
+            tap(a, "OPS")
+            assertTrue(text(a).contains("0 manual QSOs"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+            assertFalse(button(a, "CONNECT CAT — PHYSICAL VALIDATION REQUIRED").isEnabled)
+        }
+    }
+
     @Test fun manualQsoFeedsSameLogbookAdifAndAwardsWithoutLotw() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
