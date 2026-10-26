@@ -37,6 +37,7 @@ object FtFamilyOfflineWav {
             val start = pos.toLong() + 8
             require(len <= riffEnd - start) { "Truncated WAVE chunk" }
             if (kind == "fmt ") {
+                require(!formatFound) { "Duplicate WAVE format chunk" }
                 require(len >= 16) { "Truncated WAVE format" }
                 val off = start.toInt()
                 val pcm = u16(b, off)
@@ -51,7 +52,8 @@ object FtFamilyOfflineWav {
                     "Requires mono 12 kHz 16-bit uncompressed PCM WAV"
                 }
                 formatFound = true
-            } else if (kind == "data" && dataOffset == -1) {
+            } else if (kind == "data") {
+                require(dataOffset == -1) { "Duplicate WAVE audio chunk" }
                 dataOffset = start.toInt()
                 dataSize = len.toInt()
             }
@@ -79,7 +81,7 @@ object FtFamilyOfflineWav {
         while (true) {
             val count = input.read(buffer)
             if (count < 0) break
-            if (count == 0) continue
+            require(count != 0) { "WAV input stream returned zero bytes without EOF" }
             require(bytes.size() + count <= MAX_FILE_BYTES) { "WAV exceeds offline 2 MB limit" }
             bytes.write(buffer, 0, count)
         }

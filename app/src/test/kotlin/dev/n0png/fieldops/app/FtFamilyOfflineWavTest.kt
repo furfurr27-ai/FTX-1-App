@@ -95,6 +95,45 @@ class FtFamilyOfflineWavTest {
         assertNull(decoder.lastMode)
     }
 
+
+    @Test fun duplicateFormatAndAudioChunksCannotReachDecoder() {
+        val format = wav(DigitalMode.FT8).copyOfRange(20, 36)
+        for ((kind, payload) in listOf(
+            "fmt " to format,
+            "data" to byteArrayOf(),
+        )) {
+            val base = wav(DigitalMode.FT8)
+            val appended = ByteBuffer.allocate(base.size + 8 + payload.size)
+                .order(ByteOrder.LITTLE_ENDIAN)
+                .put(base)
+                .put(kind.toByteArray(Charsets.US_ASCII))
+                .putInt(payload.size)
+                .put(payload)
+                .array()
+            ByteBuffer.wrap(appended).order(ByteOrder.LITTLE_ENDIAN)
+                .putInt(4, appended.size - 8)
+            val decoder = Decoder()
+            val rejection = assertThrows(IllegalArgumentException::class.java) {
+                FtFamilyOfflineWav.decode(ByteArrayInputStream(appended), DigitalMode.FT8, decoder)
+            }
+            assertTrue(rejection.message.orEmpty().contains("Duplicate WAVE"))
+            assertNull("Decoder must not see ambiguous audio", decoder.lastMode)
+        }
+    }
+
+    @Test fun nonProgressingContentProviderStreamFailsClosedWithoutSpinning() {
+        val decoder = Decoder()
+        val neverProgresses = object : java.io.InputStream() {
+            override fun read(): Int = 0
+            override fun read(bytes: ByteArray, offset: Int, length: Int): Int = 0
+        }
+        val rejection = assertThrows(IllegalArgumentException::class.java) {
+            FtFamilyOfflineWav.decode(neverProgresses, DigitalMode.FT8, decoder)
+        }
+        assertTrue(rejection.message.orEmpty().contains("zero bytes"))
+        assertNull(decoder.lastMode)
+    }
+
     @Test fun noJs8OrWsprWavMayUseFtFamilyPath() {
         val d = Decoder()
         assertThrows(IllegalArgumentException::class.java) {
