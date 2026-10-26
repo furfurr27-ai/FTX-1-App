@@ -29,15 +29,16 @@ public final class FT8SignalListener {
     public void DeleteDecoder(long handle) { deleteCount++; }
 
     public long InitDecoderFt2(long slotStartUtcMillis, int sampleRate, int samples, int protocol) {
-        lastInitMode = "FT2";
-        return 2L;
+        if (protocol != 0 && protocol != 2) throw new IllegalArgumentException("Unknown FT-family protocol");
+        lastInitMode = protocol == 0 ? "FT4" : "FT2";
+        return protocol == 0 ? 4L : 2L;
     }
 
     public void DecoderFt2MonitorPressFloat(float[] audio, long handle) {}
     public int DecoderFt2FindSync(long handle) { return 1; }
 
     public boolean DecoderFt2Analysis(int candidate, long handle, Ft8Message out) {
-        fill(out, "FT2");
+        fill(out, handle == 4L ? "FT4" : "FT2");
         return true;
     }
 
