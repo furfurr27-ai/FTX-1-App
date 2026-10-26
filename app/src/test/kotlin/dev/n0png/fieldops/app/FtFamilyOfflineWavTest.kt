@@ -37,7 +37,7 @@ class FtFamilyOfflineWavTest {
             putInt(sampleRate); putInt(sampleRate * channels * bits / 8)
             putShort((channels * bits / 8).toShort()); putShort(bits.toShort())
             put("data".toByteArray()); putInt(dataBytes)
-            repeat(samples) { putShort(if (it % 2 == 0) 1000 else -1000) }
+            repeat(samples) { putShort((if (it % 2 == 0) 1000 else -1000).toShort()) }
         }.array()
     }
 
