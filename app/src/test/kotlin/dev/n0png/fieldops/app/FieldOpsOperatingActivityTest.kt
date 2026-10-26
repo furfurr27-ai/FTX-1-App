@@ -199,6 +199,54 @@ class FieldOpsOperatingActivityTest {
         controller.pause().stop().destroy()
     }
 
+    @Test fun ftModeDecodeNeverAutoLogsButOperatorCanPrepareAndConfirmManualDigitalQso() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            assertTrue(text(a).contains("An offline decode, a CQ or a heard signal alone is NOT a QSO"))
+            tap(a, "PREPARE MANUAL FT8 QSO (NO AUTO LOG)")
+            assertTrue(text(a).contains("MANUAL FT CONTACT / OPERATOR ATTESTATION"))
+            assertTrue(text(a).contains("MANUAL MODE: FT8 (SWITCH)"))
+            assertTrue(text(a).contains("0 records"))
+            field(a, "Remote callsign").setText("DL1XYZ")
+            field(a, "Frequency in MHz (e.g. 7.075)").setText("14.074")
+            field(a, "RST sent (optional)").setText("-08")
+            field(a, "RST received (optional)").setText("-12")
+            field(a, "Remote grid square (optional)").setText("JO40")
+            tap(a, "CONFIRM COMPLETED FT QSO — SAVE MANUALLY")
+            assertTrue(text(a).contains("Saved in memory: QSO #1 DL1XYZ FT8"))
+            tap(a, "SHOW ADIF FROM REAL LOGBOOK")
+            assertTrue(text(a).contains("<MODE:3>FT8"))
+            assertTrue(text(a).contains("<CALL:6>DL1XYZ"))
+            assertTrue(text(a).contains("<RST_SENT:3>-08"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
+    }
+
+    @Test fun ft4AndFt2PrepareDistinctManualModesAndPreserveDraftAcrossRotation() {
+        val ctl = Robolectric.buildActivity(MainActivity::class.java).setup()
+        tap(ctl.get(), "DIGI")
+        tap(ctl.get(), "SELECT FT4")
+        tap(ctl.get(), "PREPARE MANUAL FT4 QSO (NO AUTO LOG)")
+        field(ctl.get(), "Remote callsign").setText("K1ABC")
+        field(ctl.get(), "Frequency in MHz (e.g. 7.075)").setText("7.074")
+        ctl.configurationChange()
+        assertEquals("K1ABC", field(ctl.get(), "Remote callsign").text.toString())
+        assertTrue(text(ctl.get()).contains("MANUAL MODE: FT4 (SWITCH)"))
+        tap(ctl.get(), "CONFIRM COMPLETED FT QSO — SAVE MANUALLY")
+        tap(ctl.get(), "DIGI")
+        tap(ctl.get(), "SELECT FT2")
+        tap(ctl.get(), "PREPARE MANUAL FT2 QSO (NO AUTO LOG)")
+        field(ctl.get(), "Remote callsign").setText("W1AW")
+        field(ctl.get(), "Frequency in MHz (e.g. 7.075)").setText("14.074")
+        tap(ctl.get(), "CONFIRM COMPLETED FT QSO — SAVE MANUALLY")
+        tap(ctl.get(), "SHOW ADIF FROM REAL LOGBOOK")
+        assertTrue(text(ctl.get()).contains("<MODE:3>FT4"))
+        assertTrue(text(ctl.get()).contains("<MODE:3>FT2"))
+        ctl.pause().stop().destroy()
+    }
+
     @Test fun launcherStillNavigatesToPrivateSyntheticArchive() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()

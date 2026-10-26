@@ -45,6 +45,7 @@ considered fully accepted by this checkpoint.
 ## CP-0009R / CP-0009S audit update
 
 - CP-0009R `v69` is durable: [merged-main CI finalizer 39870937975](https://github.com/furfurr27-ai/FTX-1-App/actions/runs/39870937975) 46/46, [PR #70](https://github.com/furfurr27-ai/FTX-1-App/pull/70). It replaced the prior archive-only Android launcher. Earlier audit baseline above is retained as historical source context.
+- CP-0009S draft also adds a DIGI → LOG operator-confirmed **manual** FT8/FT4/FT2 QSO handoff, using existing canonical FastQsoLogger, ADIF and Awards state. It creates NO contact from WAV decoding, is in-memory only, and is not proof of working FT QSO sequencing.
 - CP-0009S [draft PR #71](https://github.com/furfurr27-ai/FTX-1-App/pull/71) introduces **source-built ARM64** FT8/FT4/FT2 JNI, recorded-FT8 truth gate, real Android file-only native decode path and corrected fast-mode JNI protocol routing. Rows below describe directly inspected branch code, with **CURRENT-HEAD CI PENDING** until explicitly verified. These features are neither merged nor checkpointed.
 - There is still no validated live FTX-1 USB audio/CAT/PTT workflow, production FT4/FT2 recording/golden reference, automatic FT-family QSO lifecycle, or final software release. Source-built APK and mock unit tests alone do NOT close these gaps. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
 

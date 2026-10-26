@@ -312,6 +312,20 @@ open class FieldOpsOperatingActivity : Activity() {
             }
             panel("OFFLINE DECODE RESULT", model.offlineDecodeStatus)
             model.offlineDecodeLines.forEach { panel("DECODED WAV / UNVERIFIED", it) }
+            panel("COMPLETED FT QSO / OPERATOR REVIEW",
+                "Only log a TWO-WAY contact that you independently completed. " +
+                    "An offline decode, a CQ or a heard signal alone is NOT a QSO. " +
+                    "Preparing the manual form does not key the radio, record a QSO or queue LoTW.")
+            action("PREPARE MANUAL ${model.mode.name} QSO (NO AUTO LOG)") {
+                model.manualMode = when (model.mode) {
+                    DigitalMode.FT8 -> ManualQsoMode.FT8
+                    DigitalMode.FT4 -> ManualQsoMode.FT4
+                    DigitalMode.FT2 -> ManualQsoMode.FT2
+                    else -> error("FT-family mode required")
+                }
+                model.tab = Tab.LOG
+                render()
+            }
         }
         disabledAction("START RX — NOT CONNECTED")
         disabledAction("ARM TX — HARDWARE VALIDATION REQUIRED")
@@ -343,6 +357,11 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("MANUAL CW / SSB CONTACT",
             "Use this form to record an actual manually entered QSO in volatile memory. " +
                 "Do not use it as proof of radio reception, transmission, saved disk records or LoTW sync.")
+        if (model.manualMode in setOf(ManualQsoMode.FT8, ManualQsoMode.FT4, ManualQsoMode.FT2)) {
+            panel("MANUAL FT CONTACT / OPERATOR ATTESTATION",
+                "Press SAVE only after a completed two-way ${model.manualMode.adifMode} contact. " +
+                    "No waveform or decoder automatically creates a QSO; no TX or LoTW is performed.")
+        }
         val call = EditText(this).apply {
             hint = "Remote callsign"
             contentDescription = "Remote callsign"
@@ -392,7 +411,10 @@ open class FieldOpsOperatingActivity : Activity() {
                 ManualQsoMode.CW else ManualQsoMode.SSB
             render()
         }
-        action("SAVE MANUAL QSO") {
+        action(
+            if (model.manualMode in setOf(ManualQsoMode.FT8, ManualQsoMode.FT4, ManualQsoMode.FT2))
+                "CONFIRM COMPLETED FT QSO — SAVE MANUALLY" else "SAVE MANUAL QSO"
+        ) {
             model.draftCall = call.text.toString()
             model.draftFrequencyMhz = freq.text.toString()
             model.saveManual()

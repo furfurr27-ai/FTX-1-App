@@ -95,3 +95,7 @@ does not establish FT4/FT2 real-waveform interoperability, Android
 ARM64 JNI execution on real device, phone USB audio rates/routes, live
 decode timing, QSO protocol state or RF-safe transmission. The software
 release remains incomplete and physical CP-0004A/B/C proofs are outstanding.
+
+## Operator-reviewed FT8/FT4/FT2 manual QSO handoff — pending exact-head CI
+
+The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action that opens the same canonical LOG workspace already used for CW/SSB. The operator must enter frequency/callsign and explicitly confirm **completed two-way** contact before `FastQsoLogger.logManual` writes a MANUAL-provenance FT8/FT4/FT2 record. The entry contributes to the existing ADIF/Awards projection; no decode, CQ or file import can automatically create a QSO, and CAT/PTT/LoTW remain disabled. Robolectric tests cover FT8 manual log, FT4/FT2 mode identity, draft retention and locked TX. This is **not** automated FT QSO sequencing, RF proof, or persistent storage. Full exact-head CI remains required.
