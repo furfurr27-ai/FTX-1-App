@@ -14,8 +14,8 @@ android {
         applicationId = "dev.n0png.fieldops"
         minSdk = 29
         targetSdk = 35
-        versionCode = 69
-        versionName = "0.69.0-cp0009r"
+        versionCode = 70
+        versionName = "0.70.0-cp0009s-ft-family-offline-rx"
         // FieldOps is a single-device Galaxy S23 Ultra target.
         ndk { abiFilters += "arm64-v8a" }
     }
