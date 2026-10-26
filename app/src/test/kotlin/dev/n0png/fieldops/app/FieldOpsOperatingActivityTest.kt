@@ -78,7 +78,7 @@ class FieldOpsOperatingActivityTest {
             val a = ctl.get()
             tap(a, "DIGI")
             assertTrue(text(a).contains("RECORDED-WAV RECEIVE / FILE ONLY"))
-            assertTrue(text(a).contains("UNVERIFIED"))
+            assertTrue(text(a).contains("unverified"))
             assertFalse(button(a, "START RX — NOT CONNECTED").isEnabled)
             assertFalse(button(a, "ARM TX — HARDWARE VALIDATION REQUIRED").isEnabled)
             tap(a, "OPEN OFFLINE WAV FILE (NO RF)")
