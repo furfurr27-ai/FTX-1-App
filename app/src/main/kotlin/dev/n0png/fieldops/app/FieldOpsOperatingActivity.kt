@@ -88,7 +88,8 @@ open class FieldOpsOperatingActivity : Activity() {
         fun finishOfflineDecode(
             requestGeneration: Long,
             modeAtStart: DigitalMode,
-            result: Result<List<DecodeResult>>,
+            decodes: List<DecodeResult>?,
+            failure: Throwable?,
         ) {
             offlineDecodeBusy = false
             if (offlineDecodeGeneration != requestGeneration || mode != modeAtStart) {
@@ -97,23 +98,20 @@ open class FieldOpsOperatingActivity : Activity() {
                 onUiChanged?.invoke()
                 return
             }
-            result.fold(
-                onSuccess = { decodes ->
-                    offlineDecodeStatus =
-                        "${modeAtStart.name}: ${decodes.size} decoded entries from user-selected WAV. " +
-                            "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
-                            "NO QSO automatically logged or transmitted."
-                    offlineDecodes = decodes.take(40)
-                },
-                onFailure = { error ->
-                    offlineDecodeStatus =
-                        if (error is IllegalArgumentException)
-                            "OFFLINE RX REJECTED: ${error.message?.take(140)}"
-                        else
-                            "OFFLINE RX FAILED: native decoder or recording unavailable."
-                    offlineDecodes = emptyList()
-                },
-            )
+            if (failure != null || decodes == null) {
+                offlineDecodeStatus =
+                    if (failure is IllegalArgumentException)
+                        "OFFLINE RX REJECTED: ${failure.message?.take(140)}"
+                    else
+                        "OFFLINE RX FAILED: native decoder or recording unavailable."
+                offlineDecodes = emptyList()
+            } else {
+                offlineDecodeStatus =
+                    "${modeAtStart.name}: ${decodes.size} decoded entries from user-selected WAV. " +
+                        "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
+                        "NO QSO automatically logged or transmitted."
+                offlineDecodes = decodes.take(40)
+            }
             onUiChanged?.invoke()
         }
 
@@ -243,7 +241,10 @@ open class FieldOpsOperatingActivity : Activity() {
                     ?: throw IllegalArgumentException("Could not open selected WAV")
                 input.use { FtFamilyOfflineWav.decode(it, selected, FtFamilyNativeEngine()) }
             }
-            main.post { session.finishOfflineDecode(generation, selected, result) }
+            main.post {
+                session.finishOfflineDecode(
+                    generation, selected, result.getOrNull(), result.exceptionOrNull())
+            }
         }, "FieldOps-Offline-FT-Family-RX").apply { isDaemon = true }.start()
     }
 

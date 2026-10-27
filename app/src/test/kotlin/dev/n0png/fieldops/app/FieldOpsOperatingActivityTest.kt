@@ -275,6 +275,87 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    /**
+     * Exercise the retained session's completion contract on the Android main
+     * test thread without fake RF, network, USB or a real native recording.
+     */
+    private fun operatingModel(activity: MainActivity): Any =
+        FieldOpsOperatingActivity::class.java.getDeclaredField("model").let {
+            it.isAccessible = true
+            requireNotNull(it.get(activity))
+        }
+
+    private fun readSessionField(model: Any, name: String): Any? =
+        model.javaClass.getDeclaredField(name).let {
+            it.isAccessible = true
+            it.get(model)
+        }
+
+    private fun writeSessionField(model: Any, name: String, value: Any?) {
+        model.javaClass.getDeclaredField(name).apply {
+            isAccessible = true
+            set(model, value)
+        }
+    }
+
+    private fun completeSessionDecode(model: Any, generation: Long,
+                                      mode: DigitalMode, results: List<DecodeResult>) {
+        val method = model.javaClass.getDeclaredMethod("finishOfflineDecode",
+            java.lang.Long.TYPE, DigitalMode::class.java, List::class.java, Throwable::class.java)
+        method.isAccessible = true
+        method.invoke(model, generation, mode, results, null)
+    }
+
+    @Test fun inFlightDecoderCompletionAfterRotationRefreshesCurrentActivityOnly() {
+        val ctl = Robolectric.buildActivity(MainActivity::class.java).setup()
+        tap(ctl.get(), "DIGI")
+        val prior = operatingModel(ctl.get())
+        writeSessionField(prior, "offlineDecodeBusy", true)
+        val oldObserver = requireNotNull(readSessionField(prior, "onUiChanged"))
+        ctl.configurationChange()
+        val current = operatingModel(ctl.get())
+        assertSame("Retained QSO session and RX job state", prior, current)
+        val newObserver = requireNotNull(readSessionField(current, "onUiChanged"))
+        assertNotSame("Old Activity UI callback must be replaced", oldObserver, newObserver)
+        completeSessionDecode(current, 0L, DigitalMode.FT8, listOf(DecodeResult(
+            DigitalMode.FT8, 0L, audioHz = 1200f, text = "CQ K1JT FN20",
+            decodedSenderCallsign = "K1JT")))
+        assertTrue(text(ctl.get()).contains("1 decoded entries"))
+        assertTrue(text(ctl.get()).contains("REVIEW K1JT IN MANUAL LOG"))
+        assertEquals(false, readSessionField(current, "offlineDecodeBusy"))
+        tap(ctl.get(), "OPS")
+        assertTrue(text(ctl.get()).contains("0 manual QSOs"))
+        tap(ctl.get(), "RADIO")
+        assertFalse(button(ctl.get(), "PTT / TRANSMIT — LOCKED").isEnabled)
+        ctl.pause().stop().destroy()
+        assertNull("Destroy must remove last Activity callback",
+            readSessionField(current, "onUiChanged"))
+        // A decode that finishes after final Activity destruction must not
+        // attempt to paint the defunct screen.
+        completeSessionDecode(current, 0L, DigitalMode.FT8, emptyList())
+    }
+
+    @Test fun completedOlderModeWavDoesNotBecomeStationReviewOnNewMode() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            val model = operatingModel(a)
+            writeSessionField(model, "offlineDecodeBusy", true)
+            tap(a, "SELECT FT4")
+            assertTrue(text(a).contains("No offline recording decoded for FT4"))
+            completeSessionDecode(model, 0L, DigitalMode.FT8, listOf(DecodeResult(
+                DigitalMode.FT8, 0L, text = "K1JT N0PNG FN20",
+                decodedSenderCallsign = "K1JT")))
+            assertFalse(text(a).contains("REVIEW K1JT IN MANUAL LOG"))
+            assertTrue(text(a).contains("No offline recording decoded for FT4"))
+            assertEquals(false, readSessionField(model, "offlineDecodeBusy"))
+            tap(a, "OPS")
+            assertTrue(text(a).contains("0 manual QSOs"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
+    }
+
     @Test fun launcherStillNavigatesToPrivateSyntheticArchive() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
