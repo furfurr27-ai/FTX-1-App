@@ -32,6 +32,7 @@ import dev.n0png.fieldops.core.logbook.ManualQsoMode
 import dev.n0png.fieldops.core.logbook.OperatingSession
 import dev.n0png.fieldops.core.logbook.QsoLocationSnapshot
 import dev.n0png.fieldops.core.logbook.QsoRadioContext
+import dev.n0png.fieldops.core.logbook.QsoRecord
 import dev.n0png.fieldops.core.logbook.SequentialQsoIdSource
 import java.math.BigDecimal
 
@@ -44,7 +45,10 @@ import java.math.BigDecimal
  * No USB, CAT, audio, network, PTT or transmitter path is instantiated here.
  */
 open class FieldOpsOperatingActivity : Activity() {
-    private companion object { const val OPEN_OFFLINE_WAV = 7129 }
+    private companion object {
+        const val OPEN_OFFLINE_WAV = 7129
+        const val EXPORT_MANUAL_ADIF = 7130
+    }
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
     private class UiSession {
@@ -67,6 +71,11 @@ open class FieldOpsOperatingActivity : Activity() {
         var draftRemoteGrid = ""
         var logMessage = "No contacts recorded in this in-memory session."
         var showAdif = false
+        // User-selected Storage Access Framework export. The exact immutable
+        // record snapshot remains in RAM until the file picker returns.
+        var pendingAdifExport: List<QsoRecord>? = null
+        var adifExportBusy = false
+        var adifExportStatus = "No file exported. All contacts remain volatile until exported."
         var offlineDecodeBusy = false
         var offlineDecodeStatus = "No offline recording decoded."
         var offlineDecodes: List<DecodeResult> = emptyList()
@@ -112,6 +121,17 @@ open class FieldOpsOperatingActivity : Activity() {
                         "NO QSO automatically logged or transmitted."
                 offlineDecodes = decodes.take(40)
             }
+            onUiChanged?.invoke()
+        }
+
+        fun finishAdifExport(writtenRecords: Int?, error: Throwable?) {
+            adifExportBusy = false
+            adifExportStatus = if (error == null && writtenRecords != null)
+                "ADIF FILE SAVED: $writtenRecords record(s) in user-selected document. " +
+                    "No LoTW upload or confirmation; memory-only log is unchanged."
+            else
+                "ADIF EXPORT FAILED: document could not be written. " +
+                    "The in-memory log is unchanged; no LoTW upload attempted."
             onUiChanged?.invoke()
         }
 
@@ -218,6 +238,33 @@ open class FieldOpsOperatingActivity : Activity() {
     @Deprecated("Android document result callback")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == EXPORT_MANUAL_ADIF) {
+            val session = model
+            val snapshot = session.pendingAdifExport
+            session.pendingAdifExport = null
+            val outputUri = data?.data
+            if (resultCode != RESULT_OK || outputUri == null || snapshot.isNullOrEmpty()) {
+                session.adifExportStatus = "ADIF export canceled or no records selected; log unchanged."
+                render()
+                return
+            }
+            session.adifExportBusy = true
+            session.adifExportStatus = "Writing chosen ADIF document; nothing sent to LoTW."
+            render()
+            val resolver = applicationContext.contentResolver
+            val main = Handler(Looper.getMainLooper())
+            Thread({
+                val result = runCatching {
+                    val stream = resolver.openOutputStream(outputUri, "w")
+                        ?: throw IllegalStateException("Document provider refused output")
+                    stream.use { ManualAdifFileExport.write(snapshot, it) }
+                }
+                main.post {
+                    session.finishAdifExport(result.getOrNull(), result.exceptionOrNull())
+                }
+            }, "FieldOps-ADIF-Document-Export").apply { isDaemon = true }.start()
+            return
+        }
         if (requestCode != OPEN_OFFLINE_WAV || resultCode != RESULT_OK) return
         val uri = data?.data ?: return
         val session = model
@@ -498,6 +545,24 @@ open class FieldOpsOperatingActivity : Activity() {
             model.showAdif = !model.showAdif
             render()
         }
+        if (all.isNotEmpty() && !model.adifExportBusy && model.pendingAdifExport == null) {
+            action("EXPORT ADIF FILE (CHOOSE DESTINATION)") {
+                // An explicit system file-picker destination is mandatory.
+                // Snapshot prevents later edits/QSOs from silently changing the
+                // bytes written after the user approves a particular export.
+                model.pendingAdifExport = model.logbook.all()
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TITLE, "N0PNG-FieldOps-log.adi")
+                }
+                @Suppress("DEPRECATION")
+                startActivityForResult(intent, EXPORT_MANUAL_ADIF)
+            }
+        } else if (all.isEmpty()) {
+            disabledAction("EXPORT ADIF FILE — NO QSOS")
+        }
+        panel("ADIF FILE EXPORT / EXPLICIT USER ACTION", model.adifExportStatus)
         if (model.showAdif) {
             val adif = AdifCodec.export(all)
             title("ADIF PREVIEW / NOT SENT TO LOTW", 12, amber, true)

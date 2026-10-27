@@ -134,6 +134,40 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun exportingManualFtQsoRequestsExplicitDocumentAndNeverUploads() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            tap(a, "SELECT FT4")
+            tap(a, "PREPARE MANUAL FT4 QSO (NO AUTO LOG)")
+            field(a, "Remote callsign").setText("K1JT")
+            field(a, "Frequency in MHz (e.g. 7.075)").setText("14.08")
+            tap(a, "CONFIRM COMPLETED FT QSO — SAVE MANUALLY")
+            assertTrue(text(a).contains("Saved in memory: QSO #1 K1JT FT4"))
+            tap(a, "EXPORT ADIF FILE (CHOOSE DESTINATION)")
+            val request = Shadows.shadowOf(a).nextStartedActivityForResult
+            assertNotNull("Save requires user-selected SAF destination", request)
+            assertEquals(Intent.ACTION_CREATE_DOCUMENT, request.intent.action)
+            assertTrue(request.intent.hasCategory(Intent.CATEGORY_OPENABLE))
+            assertEquals("text/plain", request.intent.type)
+            assertTrue(request.intent.getStringExtra(Intent.EXTRA_TITLE)!!.endsWith(".adi"))
+            assertTrue(text(a).contains("1 records"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+            tap(a, "OPS")
+            assertTrue(text(a).contains("1 manual QSOs"))
+        }
+    }
+
+    @Test fun noFileExportIsOfferedUntilTheOperatorHasLoggedAContact() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "LOG")
+            assertFalse(button(a, "EXPORT ADIF FILE — NO QSOS").isEnabled)
+            assertTrue(text(a).contains("No file exported"))
+        }
+    }
+
     @Test fun invalidFrequencyDoesNotCreateContactOrArmTransmitter() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
