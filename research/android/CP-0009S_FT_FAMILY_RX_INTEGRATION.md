@@ -118,3 +118,9 @@ The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action t
 - `FtFamilyOfflineWav` now accepts mode-specific recordings between the actual channel symbol burst plus 500 ms timing margin and the one-slot maximum, **zero-padding only the end** to the correct 180,000 / 90,000 / 45,000 sample decoder input. Invalid, odd-sized, undersized and overlong WAVs still fail closed. Relative UTC remains **UNKNOWN**. This does not invent missing RF, authentic timestamp, or automatically save a QSO.
 - Android unit tests explicitly check the 6.048-second independent-source-shaped FT4 WAV reaches a complete 7.5-second engine window, the tail is all zero, and malformed duration/padding cannot reach DSP.
 - Validation is CI-pending at this new head; physical S23/JNI decode of the independently sourced WAV is not yet established.
+
+## Decoder lifecycle/mode isolation correction — exact-head CI required
+
+- Offline WAV decode completion now posts only to the retained `UiSession` on the Android main looper, with a transient observer attached to the current Activity and detached in `onDestroy`. The background worker holds the application `ContentResolver`, selected mode, request generation and retained session, never a destroyed screen.
+- A mode-selection generation invalidates any in-flight older-mode result and clears decoded station review cards, so a late FT4/FT8/FT2 file decode cannot masquerade as a decode from a newly selected mode or create a stale manual QSO prefill.
+- Active Android Robolectric regression exercises observer reattachment across rotation, stale-mode decode discard, and continuing locked transmit UI. This is lifecycle software proof only, not Android physical hardware/JNI or radio work.

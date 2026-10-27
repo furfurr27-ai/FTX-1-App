@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -68,6 +70,52 @@ open class FieldOpsOperatingActivity : Activity() {
         var offlineDecodeBusy = false
         var offlineDecodeStatus = "No offline recording decoded."
         var offlineDecodes: List<DecodeResult> = emptyList()
+        // The model survives rotation. Its transient UI observer is rebound to
+        // the CURRENT Activity only; the background worker never owns a View.
+        var onUiChanged: (() -> Unit)? = null
+        var offlineDecodeGeneration: Long = 0
+
+        fun selectMode(newMode: DigitalMode) {
+            if (mode != newMode) {
+                mode = newMode
+                // Never present an older mode's recording in a new-mode view.
+                offlineDecodeGeneration++
+                offlineDecodes = emptyList()
+                offlineDecodeStatus = "No offline recording decoded for ${newMode.name}."
+            }
+        }
+
+        fun finishOfflineDecode(
+            requestGeneration: Long,
+            modeAtStart: DigitalMode,
+            result: Result<List<DecodeResult>>,
+        ) {
+            offlineDecodeBusy = false
+            if (offlineDecodeGeneration != requestGeneration || mode != modeAtStart) {
+                // An asynchronous old-mode decode is not an observation of the
+                // currently selected mode and must never become a QSO hint.
+                onUiChanged?.invoke()
+                return
+            }
+            result.fold(
+                onSuccess = { decodes ->
+                    offlineDecodeStatus =
+                        "${modeAtStart.name}: ${decodes.size} decoded entries from user-selected WAV. " +
+                            "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
+                            "NO QSO automatically logged or transmitted."
+                    offlineDecodes = decodes.take(40)
+                },
+                onFailure = { error ->
+                    offlineDecodeStatus =
+                        if (error is IllegalArgumentException)
+                            "OFFLINE RX REJECTED: ${error.message?.take(140)}"
+                        else
+                            "OFFLINE RX FAILED: native decoder or recording unavailable."
+                    offlineDecodes = emptyList()
+                },
+            )
+            onUiChanged?.invoke()
+        }
 
         fun saveManual(): Boolean {
             val call = draftCall.trim().uppercase()
@@ -127,12 +175,16 @@ open class FieldOpsOperatingActivity : Activity() {
 
     private lateinit var model: UiSession
     private lateinit var root: LinearLayout
+    private val refreshActiveUi: () -> Unit = {
+        if (::model.isInitialized && !isFinishing && !isDestroyed) render()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // ArchiveHistoryActivity independently owns its own explicit recovery consent.
         // Retaining this model does not persist any log or credential to disk.
         model = (lastNonConfigurationInstance as? UiSession) ?: UiSession()
+        model.onUiChanged = refreshActiveUi
         if (savedInstanceState != null) {
             savedInstanceState.getString("fieldops.tab")?.let {
                 model.tab = runCatching { Tab.valueOf(it) }.getOrDefault(Tab.OPS)
@@ -142,6 +194,13 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     override fun onRetainNonConfigurationInstance(): Any = model
+
+    override fun onDestroy() {
+        if (::model.isInitialized && model.onUiChanged === refreshActiveUi) {
+            model.onUiChanged = null
+        }
+        super.onDestroy()
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("fieldops.tab", model.tab.name)
@@ -167,11 +226,16 @@ open class FieldOpsOperatingActivity : Activity() {
         if (session.offlineDecodeBusy ||
             session.mode !in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) return
         val selected = session.mode
+        val generation = session.offlineDecodeGeneration
         session.offlineDecodeBusy = true
         session.offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
         session.offlineDecodes = emptyList()
         render()
+        // Never capture this Activity in the worker. Completion is posted to
+        // the retained session and repaints whichever Activity currently owns
+        // its transient observer (or no Activity after a final destroy).
         val resolver = applicationContext.contentResolver
+        val main = Handler(Looper.getMainLooper())
         Thread({
             val result = runCatching {
                 check(FtFamilyNativeAvailability.probe()) { "Native decoder unavailable" }
@@ -179,28 +243,7 @@ open class FieldOpsOperatingActivity : Activity() {
                     ?: throw IllegalArgumentException("Could not open selected WAV")
                 input.use { FtFamilyOfflineWav.decode(it, selected, FtFamilyNativeEngine()) }
             }
-            runOnUiThread {
-                session.offlineDecodeBusy = false
-                result.fold(
-                    onSuccess = { decodes ->
-                        session.offlineDecodeStatus =
-                            "${selected.name}: ${decodes.size} decoded entries from user-selected WAV. " +
-                            "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
-                            "NO QSO automatically logged or transmitted."
-                        // Preserve bounded native metadata for opt-in operator review.
-                        session.offlineDecodes = decodes.take(40)
-                    },
-                    onFailure = { error ->
-                        session.offlineDecodeStatus =
-                            if (error is IllegalArgumentException)
-                                "OFFLINE RX REJECTED: ${error.message?.take(140)}"
-                            else
-                                "OFFLINE RX FAILED: native decoder or recording unavailable."
-                        session.offlineDecodes = emptyList()
-                    },
-                )
-                if (!isFinishing && !isDestroyed && model === session) render()
-            }
+            main.post { session.finishOfflineDecode(generation, selected, result) }
         }, "FieldOps-Offline-FT-Family-RX").apply { isDaemon = true }.start()
     }
 
@@ -277,7 +320,7 @@ open class FieldOpsOperatingActivity : Activity() {
         for (mode in listOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2,
             DigitalMode.JS8, DigitalMode.WSPR)) {
             action("SELECT ${mode.name}") {
-                model.mode = mode
+                model.selectMode(mode)
                 render()
             }
         }
