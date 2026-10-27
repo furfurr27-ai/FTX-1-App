@@ -309,10 +309,16 @@ class FieldOpsOperatingActivityTest {
     @Test fun inFlightDecoderCompletionAfterRotationRefreshesCurrentActivityOnly() {
         val ctl = Robolectric.buildActivity(MainActivity::class.java).setup()
         tap(ctl.get(), "DIGI")
-        val prior = operatingModel(ctl.get())
+        val oldActivity = ctl.get()
+        val prior = operatingModel(oldActivity)
         writeSessionField(prior, "offlineDecodeBusy", true)
         val oldObserver = requireNotNull(readSessionField(prior, "onUiChanged"))
-        ctl.configurationChange()
+        // configurationChange() with unchanged qualifiers can be a no-op in
+        // Robolectric. Explicit recreate() guarantees a NEW Activity, while
+        // preserving its last non-configuration UiSession.
+        ctl.recreate()
+        assertNotSame("A real Activity instance must replace the prior screen",
+            oldActivity, ctl.get())
         val current = operatingModel(ctl.get())
         assertSame("Retained QSO session and RX job state", prior, current)
         val newObserver = requireNotNull(readSessionField(current, "onUiChanged"))
