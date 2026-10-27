@@ -8,6 +8,10 @@ import android.widget.EditText
 import android.widget.TextView
 import dev.n0png.fieldops.core.digital.DigitalMode
 import dev.n0png.fieldops.core.dsp.DecodeResult
+import dev.n0png.fieldops.core.logbook.QsoRecord
+import dev.n0png.fieldops.core.logbook.QsoOrigin
+import dev.n0png.fieldops.core.logbook.LotwUploadState
+import dev.n0png.fieldops.core.logbook.LotwConfirmationState
 import org.junit.Assert.*
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -172,6 +176,66 @@ class FieldOpsOperatingActivityTest {
             assertTrue(text(a).contains("0 records"))
             tap(a, "RADIO")
             assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
+    }
+
+    @Test fun stagedAdifHasZeroLogEffectsUntilConfirmationAndDeduplicates() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            val staged = QsoRecord(
+                id = 0, call = "K1JT", stationCallsign = "N0PNG",
+                qsoDate = "20261027", timeOn = "120000", band = "20m", mode = "FT4",
+                freqMhz = "14.08", frequencyHz = 14_080_000L,
+                origin = QsoOrigin.IMPORTED, sourceProvider = "FIELDOPS_ADIF",
+                lotwUpload = LotwUploadState.NOT_UPLOADED,
+                lotwConfirmation = LotwConfirmationState.UNKNOWN,
+            )
+            val model = operatingModel(a)
+            writeSessionField(model, "stagedAdifRecords", listOf(staged))
+            tap(a, "LOG")
+            assertTrue(text(a).contains("CONFIRM RESTORE TO LOCAL LOG"))
+            assertTrue(text(a).contains("0 records"))
+            tap(a, "AWARDS")
+            assertTrue(text(a).contains("Worked:"))
+            tap(a, "LOG")
+            assertTrue(text(a).contains("0 records"))
+            tap(a, "CONFIRM RESTORE TO LOCAL LOG (NO LOTW)")
+            assertTrue(text(a).contains("CONFIRMED IMPORT: 1 new QSO"))
+            assertTrue(text(a).contains("1 records"))
+            tap(a, "SHOW ADIF FROM REAL LOGBOOK")
+            assertTrue(text(a).contains("<MODE:3>FT4"))
+            assertTrue(text(a).contains("<CALL:4>K1JT"))
+            val entries = readSessionField(model, "logbook")
+                as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+            assertEquals(1, entries.all().size)
+            assertEquals(QsoOrigin.IMPORTED, entries.all().single().origin)
+            assertEquals(LotwConfirmationState.UNKNOWN,
+                entries.all().single().lotwConfirmation)
+            writeSessionField(model, "stagedAdifRecords", listOf(staged))
+            tap(a, "OPS")
+            tap(a, "LOG")
+            tap(a, "CONFIRM RESTORE TO LOCAL LOG (NO LOTW)")
+            assertTrue(text(a).contains("CONFIRMED IMPORT: 0 new QSO"))
+            assertEquals(1, entries.all().size)
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
+    }
+
+    @Test fun cancelStagedAdifImportKeepsExistingLogUnchanged() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            val model = operatingModel(a)
+            writeSessionField(model, "stagedAdifRecords", listOf(QsoRecord(
+                id = 0, call = "DL1XYZ", stationCallsign = "N0PNG",
+                qsoDate = "20261027", timeOn = "120000", band = "20m",
+                mode = "FT8", origin = QsoOrigin.IMPORTED
+            )))
+            tap(a, "LOG")
+            assertTrue(text(a).contains("0 records"))
+            tap(a, "CANCEL STAGED ADIF RESTORE")
+            assertFalse(text(a).contains("CONFIRM RESTORE TO LOCAL LOG"))
+            assertTrue(text(a).contains("0 records"))
         }
     }
 

@@ -50,6 +50,8 @@ class FieldOpsAdifRestoreTest {
             adif.replace("<PROGRAMID:13>FTX1_FieldOps", "<PROGRAMID:13>Other_FieldOp"),
             adif + "<CALL:4>K1JT",
             adif.replace("14.08", "18.08"),
+            adif.replace("<EOR>", "<LOTW_QSL_RCVD:1>Y\n<EOR>"),
+            adif.replace("<EOR>", "<MY_CQ_ZONE:3>BAD\n<EOR>"),
             "<EOH><EOR>",
         )
         val repo=InMemoryLogbookRepository()

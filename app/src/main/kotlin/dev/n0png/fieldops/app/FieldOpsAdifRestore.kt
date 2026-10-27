@@ -98,7 +98,11 @@ internal object FieldOpsAdifRestore {
                 val stationGrid = fields["MY_GRIDSQUARE"]?.trim()?.uppercase(Locale.ROOT)
                 for (g in listOfNotNull(remoteGrid, stationGrid))
                     require(grid.matches(g)) { "Invalid Maidenhead locator" }
-                fun optInt(name: String): Int? = fields[name]?.trim()?.toIntOrNull()
+                fun optInt(name: String): Int? {
+                    val value = fields[name]?.trim() ?: return null
+                    return value.toIntOrNull()
+                        ?: throw IllegalArgumentException("Invalid numeric field $name")
+                }
                 val record = QsoRecord(
                     id = 0L, call = remote, stationCallsign = station, qsoDate = date,
                     timeOn = at, band = band, mode = mode, freqMhz = FrequencyFormat.mhz(hz),
