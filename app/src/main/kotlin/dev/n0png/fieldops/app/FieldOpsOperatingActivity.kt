@@ -26,6 +26,7 @@ import dev.n0png.fieldops.core.digital.DigitalModes
 import dev.n0png.fieldops.core.dsp.DecodeResult
 import dev.n0png.fieldops.core.logbook.AdifCodec
 import dev.n0png.fieldops.core.logbook.FastQsoLogger
+import dev.n0png.fieldops.core.logbook.QsoOrigin
 import dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
 import dev.n0png.fieldops.core.logbook.ManualQsoInput
 import dev.n0png.fieldops.core.logbook.ManualQsoMode
@@ -48,12 +49,14 @@ open class FieldOpsOperatingActivity : Activity() {
     private companion object {
         const val OPEN_OFFLINE_WAV = 7129
         const val EXPORT_MANUAL_ADIF = 7130
+        const val IMPORT_FIELDOPS_ADIF = 7131
     }
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
     private class UiSession {
         val logbook = InMemoryLogbookRepository()
-        val logger = FastQsoLogger(logbook, SequentialQsoIdSource())
+        val ids = SequentialQsoIdSource()
+        val logger = FastQsoLogger(logbook, ids)
         val awards = AwardsCenterApplicationService(logbook, InMemoryAwardEvidenceRepository())
         val operatingSession = OperatingSession(
             id = "local-in-memory-session",
@@ -76,6 +79,9 @@ open class FieldOpsOperatingActivity : Activity() {
         var pendingAdifExport: List<QsoRecord>? = null
         var adifExportBusy = false
         var adifExportStatus = "No file exported. All contacts remain volatile until exported."
+        var adifImportBusy = false
+        var adifImportStatus = "No ADIF restore requested."
+        var stagedAdifRecords: List<dev.n0png.fieldops.core.logbook.QsoRecord>? = null
         var offlineDecodeBusy = false
         var offlineDecodeStatus = "No offline recording decoded."
         var offlineDecodes: List<DecodeResult> = emptyList()
@@ -133,6 +139,28 @@ open class FieldOpsOperatingActivity : Activity() {
                 "ADIF EXPORT FAILED: document could not be written. " +
                     "The in-memory log is unchanged; no LoTW upload attempted."
             onUiChanged?.invoke()
+        }
+
+        fun stageAdifImport(records: List<dev.n0png.fieldops.core.logbook.QsoRecord>?,
+                            failure: Throwable?) {
+            adifImportBusy = false
+            stagedAdifRecords = if (failure == null) records else null
+            adifImportStatus = if (failure == null && !records.isNullOrEmpty())
+                "REVIEW BEFORE IMPORT: ${records.size} FieldOps ADIF contact(s) for ${operatingSession.stationCallsign}. " +
+                    "Only CONFIRM RESTORE adds these to the local log. LoTW remains unverified."
+            else
+                "ADIF RESTORE REJECTED: ${failure?.message?.take(110) ?: "No valid records"}. " +
+                    "Local log unchanged."
+            onUiChanged?.invoke()
+        }
+
+        fun confirmAdifImport(): Int {
+            val staged = requireNotNull(stagedAdifRecords) { "No staged ADIF import" }
+            val imported = FieldOpsAdifRestore.commit(staged, logbook, ids)
+            stagedAdifRecords = null
+            adifImportStatus = "CONFIRMED IMPORT: $imported new QSO(s) added to volatile log; " +
+                "${staged.size - imported} duplicate(s) skipped. LoTW not sent."
+            return imported
         }
 
         fun saveManual(): Boolean {
@@ -238,6 +266,34 @@ open class FieldOpsOperatingActivity : Activity() {
     @Deprecated("Android document result callback")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == IMPORT_FIELDOPS_ADIF) {
+            val session = model
+            val uri = data?.data
+            if (resultCode != RESULT_OK || uri == null) {
+                session.adifImportStatus = "ADIF restore canceled; log unchanged."
+                render()
+                return
+            }
+            if (session.adifImportBusy) return
+            session.adifImportBusy = true
+            session.stagedAdifRecords = null
+            session.adifImportStatus = "Validating selected FieldOps ADIF; no QSO added."
+            render()
+            val resolver = applicationContext.contentResolver
+            val main = Handler(Looper.getMainLooper())
+            val station = session.operatingSession.stationCallsign
+            Thread({
+                val result = runCatching {
+                    val stream = resolver.openInputStream(uri)
+                        ?: throw IllegalArgumentException("Could not read selected ADIF")
+                    stream.use { FieldOpsAdifRestore.read(it, station) }
+                }
+                main.post {
+                    session.stageAdifImport(result.getOrNull(), result.exceptionOrNull())
+                }
+            }, "FieldOps-ADIF-Validate-Only").apply { isDaemon = true }.start()
+            return
+        }
         if (requestCode == EXPORT_MANUAL_ADIF) {
             val session = model
             val snapshot = session.pendingAdifExport
@@ -563,6 +619,30 @@ open class FieldOpsOperatingActivity : Activity() {
             disabledAction("EXPORT ADIF FILE — NO QSOS")
         }
         panel("ADIF FILE EXPORT / EXPLICIT USER ACTION", model.adifExportStatus)
+        if (!model.adifImportBusy) {
+            action("RESTORE FIELDOPS ADIF (PICK FILE)") {
+                model.stagedAdifRecords = null
+                model.adifImportStatus = "Choose a FieldOps-generated ADIF file for validation."
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                }
+                @Suppress("DEPRECATION")
+                startActivityForResult(intent, IMPORT_FIELDOPS_ADIF)
+            }
+        }
+        panel("ADIF RESTORE / NOT LOTW", model.adifImportStatus)
+        if (!model.stagedAdifRecords.isNullOrEmpty() && !model.adifImportBusy) {
+            action("CONFIRM RESTORE TO LOCAL LOG (NO LOTW)") {
+                model.confirmAdifImport()
+                render()
+            }
+            action("CANCEL STAGED ADIF RESTORE") {
+                model.stagedAdifRecords = null
+                model.adifImportStatus = "Staged restore discarded; log unchanged."
+                render()
+            }
+        }
         if (model.showAdif) {
             val adif = AdifCodec.export(all)
             title("ADIF PREVIEW / NOT SENT TO LOTW", 12, amber, true)

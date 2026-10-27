@@ -159,6 +159,22 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun restoreRequiresDocumentPickerAndSeparateOperatorConfirmation() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "LOG")
+            tap(a, "RESTORE FIELDOPS ADIF (PICK FILE)")
+            val request = Shadows.shadowOf(a).nextStartedActivityForResult
+            assertNotNull(request)
+            assertEquals(Intent.ACTION_OPEN_DOCUMENT, request.intent.action)
+            assertTrue(request.intent.hasCategory(Intent.CATEGORY_OPENABLE))
+            assertFalse(text(a).contains("CONFIRM RESTORE TO LOCAL LOG"))
+            assertTrue(text(a).contains("0 records"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
+    }
+
     @Test fun noFileExportIsOfferedUntilTheOperatorHasLoggedAContact() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
