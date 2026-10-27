@@ -8,7 +8,9 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 /**
- * Bounded, receive-only offline replay for mono 12 kHz PCM16 RIFF/WAVE slots.
+ * Bounded, receive-only offline replay for mono 12 kHz PCM16 RIFF/WAVE.
+ * Complete slots work unchanged; shorter complete-signal sample archives may
+ * zero-pad the remainder of the selected mode's one-slot receive window.
  *
  * The WAV header contains no trusted real-world timestamp; callers must label
  * the decode time as a synthetic slot epoch. Nothing keys RF or logs a QSO.
@@ -63,13 +65,27 @@ object FtFamilyOfflineWav {
         require(pos.toLong() == riffEnd) { "Incomplete WAVE chunk header" }
         require(formatFound && dataOffset >= 0) { "WAVE format or audio missing" }
         val expectedSamples = DigitalModes.profile(mode).cycleMillis.toInt() * 12
-        require(dataSize == expectedSamples * 2) {
-            "${mode.name} requires exactly one ${DigitalModes.profile(mode).cycleMillis} ms slot"
+        // A complete burst, plus 500 ms of timing margin, is the minimum
+        // usable recorded waveform. FT4 reference archives include 6.048 s
+        // captures that carry a complete 105-symbol waveform but not 7.5 s of
+        // silence. We pad those ONLY for offline decoder input; UTC remains
+        // explicitly unverified and the result cannot create a contact.
+        val burstSamples = when (mode) {
+            DigitalMode.FT8 -> 79 * 1_920 // 79 symbols * 160 ms * 12 kHz
+            DigitalMode.FT4 -> 105 * 576   // 105 symbols * 48 ms * 12 kHz
+            DigitalMode.FT2 -> 105 * 288   // 105 symbols * 24 ms * 12 kHz
+            else -> error("Unsupported FT-family decoder")
         }
-        val samples = FloatArray(expectedSamples) { index ->
+        val minSamples = burstSamples + 6_000 // 500 ms capture margin
+        require(dataSize % 2 == 0 && dataSize / 2 in minSamples..expectedSamples) {
+            "${mode.name} requires ${minSamples / 12}..${DigitalModes.profile(mode).cycleMillis} ms of complete 12 kHz PCM16 audio"
+        }
+        val actualSamples = dataSize / 2
+        val samples = FloatArray(expectedSamples) // zero pad SHORT, bounded file recordings
+        for (index in 0 until actualSamples) {
             val off = dataOffset + 2 * index
             val pcm = u16(b, off).toShort().toInt()
-            pcm / 32768.0f
+            samples[index] = pcm / 32768.0f
         }
         // Zero denotes a RELATIVE offline test slot, not the recording's UTC.
         return engine.decode(mode, 0L, samples)

@@ -51,6 +51,48 @@ class FtFamilyOfflineWavTest {
         }
     }
 
+    @Test fun independentArchiveLengthMayPadToFullSlotButCannotGuessUtc() {
+        val dec = object : WindowedDspEngine {
+            override val modes = setOf(DigitalMode.FT4)
+            var samples: FloatArray? = null
+            override fun decode(mode: DigitalMode, slotStartUtcMillis: Long,
+                                samples12k: FloatArray): List<DecodeResult> {
+                assertEquals(DigitalMode.FT4, mode)
+                assertEquals(0L, slotStartUtcMillis)
+                samples = samples12k
+                return emptyList()
+            }
+            override fun encode(request: EncodeRequest): TxWaveform =
+                error("Offline receive must not transmit")
+        }
+        val sourceSamples = 72_576 // WSJT-X FT4 sample: 145196-byte WAV, 6.048 s audio
+        assertTrue(FtFamilyOfflineWav.decode(ByteArrayInputStream(wav(DigitalMode.FT4,
+            samples = sourceSamples)), DigitalMode.FT4, dec).isEmpty())
+        val pcm = requireNotNull(dec.samples)
+        assertEquals(90_000, pcm.size)
+        assertNotEquals(0f, pcm[sourceSamples - 1])
+        assertTrue(pcm.copyOfRange(sourceSamples, pcm.size).all { it == 0f })
+    }
+
+    @Test fun rejectOddByteLengthOverlongAndIncompleteFastModeBursts() {
+        val dec = Decoder()
+        val short = wav(DigitalMode.FT4, samples = 60_000)
+        val extraLong = wav(DigitalMode.FT4, samples = 90_001)
+        val odd = wav(DigitalMode.FT4).let { source ->
+            source.copyOf(source.size + 1).also {
+                ByteBuffer.wrap(it).order(ByteOrder.LITTLE_ENDIAN)
+                    .putInt(4, it.size - 8)
+                    .putInt(40, it.size - 44)
+            }
+        }
+        for (malformed in listOf(short, extraLong, odd)) {
+            assertThrows(IllegalArgumentException::class.java) {
+                FtFamilyOfflineWav.decode(ByteArrayInputStream(malformed), DigitalMode.FT4, dec)
+            }
+        }
+        assertNull("Reject malformed receive WAV before DSP invocation", dec.lastMode)
+    }
+
     @Test fun invalidHeadersRatesLengthsAndUnboundedInputFailBeforeEngine() {
         val d = Decoder()
         assertThrows(IllegalArgumentException::class.java) {
