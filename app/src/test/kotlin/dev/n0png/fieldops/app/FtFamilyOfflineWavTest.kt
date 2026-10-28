@@ -51,6 +51,56 @@ class FtFamilyOfflineWavTest {
         }
     }
 
+    @Test fun sameProductionFirAcceptsMono48kInAllThreeDistinctModeSlots() {
+        for (mode in listOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            val dec = Decoder()
+            val samples48 = (DigitalModes.profile(mode).cycleMillis * 48).toInt()
+            val result = FtFamilyOfflineWav.decode(ByteArrayInputStream(
+                wav(mode, sampleRate = 48_000, samples = samples48)), mode, dec)
+            assertEquals(mode, dec.lastMode)
+            assertEquals("TEST ONLY", result.single().text)
+            assertEquals(0L, result.single().utcMillis) // no fabricated WAV UTC
+        }
+    }
+
+    @Test fun short48kArchivesPadOnlyAfterProductionFirDecimation() {
+        val dec = object : WindowedDspEngine {
+            override val modes = setOf(DigitalMode.FT4)
+            var pcm: FloatArray? = null
+            override fun decode(mode: DigitalMode, slotStartUtcMillis: Long,
+                                samples12k: FloatArray): List<DecodeResult> {
+                pcm = samples12k
+                return emptyList()
+            }
+            override fun encode(request: EncodeRequest): TxWaveform =
+                error("WAV receive never encodes or transmits")
+        }
+        val archived = 72_576 * 4 // 6.048 s FT4 at 48 kHz
+        assertTrue(FtFamilyOfflineWav.decode(ByteArrayInputStream(
+            wav(DigitalMode.FT4, sampleRate = 48_000, samples = archived)),
+            DigitalMode.FT4, dec).isEmpty())
+        val pcm = requireNotNull(dec.pcm)
+        assertEquals(90_000, pcm.size)
+        assertTrue(pcm.copyOfRange(0, 72_576).any { it != 0f })
+        assertTrue(pcm.copyOfRange(72_576, pcm.size).all { it == 0f })
+    }
+
+    @Test fun rejectMisaligned48kPartialGroupsAndUnsupportedChannelRates() {
+        val d = Decoder()
+        val normal = (DigitalModes.profile(DigitalMode.FT2).cycleMillis * 48).toInt()
+        for (data in listOf(
+            wav(DigitalMode.FT2, sampleRate = 48_000, samples = normal - 1),
+            wav(DigitalMode.FT2, sampleRate = 48_000, samples = normal + 4),
+            wav(DigitalMode.FT2, sampleRate = 48_000, channels = 2, samples = normal),
+            wav(DigitalMode.FT2, sampleRate = 32_000, samples = normal)
+        )) {
+            assertThrows(IllegalArgumentException::class.java) {
+                FtFamilyOfflineWav.decode(ByteArrayInputStream(data), DigitalMode.FT2, d)
+            }
+        }
+        assertNull("Rejected audio must not reach the native DSP", d.lastMode)
+    }
+
     @Test fun independentArchiveLengthMayPadToFullSlotButCannotGuessUtc() {
         val dec = object : WindowedDspEngine {
             override val modes = setOf(DigitalMode.FT4)

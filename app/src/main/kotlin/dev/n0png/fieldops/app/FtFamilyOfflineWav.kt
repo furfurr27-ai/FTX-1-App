@@ -1,5 +1,6 @@
 package dev.n0png.fieldops.app
 
+import dev.n0png.fieldops.core.audio.FirDecimator4
 import dev.n0png.fieldops.core.digital.DigitalMode
 import dev.n0png.fieldops.core.digital.DigitalModes
 import dev.n0png.fieldops.core.dsp.DecodeResult
@@ -8,7 +9,9 @@ import java.io.ByteArrayOutputStream
 import java.io.InputStream
 
 /**
- * Bounded, receive-only offline replay for mono 12 kHz PCM16 RIFF/WAVE.
+ * Bounded, receive-only offline replay for mono 12/48 kHz PCM16 RIFF/WAVE.
+ * The 48 kHz path uses the exact production 4:1 FIR decimator rather than
+ * aliased sample skipping; both paths present 12 kHz audio to the same engine.
  * Complete slots work unchanged; shorter complete-signal sample archives may
  * zero-pad the remainder of the selected mode's one-slot receive window.
  *
@@ -31,6 +34,7 @@ object FtFamilyOfflineWav {
         require(riffEnd <= b.size.toLong()) { "Truncated WAVE container" }
         var pos = 12
         var formatFound = false
+        var sourceSampleRate = 0
         var dataOffset = -1
         var dataSize = 0
         while (pos.toLong() + 8L <= riffEnd) {
@@ -48,11 +52,13 @@ object FtFamilyOfflineWav {
                 val bytesPerSecond = u32(b, off + 8)
                 val blockAlign = u16(b, off + 12)
                 val bitsPerSample = u16(b, off + 14)
-                require(pcm == 1 && channels == 1 && sampleRate == 12_000L &&
-                    bytesPerSecond == 24_000L && blockAlign == 2 &&
+                require(pcm == 1 && channels == 1 &&
+                    sampleRate in setOf(12_000L, 48_000L) &&
+                    bytesPerSecond == sampleRate * 2 && blockAlign == 2 &&
                     bitsPerSample == 16) {
-                    "Requires mono 12 kHz 16-bit uncompressed PCM WAV"
+                    "Requires mono 12 or 48 kHz 16-bit uncompressed PCM WAV"
                 }
+                sourceSampleRate = sampleRate.toInt()
                 formatFound = true
             } else if (kind == "data") {
                 require(dataOffset == -1) { "Duplicate WAVE audio chunk" }
@@ -77,16 +83,29 @@ object FtFamilyOfflineWav {
             else -> error("Unsupported FT-family decoder")
         }
         val minSamples = burstSamples + 6_000 // 500 ms capture margin
-        require(dataSize % 2 == 0 && dataSize / 2 in minSamples..expectedSamples) {
-            "${mode.name} requires ${minSamples / 12}..${DigitalModes.profile(mode).cycleMillis} ms of complete 12 kHz PCM16 audio"
+        val rateFactor = sourceSampleRate / 12_000
+        // 48 kHz samples must represent whole 4:1 decimation groups: never
+        // truncate half a group and mistake it for complete recorded audio.
+        require(dataSize % 2 == 0 &&
+            (dataSize / 2) % rateFactor == 0 &&
+            dataSize / (2 * rateFactor) in minSamples..expectedSamples) {
+            "${mode.name} requires ${minSamples / 12}..${DigitalModes.profile(mode).cycleMillis} ms of complete mono 12/48 kHz PCM16 audio"
         }
-        val actualSamples = dataSize / 2
-        val samples = FloatArray(expectedSamples) // zero pad SHORT, bounded file recordings
-        for (index in 0 until actualSamples) {
+        val actualSourceSamples = dataSize / 2
+        val source = FloatArray(actualSourceSamples)
+        for (index in 0 until actualSourceSamples) {
             val off = dataOffset + 2 * index
             val pcm = u16(b, off).toShort().toInt()
-            samples[index] = pcm / 32768.0f
+            source[index] = pcm / 32768.0f
         }
+        // Pass real 48 kHz PCM through the SAME anti-aliasing FIR used by the
+        // connected audio pipeline; the test fixture does not stand in for DSP.
+        val converted = if (rateFactor == 4) FirDecimator4().process(source).samples else source
+        require(converted.size == actualSourceSamples / rateFactor) {
+            "Invalid 48 kHz decimation result"
+        }
+        val samples = FloatArray(expectedSamples) // zero-pad only after FIR processing
+        converted.copyInto(samples)
         // Zero denotes a RELATIVE offline test slot, not the recording's UTC.
         return engine.decode(mode, 0L, samples)
     }

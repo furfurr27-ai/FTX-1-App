@@ -444,7 +444,8 @@ open class FieldOpsOperatingActivity : Activity() {
         }
         if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
             panel("RECORDED-WAV RECEIVE / FILE ONLY",
-                "Requires a single 12 kHz, mono, 16-bit PCM WAV slot. " +
+                "Accepts one mono 16-bit PCM WAV at 12 kHz or 48 kHz. " +
+                    "48 kHz passes through the same 4:1 FIR as shared capture; no live device connected. " +
                     "Recording time and source are unverified. Decoded text is NOT logged as a QSO.")
             if (!model.offlineDecodeBusy) {
                 action("OPEN OFFLINE WAV FILE (NO RF)") {
