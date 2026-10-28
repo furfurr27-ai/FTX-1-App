@@ -31,6 +31,68 @@ internal object FieldOpsAdifRestore {
     private val number = Regex("[0-9]{8}")
     private val time = Regex("[0-9]{6}")
     private val basicDate = DateTimeFormatter.BASIC_ISO_DATE
+    private val fieldTag = Regex("<([A-Z][A-Z0-9_]*):([0-9]{1,7})>", RegexOption.IGNORE_CASE)
+
+    /**
+     * The general ADIF parser is intentionally lenient for external LoTW
+     * reports. Never use it for an operator-approved restore: duplicate
+     * fields or malformed tag lengths must fail, not silently overwrite data.
+     *
+     * Exactly follows FieldOps' own export vocabulary, including its
+     * uppercase ASCII tags and length-prefixed values. Any unconsumed byte
+     * other than whitespace fails validation.
+     */
+    private fun parseStrictFieldOps(text: String): List<Map<String, String>> {
+        var pos = 0
+        var readingHeader = true
+        val header = linkedMapOf<String, String>()
+        var current = linkedMapOf<String, String>()
+        val records = ArrayList<Map<String, String>>()
+        while (pos < text.length) {
+            // FieldOps exports one field per line; blank separators are fine.
+            while (pos < text.length && text[pos].isWhitespace()) pos++
+            if (pos >= text.length) break
+            require(text[pos] == '<') { "Unexpected text outside ADIF fields" }
+            if (text.regionMatches(pos, "<EOH>", 0, 5, ignoreCase = true)) {
+                require(readingHeader && header.size == 2 &&
+                    header["ADIF_VER"] == "3.1.6" &&
+                    header["PROGRAMID"] == PROGRAM_ID) {
+                    "Unsupported or incomplete FieldOps ADIF header"
+                }
+                readingHeader = false
+                pos += 5
+                continue
+            }
+            if (text.regionMatches(pos, "<EOR>", 0, 5, ignoreCase = true)) {
+                require(!readingHeader && current.isNotEmpty()) {
+                    "Missing or empty ADIF contact"
+                }
+                require(records.size < MAX_RECORDS) { "ADIF exceeds 500 contacts" }
+                records.add(current)
+                current = linkedMapOf()
+                pos += 5
+                continue
+            }
+            val match = fieldTag.find(text, pos)
+            require(match != null && match.range.first == pos) {
+                "Invalid ADIF tag or length"
+            }
+            val name = match.groupValues[1].uppercase(Locale.ROOT)
+            val length = match.groupValues[2].toInt()
+            val valueStart = match.range.last + 1
+            require(length <= text.length - valueStart) { "Truncated ADIF field $name" }
+            val destination = if (readingHeader) header else current
+            require(if (readingHeader) name in setOf("ADIF_VER", "PROGRAMID")
+                    else name in allowedFields) { "Unsupported ADIF field $name" }
+            require(name !in destination) { "Duplicate ADIF field $name" }
+            destination[name] = text.substring(valueStart, valueStart + length)
+            pos = valueStart + length
+        }
+        require(!readingHeader) { "ADIF has no complete header" }
+        require(current.isEmpty()) { "ADIF contains incomplete trailing record" }
+        require(records.isNotEmpty()) { "ADIF contains no complete contacts" }
+        return records
+    }
 
     fun read(input: InputStream, expectedStation: String): List<QsoRecord> {
         val bytes = ByteArrayOutputStream()
@@ -50,21 +112,10 @@ internal object FieldOpsAdifRestore {
             "Non-ASCII ADIF requires explicit conversion; not imported"
         }
         val text = raw.toString(Charsets.US_ASCII)
-        require(Regex("(?i)<EOH>").findAll(text).count() == 1) { "Invalid ADIF header" }
-        val report = AdifCodec.parse(text)
-        require(report.header["PROGRAMID"] == PROGRAM_ID) {
-            "Only FieldOps-exported ADIF can be restored here"
-        }
-        val eorCount = Regex("(?i)<EOR>").findAll(text).count()
-        require(eorCount in 1..MAX_RECORDS && eorCount == report.records.size) {
-            "ADIF must contain 1..500 complete records"
-        }
-        require(text.trimEnd().endsWith("<EOR>", ignoreCase = true)) {
-            "ADIF contains incomplete trailing record"
-        }
+        val parsed = parseStrictFieldOps(text)
         val localCall = expectedStation.trim().uppercase(Locale.ROOT)
         require(callsign.matches(localCall)) { "Invalid active station callsign" }
-        return report.records.mapIndexed { index, fields ->
+        return parsed.mapIndexed { index, fields ->
             try {
                 require(fields.keys.all { it in allowedFields }) { "Unsupported field would be lost" }
                 fun req(k: String): String = fields[k]?.trim()?.uppercase(Locale.ROOT)

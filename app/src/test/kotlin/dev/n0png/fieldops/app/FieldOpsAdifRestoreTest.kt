@@ -63,6 +63,32 @@ class FieldOpsAdifRestoreTest {
         assertTrue(repo.all().isEmpty())
     }
 
+    @Test fun malformedDuplicateAndAmbiguousFieldsNeverChangeTheReviewedContact() {
+        val adif = export()
+        val malformed = listOf(
+            // Previously a Map overwrite silently preferred the second CALL.
+            adif.replace("<CALL:4>K1JT",
+                "<CALL:4>K1JT\n<CALL:4>W1AW"),
+            adif.replace("<MODE:3>FT4",
+                "<MODE:3>FT4\n<MODE:3>FT8"),
+            adif.replace("<PROGRAMID:13>FTX1_FieldOps",
+                "<PROGRAMID:13>FTX1_FieldOps\n<PROGRAMID:13>FTX1_FieldOps"),
+            adif.replace("<EOH>", "<UNKNOWN:1>X\n<EOH>"),
+            adif.replace("<CALL:4>K1JT", "<CALL:3>K1JT"),
+            adif.replace("<CALL:4>K1JT", "<CALL:40>K1JT"),
+            adif.replace("<CALL:4>K1JT", "<CALL:four>K1JT"),
+            adif.replace("<EOR>", "UNPARSED CONTACT TEXT\n<EOR>"),
+            adif + "extraneous trailing bytes",
+            adif.replace("<EOR>", "<EOR>\n<EOR>"),
+        )
+        for (data in malformed) {
+            assertThrows("Rejected ambiguous ADIF data", IllegalArgumentException::class.java) {
+                read(data)
+            }
+        }
+        assertEquals("K1JT", read(adif).single().call)
+    }
+
     @Test fun oversizeAndInvalidUtf8AreRejectedBeforeAnyQsoExists() {
         assertThrows(IllegalArgumentException::class.java) {
             FieldOpsAdifRestore.read(ByteArrayInputStream(ByteArray(1_000_001) { 65 }), "N0PNG")
