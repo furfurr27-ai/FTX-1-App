@@ -420,6 +420,71 @@ class FieldOpsOperatingActivityTest {
         method.invoke(model, generation, mode, results, null)
     }
 
+    private fun beginSessionDecode(model: Any): Long {
+        val method = model.javaClass.getDeclaredMethod("beginOfflineDecode")
+        method.isAccessible = true
+        return method.invoke(model) as Long
+    }
+
+    @Test fun supersededModeDecodesCannotClearOrOverwriteNewerPendingWav() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            val model = operatingModel(a)
+            val oldToken = beginSessionDecode(model) // FT8 requested
+            assertEquals(true, readSessionField(model, "offlineDecodeBusy"))
+            tap(a, "SELECT FT4")
+            assertEquals(false, readSessionField(model, "offlineDecodeBusy"))
+            assertTrue(text(a).contains("No offline recording decoded for FT4"))
+            val currentToken = beginSessionDecode(model)
+            assertNotEquals(oldToken, currentToken)
+            assertThrows(java.lang.reflect.InvocationTargetException::class.java) {
+                beginSessionDecode(model)
+            }
+            completeSessionDecode(model, oldToken, DigitalMode.FT8, listOf(DecodeResult(
+                DigitalMode.FT8, 0L, text = "CQ K1JT FN20",
+                decodedSenderCallsign = "K1JT")))
+            assertEquals("Late old WAV must not end current processing", true,
+                readSessionField(model, "offlineDecodeBusy"))
+            assertFalse(text(a).contains("REVIEW K1JT IN MANUAL LOG"))
+            completeSessionDecode(model, currentToken, DigitalMode.FT4, listOf(DecodeResult(
+                DigitalMode.FT4, 0L, text = "CQ W1AW FN31",
+                decodedSenderCallsign = "W1AW")))
+            assertEquals(false, readSessionField(model, "offlineDecodeBusy"))
+            assertTrue(text(a).contains("REVIEW W1AW IN MANUAL LOG"))
+            assertFalse(text(a).contains("REVIEW K1JT IN MANUAL LOG"))
+            // The earlier FT8 worker can complete again without modifying
+            // a finished FT4 result or creating a phantom QSO.
+            completeSessionDecode(model, oldToken, DigitalMode.FT8, emptyList())
+            assertTrue(text(a).contains("REVIEW W1AW IN MANUAL LOG"))
+            tap(a, "OPS")
+            assertTrue(text(a).contains("0 manual QSOs"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+        }
+    }
+
+    @Test fun switchingAwayFromAndBackToFt8RejectsOriginalSameModeJob() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            val model = operatingModel(a)
+            val stale = beginSessionDecode(model)
+            tap(a, "SELECT JS8")
+            assertFalse(readSessionField(model, "offlineDecodeBusy") as Boolean)
+            tap(a, "SELECT FT8")
+            val current = beginSessionDecode(model)
+            assertNotEquals(stale, current)
+            completeSessionDecode(model, stale, DigitalMode.FT8, listOf(DecodeResult(
+                DigitalMode.FT8, 0L, text = "K1JT FN20",
+                decodedSenderCallsign = "K1JT")))
+            assertTrue(readSessionField(model, "offlineDecodeBusy") as Boolean)
+            completeSessionDecode(model, current, DigitalMode.FT8, emptyList())
+            assertFalse(readSessionField(model, "offlineDecodeBusy") as Boolean)
+            assertFalse(text(a).contains("REVIEW K1JT IN MANUAL LOG"))
+        }
+    }
+
     @Test fun inFlightDecoderCompletionAfterRotationRefreshesCurrentActivityOnly() {
         val ctl = Robolectric.buildActivity(MainActivity::class.java).setup()
         tap(ctl.get(), "DIGI")

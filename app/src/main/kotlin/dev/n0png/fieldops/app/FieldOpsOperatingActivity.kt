@@ -93,11 +93,26 @@ open class FieldOpsOperatingActivity : Activity() {
         fun selectMode(newMode: DigitalMode) {
             if (mode != newMode) {
                 mode = newMode
-                // Never present an older mode's recording in a new-mode view.
+                // The old job cannot prevent a new mode's WAV from opening.
+                // Even if the worker eventually completes, its generation is
+                // invalid and must never affect any newer decode's busy flag.
                 offlineDecodeGeneration++
+                offlineDecodeBusy = false
                 offlineDecodes = emptyList()
                 offlineDecodeStatus = "No offline recording decoded for ${newMode.name}."
             }
+        }
+
+        fun beginOfflineDecode(): Long {
+            check(!offlineDecodeBusy) { "Offline decoder already running" }
+            require(mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+                "Only FT8/FT4/FT2 offline receive is supported"
+            }
+            offlineDecodeGeneration++
+            offlineDecodeBusy = true
+            offlineDecodes = emptyList()
+            offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
+            return offlineDecodeGeneration
         }
 
         fun finishOfflineDecode(
@@ -106,13 +121,13 @@ open class FieldOpsOperatingActivity : Activity() {
             decodes: List<DecodeResult>?,
             failure: Throwable?,
         ) {
-            offlineDecodeBusy = false
             if (offlineDecodeGeneration != requestGeneration || mode != modeAtStart) {
-                // An asynchronous old-mode decode is not an observation of the
-                // currently selected mode and must never become a QSO hint.
-                onUiChanged?.invoke()
+                // Stale workers must NOT clear the busy flag of a newer WAV or
+                // overwrite its status or reviewed station. No UI callback is
+                // needed: the old result has no current-state effect.
                 return
             }
+            offlineDecodeBusy = false
             if (failure != null || decodes == null) {
                 offlineDecodeStatus =
                     if (failure is IllegalArgumentException)
@@ -327,10 +342,7 @@ open class FieldOpsOperatingActivity : Activity() {
         if (session.offlineDecodeBusy ||
             session.mode !in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) return
         val selected = session.mode
-        val generation = session.offlineDecodeGeneration
-        session.offlineDecodeBusy = true
-        session.offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
-        session.offlineDecodes = emptyList()
+        val generation = session.beginOfflineDecode()
         render()
         // Never capture this Activity in the worker. Completion is posted to
         // the retained session and repaints whichever Activity currently owns
