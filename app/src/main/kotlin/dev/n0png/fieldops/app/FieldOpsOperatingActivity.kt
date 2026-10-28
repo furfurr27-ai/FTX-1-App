@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -16,18 +18,22 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.n0png.fieldops.android.dsp.FtFamilyNativeEngine
 import dev.n0png.fieldops.core.awards.AwardsCenterApplicationService
 import dev.n0png.fieldops.core.awards.InMemoryAwardEvidenceRepository
 import dev.n0png.fieldops.core.digital.DigitalMode
 import dev.n0png.fieldops.core.digital.DigitalModes
+import dev.n0png.fieldops.core.dsp.DecodeResult
 import dev.n0png.fieldops.core.logbook.AdifCodec
 import dev.n0png.fieldops.core.logbook.FastQsoLogger
+import dev.n0png.fieldops.core.logbook.QsoOrigin
 import dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
 import dev.n0png.fieldops.core.logbook.ManualQsoInput
 import dev.n0png.fieldops.core.logbook.ManualQsoMode
 import dev.n0png.fieldops.core.logbook.OperatingSession
 import dev.n0png.fieldops.core.logbook.QsoLocationSnapshot
 import dev.n0png.fieldops.core.logbook.QsoRadioContext
+import dev.n0png.fieldops.core.logbook.QsoRecord
 import dev.n0png.fieldops.core.logbook.SequentialQsoIdSource
 import java.math.BigDecimal
 
@@ -40,11 +46,17 @@ import java.math.BigDecimal
  * No USB, CAT, audio, network, PTT or transmitter path is instantiated here.
  */
 open class FieldOpsOperatingActivity : Activity() {
+    private companion object {
+        const val OPEN_OFFLINE_WAV = 7129
+        const val EXPORT_MANUAL_ADIF = 7130
+        const val IMPORT_FIELDOPS_ADIF = 7131
+    }
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
     private class UiSession {
         val logbook = InMemoryLogbookRepository()
-        val logger = FastQsoLogger(logbook, SequentialQsoIdSource())
+        val ids = SequentialQsoIdSource()
+        val logger = FastQsoLogger(logbook, ids)
         val awards = AwardsCenterApplicationService(logbook, InMemoryAwardEvidenceRepository())
         val operatingSession = OperatingSession(
             id = "local-in-memory-session",
@@ -62,6 +74,109 @@ open class FieldOpsOperatingActivity : Activity() {
         var draftRemoteGrid = ""
         var logMessage = "No contacts recorded in this in-memory session."
         var showAdif = false
+        // User-selected Storage Access Framework export. The exact immutable
+        // record snapshot remains in RAM until the file picker returns.
+        var pendingAdifExport: List<QsoRecord>? = null
+        var adifExportBusy = false
+        var adifExportStatus = "No file exported. All contacts remain volatile until exported."
+        var adifImportBusy = false
+        var adifImportStatus = "No ADIF restore requested."
+        var stagedAdifRecords: List<dev.n0png.fieldops.core.logbook.QsoRecord>? = null
+        var offlineDecodeBusy = false
+        var offlineDecodeStatus = "No offline recording decoded."
+        var offlineDecodes: List<DecodeResult> = emptyList()
+        // The model survives rotation. Its transient UI observer is rebound to
+        // the CURRENT Activity only; the background worker never owns a View.
+        var onUiChanged: (() -> Unit)? = null
+        var offlineDecodeGeneration: Long = 0
+
+        fun selectMode(newMode: DigitalMode) {
+            if (mode != newMode) {
+                mode = newMode
+                // The old job cannot prevent a new mode's WAV from opening.
+                // Even if the worker eventually completes, its generation is
+                // invalid and must never affect any newer decode's busy flag.
+                offlineDecodeGeneration++
+                offlineDecodeBusy = false
+                offlineDecodes = emptyList()
+                offlineDecodeStatus = "No offline recording decoded for ${newMode.name}."
+            }
+        }
+
+        fun beginOfflineDecode(): Long {
+            check(!offlineDecodeBusy) { "Offline decoder already running" }
+            require(mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+                "Only FT8/FT4/FT2 offline receive is supported"
+            }
+            offlineDecodeGeneration++
+            offlineDecodeBusy = true
+            offlineDecodes = emptyList()
+            offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
+            return offlineDecodeGeneration
+        }
+
+        fun finishOfflineDecode(
+            requestGeneration: Long,
+            modeAtStart: DigitalMode,
+            decodes: List<DecodeResult>?,
+            failure: Throwable?,
+        ) {
+            if (offlineDecodeGeneration != requestGeneration || mode != modeAtStart) {
+                // Stale workers must NOT clear the busy flag of a newer WAV or
+                // overwrite its status or reviewed station. No UI callback is
+                // needed: the old result has no current-state effect.
+                return
+            }
+            offlineDecodeBusy = false
+            if (failure != null || decodes == null) {
+                offlineDecodeStatus =
+                    if (failure is IllegalArgumentException)
+                        "OFFLINE RX REJECTED: ${failure.message?.take(140)}"
+                    else
+                        "OFFLINE RX FAILED: native decoder or recording unavailable."
+                offlineDecodes = emptyList()
+            } else {
+                offlineDecodeStatus =
+                    "${modeAtStart.name}: ${decodes.size} decoded entries from user-selected WAV. " +
+                        "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
+                        "NO QSO automatically logged or transmitted."
+                offlineDecodes = decodes.take(40)
+            }
+            onUiChanged?.invoke()
+        }
+
+        fun finishAdifExport(writtenRecords: Int?, error: Throwable?) {
+            adifExportBusy = false
+            adifExportStatus = if (error == null && writtenRecords != null)
+                "ADIF FILE SAVED: $writtenRecords record(s) in user-selected document. " +
+                    "No LoTW upload or confirmation; memory-only log is unchanged."
+            else
+                "ADIF EXPORT FAILED: document could not be written. " +
+                    "The in-memory log is unchanged; no LoTW upload attempted."
+            onUiChanged?.invoke()
+        }
+
+        fun stageAdifImport(records: List<dev.n0png.fieldops.core.logbook.QsoRecord>?,
+                            failure: Throwable?) {
+            adifImportBusy = false
+            stagedAdifRecords = if (failure == null) records else null
+            adifImportStatus = if (failure == null && !records.isNullOrEmpty())
+                "REVIEW BEFORE IMPORT: ${records.size} FieldOps ADIF contact(s) for ${operatingSession.stationCallsign}. " +
+                    "Only CONFIRM RESTORE adds these to the local log. LoTW remains unverified."
+            else
+                "ADIF RESTORE REJECTED: ${failure?.message?.take(110) ?: "No valid records"}. " +
+                    "Local log unchanged."
+            onUiChanged?.invoke()
+        }
+
+        fun confirmAdifImport(): Int {
+            val staged = requireNotNull(stagedAdifRecords) { "No staged ADIF import" }
+            val imported = FieldOpsAdifRestore.commit(staged, logbook, ids)
+            stagedAdifRecords = null
+            adifImportStatus = "CONFIRMED IMPORT: $imported new QSO(s) added to volatile log; " +
+                "${staged.size - imported} duplicate(s) skipped. LoTW not sent."
+            return imported
+        }
 
         fun saveManual(): Boolean {
             val call = draftCall.trim().uppercase()
@@ -121,12 +236,16 @@ open class FieldOpsOperatingActivity : Activity() {
 
     private lateinit var model: UiSession
     private lateinit var root: LinearLayout
+    private val refreshActiveUi: () -> Unit = {
+        if (::model.isInitialized && !isFinishing && !isDestroyed) render()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // ArchiveHistoryActivity independently owns its own explicit recovery consent.
         // Retaining this model does not persist any log or credential to disk.
         model = (lastNonConfigurationInstance as? UiSession) ?: UiSession()
+        model.onUiChanged = refreshActiveUi
         if (savedInstanceState != null) {
             savedInstanceState.getString("fieldops.tab")?.let {
                 model.tab = runCatching { Tab.valueOf(it) }.getOrDefault(Tab.OPS)
@@ -136,6 +255,13 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     override fun onRetainNonConfigurationInstance(): Any = model
+
+    override fun onDestroy() {
+        if (::model.isInitialized && model.onUiChanged === refreshActiveUi) {
+            model.onUiChanged = null
+        }
+        super.onDestroy()
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("fieldops.tab", model.tab.name)
@@ -150,6 +276,91 @@ open class FieldOpsOperatingActivity : Activity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    @Deprecated("Android document result callback")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == IMPORT_FIELDOPS_ADIF) {
+            val session = model
+            val uri = data?.data
+            if (resultCode != RESULT_OK || uri == null) {
+                session.adifImportStatus = "ADIF restore canceled; log unchanged."
+                render()
+                return
+            }
+            if (session.adifImportBusy) return
+            session.adifImportBusy = true
+            session.stagedAdifRecords = null
+            session.adifImportStatus = "Validating selected FieldOps ADIF; no QSO added."
+            render()
+            val resolver = applicationContext.contentResolver
+            val main = Handler(Looper.getMainLooper())
+            val station = session.operatingSession.stationCallsign
+            Thread({
+                val result = runCatching {
+                    val stream = resolver.openInputStream(uri)
+                        ?: throw IllegalArgumentException("Could not read selected ADIF")
+                    stream.use { FieldOpsAdifRestore.read(it, station) }
+                }
+                main.post {
+                    session.stageAdifImport(result.getOrNull(), result.exceptionOrNull())
+                }
+            }, "FieldOps-ADIF-Validate-Only").apply { isDaemon = true }.start()
+            return
+        }
+        if (requestCode == EXPORT_MANUAL_ADIF) {
+            val session = model
+            val snapshot = session.pendingAdifExport
+            session.pendingAdifExport = null
+            val outputUri = data?.data
+            if (resultCode != RESULT_OK || outputUri == null || snapshot.isNullOrEmpty()) {
+                session.adifExportStatus = "ADIF export canceled or no records selected; log unchanged."
+                render()
+                return
+            }
+            session.adifExportBusy = true
+            session.adifExportStatus = "Writing chosen ADIF document; nothing sent to LoTW."
+            render()
+            val resolver = applicationContext.contentResolver
+            val main = Handler(Looper.getMainLooper())
+            Thread({
+                val result = runCatching {
+                    val stream = resolver.openOutputStream(outputUri, "w")
+                        ?: throw IllegalStateException("Document provider refused output")
+                    stream.use { ManualAdifFileExport.write(snapshot, it) }
+                }
+                main.post {
+                    session.finishAdifExport(result.getOrNull(), result.exceptionOrNull())
+                }
+            }, "FieldOps-ADIF-Document-Export").apply { isDaemon = true }.start()
+            return
+        }
+        if (requestCode != OPEN_OFFLINE_WAV || resultCode != RESULT_OK) return
+        val uri = data?.data ?: return
+        val session = model
+        if (session.offlineDecodeBusy ||
+            session.mode !in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) return
+        val selected = session.mode
+        val generation = session.beginOfflineDecode()
+        render()
+        // Never capture this Activity in the worker. Completion is posted to
+        // the retained session and repaints whichever Activity currently owns
+        // its transient observer (or no Activity after a final destroy).
+        val resolver = applicationContext.contentResolver
+        val main = Handler(Looper.getMainLooper())
+        Thread({
+            val result = runCatching {
+                check(FtFamilyNativeAvailability.probe()) { "Native decoder unavailable" }
+                val input = resolver.openInputStream(uri)
+                    ?: throw IllegalArgumentException("Could not open selected WAV")
+                input.use { FtFamilyOfflineWav.decode(it, selected, FtFamilyNativeEngine()) }
+            }
+            main.post {
+                session.finishOfflineDecode(
+                    generation, selected, result.getOrNull(), result.exceptionOrNull())
+            }
+        }, "FieldOps-Offline-FT-Family-RX").apply { isDaemon = true }.start()
     }
 
     private fun render() {
@@ -225,7 +436,7 @@ open class FieldOpsOperatingActivity : Activity() {
         for (mode in listOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2,
             DigitalMode.JS8, DigitalMode.WSPR)) {
             action("SELECT ${mode.name}") {
-                model.mode = mode
+                model.selectMode(mode)
                 render()
             }
         }
@@ -233,6 +444,71 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("SELECTED ${model.mode.name}",
             "Cycle: ${profile.cycleMillis} ms • workflow: ${profile.workflow}. " +
                 "RX decoding, audio capture and TX remain unavailable in this APK.")
+        if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            val nativePresent = FtFamilyNativeAvailability.probe()
+            panel("FT-FAMILY 48 kHz / 12 kHz RX ENGINE",
+                if (nativePresent)
+                    "Native FT8AF library loadable. Shared 48 kHz to UTC slot decoder path is compiled; " +
+                        "input capture is NOT connected, and device/RF validation is still absent."
+                else
+                    "Production Java/JNI adapter compiled, but libft8af.so is not packaged. " +
+                        "Native FT8/FT4/FT2 decoding is UNAVAILABLE; no synthetic fallback.")
+        }
+        if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            panel("RECORDED-WAV RECEIVE / FILE ONLY",
+                "Accepts one mono 16-bit PCM WAV at 12 kHz or 48 kHz. " +
+                    "48 kHz passes through the same 4:1 FIR as shared capture; no live device connected. " +
+                    "Recording time and source are unverified. Decoded text is NOT logged as a QSO.")
+            if (!model.offlineDecodeBusy) {
+                action("OPEN OFFLINE WAV FILE (NO RF)") {
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "*/*"
+                    }
+                    @Suppress("DEPRECATION")
+                    startActivityForResult(intent, OPEN_OFFLINE_WAV)
+                }
+            }
+            panel("OFFLINE DECODE RESULT", model.offlineDecodeStatus)
+            model.offlineDecodes.forEach { decoded ->
+                panel("DECODED WAV / UNVERIFIED",
+                    "${decoded.audioHz ?: "?"} Hz audio offset | " +
+                        "${decoded.snrDb ?: "?"} dB | " + decoded.text.take(200))
+                val review = FtDecodedStationReview.from(
+                    decoded, model.operatingSession.stationCallsign)
+                if (review != null) {
+                    action("REVIEW ${review.callsign} IN MANUAL LOG (NO AUTO QSO)") {
+                        // A WAV's audio offset is NOT a CAT frequency; clear old
+                        // contact fields so no stale QSO can be accidentally saved.
+                        model.manualMode = review.manualMode
+                        model.draftCall = review.callsign
+                        model.draftFrequencyMhz = ""
+                        model.draftSent = ""
+                        model.draftReceived = ""
+                        model.draftRemoteGrid = ""
+                        model.logMessage =
+                            "UNVERIFIED WAV SENDER ${review.callsign} selected. " +
+                            "NOT LOGGED. Enter real RF frequency and confirm a completed two-way contact before saving."
+                        model.tab = Tab.LOG
+                        render()
+                    }
+                }
+            }
+            panel("COMPLETED FT QSO / OPERATOR REVIEW",
+                "Only log a TWO-WAY contact that you independently completed. " +
+                    "An offline decode, a CQ or a heard signal alone is NOT a QSO. " +
+                    "Preparing the manual form does not key the radio, record a QSO or queue LoTW.")
+            action("PREPARE MANUAL ${model.mode.name} QSO (NO AUTO LOG)") {
+                model.manualMode = when (model.mode) {
+                    DigitalMode.FT8 -> ManualQsoMode.FT8
+                    DigitalMode.FT4 -> ManualQsoMode.FT4
+                    DigitalMode.FT2 -> ManualQsoMode.FT2
+                    else -> error("FT-family mode required")
+                }
+                model.tab = Tab.LOG
+                render()
+            }
+        }
         disabledAction("START RX — NOT CONNECTED")
         disabledAction("ARM TX — HARDWARE VALIDATION REQUIRED")
     }
@@ -263,6 +539,11 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("MANUAL CW / SSB CONTACT",
             "Use this form to record an actual manually entered QSO in volatile memory. " +
                 "Do not use it as proof of radio reception, transmission, saved disk records or LoTW sync.")
+        if (model.manualMode in setOf(ManualQsoMode.FT8, ManualQsoMode.FT4, ManualQsoMode.FT2)) {
+            panel("MANUAL FT CONTACT / OPERATOR ATTESTATION",
+                "Press SAVE only after a completed two-way ${model.manualMode.adifMode} contact. " +
+                    "No waveform or decoder automatically creates a QSO; no TX or LoTW is performed.")
+        }
         val call = EditText(this).apply {
             hint = "Remote callsign"
             contentDescription = "Remote callsign"
@@ -312,7 +593,10 @@ open class FieldOpsOperatingActivity : Activity() {
                 ManualQsoMode.CW else ManualQsoMode.SSB
             render()
         }
-        action("SAVE MANUAL QSO") {
+        action(
+            if (model.manualMode in setOf(ManualQsoMode.FT8, ManualQsoMode.FT4, ManualQsoMode.FT2))
+                "CONFIRM COMPLETED FT QSO — SAVE MANUALLY" else "SAVE MANUAL QSO"
+        ) {
             model.draftCall = call.text.toString()
             model.draftFrequencyMhz = freq.text.toString()
             model.saveManual()
@@ -329,6 +613,48 @@ open class FieldOpsOperatingActivity : Activity() {
         action(if (model.showAdif) "HIDE ADIF" else "SHOW ADIF FROM REAL LOGBOOK") {
             model.showAdif = !model.showAdif
             render()
+        }
+        if (all.isNotEmpty() && !model.adifExportBusy && model.pendingAdifExport == null) {
+            action("EXPORT ADIF FILE (CHOOSE DESTINATION)") {
+                // An explicit system file-picker destination is mandatory.
+                // Snapshot prevents later edits/QSOs from silently changing the
+                // bytes written after the user approves a particular export.
+                model.pendingAdifExport = model.logbook.all()
+                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_TITLE, "N0PNG-FieldOps-log.adi")
+                }
+                @Suppress("DEPRECATION")
+                startActivityForResult(intent, EXPORT_MANUAL_ADIF)
+            }
+        } else if (all.isEmpty()) {
+            disabledAction("EXPORT ADIF FILE — NO QSOS")
+        }
+        panel("ADIF FILE EXPORT / EXPLICIT USER ACTION", model.adifExportStatus)
+        if (!model.adifImportBusy) {
+            action("RESTORE FIELDOPS ADIF (PICK FILE)") {
+                model.stagedAdifRecords = null
+                model.adifImportStatus = "Choose a FieldOps-generated ADIF file for validation."
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                }
+                @Suppress("DEPRECATION")
+                startActivityForResult(intent, IMPORT_FIELDOPS_ADIF)
+            }
+        }
+        panel("ADIF RESTORE / NOT LOTW", model.adifImportStatus)
+        if (!model.stagedAdifRecords.isNullOrEmpty() && !model.adifImportBusy) {
+            action("CONFIRM RESTORE TO LOCAL LOG (NO LOTW)") {
+                model.confirmAdifImport()
+                render()
+            }
+            action("CANCEL STAGED ADIF RESTORE") {
+                model.stagedAdifRecords = null
+                model.adifImportStatus = "Staged restore discarded; log unchanged."
+                render()
+            }
         }
         if (model.showAdif) {
             val adif = AdifCodec.export(all)

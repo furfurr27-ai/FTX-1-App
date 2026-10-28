@@ -17,6 +17,8 @@ import kotlin.math.ceil
  */
 class FtFamilyNativeEngine : WindowedDspEngine {
     override val modes = setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)
+    // Pinned FT8AF protocol codes: FT4=0, FT8=1, FT2=2. FT4 and FT2
+    // MUST use the from-source InitDecoderFt2/FindSync/Analysis ABI.
     private val native = FT8SignalListener()
 
     override fun decode(mode: DigitalMode, slotStartUtcMillis: Long, samples12k: FloatArray): List<DecodeResult> {
@@ -24,13 +26,14 @@ class FtFamilyNativeEngine : WindowedDspEngine {
         require(samples12k.isNotEmpty())
         val handle = when (mode) {
             DigitalMode.FT2 -> native.InitDecoderFt2(slotStartUtcMillis, 12_000, samples12k.size, 2)
-            DigitalMode.FT8, DigitalMode.FT4 -> native.InitDecoder(slotStartUtcMillis, 12_000, samples12k.size, mode == DigitalMode.FT8)
+            DigitalMode.FT4 -> native.InitDecoderFt2(slotStartUtcMillis, 12_000, samples12k.size, 0)
+            DigitalMode.FT8 -> native.InitDecoder(slotStartUtcMillis, 12_000, samples12k.size, true)
             else -> error("unsupported")
         }
         check(handle != 0L) { "native decoder allocation failed" }
         try {
             when (mode) {
-                DigitalMode.FT2 -> {
+                DigitalMode.FT2, DigitalMode.FT4 -> {
                     native.DecoderFt2MonitorPressFloat(samples12k, handle)
                     native.setDecodeModeFt2(handle, false)
                 }
@@ -40,14 +43,14 @@ class FtFamilyNativeEngine : WindowedDspEngine {
                 }
             }
             val count = when (mode) {
-                DigitalMode.FT2 -> native.DecoderFt2FindSync(handle)
+                DigitalMode.FT2, DigitalMode.FT4 -> native.DecoderFt2FindSync(handle)
                 else -> native.DecoderFt8FindSync(handle)
             }.coerceAtLeast(0)
             val results = ArrayList<DecodeResult>(count)
             for (i in 0 until count) {
                 val msg = Ft8Message()
                 val ok = when (mode) {
-                    DigitalMode.FT2 -> native.DecoderFt2Analysis(i, handle, msg)
+                    DigitalMode.FT2, DigitalMode.FT4 -> native.DecoderFt2Analysis(i, handle, msg)
                     else -> native.DecoderFt8Analysis(i, handle, msg)
                 }
                 if (!ok || !msg.isValid) continue
@@ -60,11 +63,16 @@ class FtFamilyNativeEngine : WindowedDspEngine {
                     snrDb = msg.snr,
                     dtSeconds = msg.time_sec,
                     text = text,
+                    decodedSenderCallsign = msg.callsignFrom.takeIf { it.isNotBlank() },
                 )
             }
             return results
         } finally {
-            if (mode == DigitalMode.FT2) native.DeleteDecoderFt2(handle) else native.DeleteDecoder(handle)
+            if (mode == DigitalMode.FT4 || mode == DigitalMode.FT2) {
+                native.DeleteDecoderFt2(handle)
+            } else {
+                native.DeleteDecoder(handle)
+            }
         }
     }
 
