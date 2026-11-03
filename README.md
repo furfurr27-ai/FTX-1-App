@@ -89,6 +89,25 @@ key retirement, auto fallback or LoTW account/certificate proof.
 
 CP-0009Q and preceding immutable checkpoints remain intact.
 
+## Active unmerged FT-family integration (CP-0009S, PR #71)
+
+Current draft development extends the non-transmitting v69 baseline with
+source-built ARM64 FT8/FT4/FT2 JNI, bounded user-selected 12/48 kHz WAV
+receive through production FIR, structured native sender/recipient
+inspection, safe mode-switch lifecycle isolation and explicit ADIF
+file export/restore. A validated RX sender may now be carried through
+a **manual, operator-attested** FT QSO draft into the shared logbook,
+ADIF and Awards workspaces. That handoff clears any previous frequency,
+signal reports and grid; a WAV cannot attest a two-way contact or
+automatically log, transmit or upload to LoTW.
+
+These changes live only in draft PR #71 and are NOT the durable v69
+baseline. Complete exact-head GitHub CI before claiming automated
+acceptance; S23/FTX-1 USB audio, CAT/PTT, live transmission, timed
+full QSO sequencing and on-device interoperability remain unverified.
+Continue finite P0–P3 acceptance work; do not start the deferred
+CP-0003C or Final Review without the owner's explicit trigger.
+
 ## Execution tracks and hardware-gated deferrals
 
 FieldOps has two practical execution lanes:

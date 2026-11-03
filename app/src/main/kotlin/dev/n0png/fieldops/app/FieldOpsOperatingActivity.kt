@@ -183,6 +183,34 @@ open class FieldOpsOperatingActivity : Activity() {
             return imported
         }
 
+        /**
+         * A validated native RX station is only a hint for a future manual QSO.
+         * Clear stale RF frequency/report/grid fields every time; NEVER infer
+         * actual dial frequency or two-way completion from a WAV recording.
+         * The LOG screen still requires explicit user-entered RF metadata and
+         * a distinct affirmative completed-QSO button.
+         */
+        fun prepareUnverifiedFtContact(review: FtDecodedStationReview) {
+            require(mode == review.mode) { "Cannot review a station from another FT mode" }
+            manualMode = review.manualMode
+            draftCall = review.callsign
+            draftFrequencyMhz = ""
+            draftSent = ""
+            draftReceived = ""
+            draftRemoteGrid = ""
+            logMessage = "UNVERIFIED WAV SENDER ${review.callsign} selected for ${review.mode.name}. " +
+                "NOT LOGGED. No trusted RF frequency or complete two-way QSO evidence. " +
+                "Enter the actual contact details and separately confirm completion."
+            tab = Tab.LOG
+        }
+
+        fun prepareObservedStation(callsign: String) {
+            val station = ftRxObservations.stations().singleOrNull {
+                it.callsign == callsign && it.mode == mode
+            } ?: throw IllegalArgumentException("Station is not in the selected FT receive review")
+            prepareUnverifiedFtContact(FtDecodedStationReview(station.callsign, station.mode))
+        }
+
         fun saveManual(): Boolean {
             val call = draftCall.trim().uppercase()
             if (!call.matches(Regex("[A-Z0-9/]{3,16}")) || !call.any { it.isDigit() }) {
@@ -483,18 +511,7 @@ open class FieldOpsOperatingActivity : Activity() {
                     decoded, model.operatingSession.stationCallsign)
                 if (review != null) {
                     action("REVIEW ${review.callsign} IN MANUAL LOG (NO AUTO QSO)") {
-                        // A WAV's audio offset is NOT a CAT frequency; clear old
-                        // contact fields so no stale QSO can be accidentally saved.
-                        model.manualMode = review.manualMode
-                        model.draftCall = review.callsign
-                        model.draftFrequencyMhz = ""
-                        model.draftSent = ""
-                        model.draftReceived = ""
-                        model.draftRemoteGrid = ""
-                        model.logMessage =
-                            "UNVERIFIED WAV SENDER ${review.callsign} selected. " +
-                            "NOT LOGGED. Enter real RF frequency and confirm a completed two-way contact before saving."
-                        model.tab = Tab.LOG
+                        model.prepareUnverifiedFtContact(review)
                         render()
                     }
                 }
@@ -512,6 +529,12 @@ open class FieldOpsOperatingActivity : Activity() {
                             "• last selected WAV #${station.lastImportOrdinal}.")
                     action("INSPECT ${station.callsign} RX HISTORY (NO QSO)") {
                         model.ftRxObservations.focus(station.callsign)
+                        render()
+                    }
+                    action("PREPARE ${station.callsign} MANUAL ${station.mode.name} QSO (NO AUTO LOG)") {
+                        // Only a station actually present in the selected
+                        // receive-only board can be handed to the manual form.
+                        model.prepareObservedStation(station.callsign)
                         render()
                     }
                 }

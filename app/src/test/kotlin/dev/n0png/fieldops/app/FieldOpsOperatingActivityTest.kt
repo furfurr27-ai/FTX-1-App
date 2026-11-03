@@ -363,6 +363,98 @@ class FieldOpsOperatingActivityTest {
         ctl.pause().stop().destroy()
     }
 
+    @Test fun reviewedFt4StationFlowsThroughExplicitManualLogAdifAndAwards() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            tap(a, "SELECT FT4")
+            val model = operatingModel(a)
+            val token = beginSessionDecode(model)
+            completeSessionDecode(model, token, DigitalMode.FT4, listOf(
+                DecodeResult(DigitalMode.FT4, 0L, audioHz = 1200f,
+                    text = "K1JT CQ FN20", decodedSenderCallsign = "K1JT",
+                    decodedRecipientCallsign = "CQ"),
+                DecodeResult(DigitalMode.FT4, 0L, audioHz = 1200f,
+                    text = "K1JT N0PNG -07", decodedSenderCallsign = "K1JT",
+                    decodedRecipientCallsign = "N0PNG"),
+                // The text mentions W1AW but no native sender exists.
+                DecodeResult(DigitalMode.FT4, 0L, audioHz = 1600f,
+                    text = "W1AW N0PNG -09", decodedSenderCallsign = null,
+                    decodedRecipientCallsign = "N0PNG")
+            ))
+            assertTrue(text(a).contains("HEARD K1JT / FT4"))
+            assertFalse(text(a).contains("HEARD W1AW / FT4"))
+            val repo = readSessionField(model, "logbook")
+                as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+            assertTrue("Received messages are never auto-logged", repo.all().isEmpty())
+            tap(a, "PREPARE K1JT MANUAL FT4 QSO (NO AUTO LOG)")
+            assertTrue(text(a).contains("UNVERIFIED WAV SENDER K1JT selected"))
+            assertTrue(text(a).contains("MANUAL MODE: FT4 (SWITCH)"))
+            assertEquals("K1JT", field(a, "Remote callsign").text.toString())
+            assertEquals("", field(a, "Frequency in MHz (e.g. 7.075)").text.toString())
+            assertEquals("", field(a, "RST sent (optional)").text.toString())
+            assertEquals("", field(a, "RST received (optional)").text.toString())
+            assertTrue(repo.all().isEmpty())
+            tap(a, "CONFIRM COMPLETED FT QSO — SAVE MANUALLY")
+            assertTrue(text(a).contains("NOT SAVED: enter a valid frequency"))
+            assertTrue(repo.all().isEmpty())
+            field(a, "Frequency in MHz (e.g. 7.075)").setText("14.08")
+            field(a, "RST sent (optional)").setText("-10")
+            field(a, "RST received (optional)").setText("-07")
+            tap(a, "CONFIRM COMPLETED FT QSO — SAVE MANUALLY")
+            assertTrue(text(a).contains("Saved in memory: QSO #1 K1JT FT4"))
+            assertEquals(1, repo.all().size)
+            assertEquals(dev.n0png.fieldops.core.logbook.QsoOrigin.MANUAL,
+                repo.all().single().origin)
+            assertEquals("FT4", repo.all().single().mode)
+            assertEquals("N0PNG", repo.all().single().stationCallsign)
+            assertEquals(dev.n0png.fieldops.core.logbook.LotwUploadState.NOT_UPLOADED,
+                repo.all().single().lotwUpload)
+            tap(a, "SHOW ADIF FROM REAL LOGBOOK")
+            assertTrue(text(a).contains("<CALL:4>K1JT"))
+            assertTrue(text(a).contains("<MODE:3>FT4"))
+            assertTrue(text(a).contains("<FREQ:5>14.08"))
+            assertTrue(text(a).contains("<RST_SENT:3>-10"))
+            tap(a, "AWARDS")
+            assertTrue(text(a).contains("AWARDS CENTER / LOCAL EVIDENCE ONLY"))
+            assertEquals(1, repo.all().size)
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+            assertFalse(button(a, "CONNECT CAT — PHYSICAL VALIDATION REQUIRED").isEnabled)
+        }
+    }
+
+    @Test fun reviewStationHandoffRejectsOldModeAndClearsExistingDraftDetails() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "LOG")
+            field(a, "Remote callsign").setText("DL1ABC")
+            field(a, "Frequency in MHz (e.g. 7.075)").setText("7.074")
+            field(a, "RST sent (optional)").setText("59")
+            field(a, "RST received (optional)").setText("57")
+            field(a, "Remote grid square (optional)").setText("JO40")
+            tap(a, "DIGI")
+            val model = operatingModel(a)
+            val gen = beginSessionDecode(model)
+            completeSessionDecode(model, gen, DigitalMode.FT8, listOf(
+                DecodeResult(DigitalMode.FT8, 0L, text = "K1JT CQ FN20",
+                    decodedSenderCallsign = "K1JT", decodedRecipientCallsign = "CQ")
+            ))
+            tap(a, "PREPARE K1JT MANUAL FT8 QSO (NO AUTO LOG)")
+            assertEquals("K1JT", field(a, "Remote callsign").text.toString())
+            assertEquals("", field(a, "Frequency in MHz (e.g. 7.075)").text.toString())
+            assertEquals("", field(a, "RST sent (optional)").text.toString())
+            assertEquals("", field(a, "RST received (optional)").text.toString())
+            assertEquals("", field(a, "Remote grid square (optional)").text.toString())
+            tap(a, "DIGI")
+            tap(a, "SELECT FT2")
+            assertFalse(text(a).contains("PREPARE K1JT MANUAL FT8 QSO"))
+            assertTrue(text(a).contains("No offline recording decoded for FT2"))
+            tap(a, "OPS")
+            assertTrue(text(a).contains("0 manual QSOs"))
+        }
+    }
+
     @Test fun nativeStructuredReceiveBoardTracksFileOrderWithoutAssumingQso() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
