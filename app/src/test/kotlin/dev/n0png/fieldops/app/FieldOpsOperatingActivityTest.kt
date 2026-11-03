@@ -518,6 +518,10 @@ class FieldOpsOperatingActivityTest {
     @Test fun offlineDecodedSenderOnlyPrefillsUnverifiedManualDraftWithoutQso() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
+            tap(a, "DIGI")
+            // A realistic FT4 decoded station must be viewed in FT4 mode:
+            // mismatched decoded mode is intentionally rejected by handoff.
+            tap(a, "SELECT FT4")
             val modelField = FieldOpsOperatingActivity::class.java.getDeclaredField("model")
             modelField.isAccessible = true
             val model = modelField.get(a)
