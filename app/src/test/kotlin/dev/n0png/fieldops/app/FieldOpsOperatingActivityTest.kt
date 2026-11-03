@@ -363,6 +363,66 @@ class FieldOpsOperatingActivityTest {
         ctl.pause().stop().destroy()
     }
 
+    @Test fun nativeStructuredReceiveBoardTracksFileOrderWithoutAssumingQso() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            tap(a, "DIGI")
+            val model = operatingModel(a)
+            val token = beginSessionDecode(model)
+            completeSessionDecode(model, token, DigitalMode.FT8, listOf(
+                DecodeResult(DigitalMode.FT8, 0L, text = "K1JT CQ FN20",
+                    decodedSenderCallsign = "K1JT", decodedRecipientCallsign = "CQ"),
+                DecodeResult(DigitalMode.FT8, 0L, text = "K1JT N0PNG -11",
+                    decodedSenderCallsign = "K1JT", decodedRecipientCallsign = "N0PNG"),
+                DecodeResult(DigitalMode.FT8, 0L, text = "W1AW N0PNG -10",
+                    decodedSenderCallsign = null, decodedRecipientCallsign = "N0PNG")
+            ))
+            assertTrue(text(a).contains("STRUCTURED RX STATION REVIEW / NOT A QSO"))
+            assertTrue(text(a).contains("HEARD K1JT / FT8"))
+            assertFalse(text(a).contains("HEARD W1AW / FT8"))
+            assertTrue(text(a).contains("1 addressed to N0PNG"))
+            tap(a, "INSPECT K1JT RX HISTORY (NO QSO)")
+            assertTrue(text(a).contains("UNVERIFIED RX MESSAGES FOR K1JT"))
+            assertTrue(text(a).contains("WAV #1 / ADDRESSED_TO_OWN_CALL"))
+            assertTrue(text(a).contains("WAV #1 / CQ"))
+            assertTrue(text(a).contains("0 manual QSOs") || text(a).contains("NO QSO"))
+            tap(a, "REVIEW K1JT IN MANUAL LOG (NO AUTO QSO)")
+            assertEquals("K1JT", field(a, "Remote callsign").text.toString())
+            assertEquals("", field(a, "Frequency in MHz (e.g. 7.075)").text.toString())
+            assertTrue(text(a).contains("0 records"))
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+            tap(a, "DIGI")
+            tap(a, "SELECT FT4")
+            assertFalse(text(a).contains("HEARD K1JT / FT8"))
+            assertFalse(text(a).contains("UNVERIFIED RX MESSAGES FOR K1JT"))
+        }
+    }
+
+    @Test fun rotationRetainsStructuredReceiveObservationsButNotQsoProof() {
+        val ctl = Robolectric.buildActivity(MainActivity::class.java).setup()
+        tap(ctl.get(), "DIGI")
+        val old = operatingModel(ctl.get())
+        val token = beginSessionDecode(old)
+        completeSessionDecode(old, token, DigitalMode.FT2, emptyList())
+        tap(ctl.get(), "SELECT FT2")
+        val tokenFt2 = beginSessionDecode(old)
+        completeSessionDecode(old, tokenFt2, DigitalMode.FT2, listOf(
+            DecodeResult(DigitalMode.FT2, 0L, text = "K1JT CQ",
+                decodedSenderCallsign = "K1JT", decodedRecipientCallsign = "CQ")
+        ))
+        ctl.recreate()
+        assertSame(old, operatingModel(ctl.get()))
+        assertTrue(text(ctl.get()).contains("HEARD K1JT / FT2"))
+        tap(ctl.get(), "OPS")
+        assertTrue(text(ctl.get()).contains("0 manual QSOs"))
+        ctl.pause().stop().destroy()
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { fresh ->
+            tap(fresh.get(), "DIGI")
+            assertFalse(text(fresh.get()).contains("HEARD K1JT / FT2"))
+        }
+    }
+
     @Test fun offlineDecodedSenderOnlyPrefillsUnverifiedManualDraftWithoutQso() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()

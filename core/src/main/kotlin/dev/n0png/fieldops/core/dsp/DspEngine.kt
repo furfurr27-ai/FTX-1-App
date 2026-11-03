@@ -12,8 +12,10 @@ data class DecodeResult(
     val dtSeconds: Float? = null,
     val text: String,
     val raw: ByteArray? = null,
-    // Optional structured native sender; receiving it is NOT a two-way contact.
+    // Optional structured native sender and addressed-to identity. These
+    // are observations from RX messages, never completed-QSO evidence.
     val decodedSenderCallsign: String? = null,
+    val decodedRecipientCallsign: String? = null,
 )
 
 data class EncodeRequest(

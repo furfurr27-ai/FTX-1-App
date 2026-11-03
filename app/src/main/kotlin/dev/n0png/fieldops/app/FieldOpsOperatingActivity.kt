@@ -66,6 +66,9 @@ open class FieldOpsOperatingActivity : Activity() {
         )
         var tab = Tab.OPS
         var mode = DigitalMode.FT8
+        val ftRxObservations = FtRxObservationLedger(operatingSession.stationCallsign).apply {
+            switchMode(mode)
+        }
         var manualMode = ManualQsoMode.SSB
         var draftCall = ""
         var draftFrequencyMhz = ""
@@ -98,6 +101,7 @@ open class FieldOpsOperatingActivity : Activity() {
                 // invalid and must never affect any newer decode's busy flag.
                 offlineDecodeGeneration++
                 offlineDecodeBusy = false
+                ftRxObservations.switchMode(newMode)
                 offlineDecodes = emptyList()
                 offlineDecodeStatus = "No offline recording decoded for ${newMode.name}."
             }
@@ -140,7 +144,8 @@ open class FieldOpsOperatingActivity : Activity() {
                     "${modeAtStart.name}: ${decodes.size} decoded entries from user-selected WAV. " +
                         "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
                         "NO QSO automatically logged or transmitted."
-                offlineDecodes = decodes.take(40)
+                offlineDecodes = decodes.filter { it.mode == modeAtStart }.take(40)
+                ftRxObservations.acceptFile(modeAtStart, offlineDecodes)
             }
             onUiChanged?.invoke()
         }
@@ -443,7 +448,7 @@ open class FieldOpsOperatingActivity : Activity() {
         val profile = DigitalModes.profile(model.mode)
         panel("SELECTED ${model.mode.name}",
             "Cycle: ${profile.cycleMillis} ms • workflow: ${profile.workflow}. " +
-                "RX decoding, audio capture and TX remain unavailable in this APK.")
+                "FT-family file-only RX is available below; live radio receive, USB audio and TX remain disabled.")
         if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
             val nativePresent = FtFamilyNativeAvailability.probe()
             panel("FT-FAMILY 48 kHz / 12 kHz RX ENGINE",
@@ -491,6 +496,33 @@ open class FieldOpsOperatingActivity : Activity() {
                             "NOT LOGGED. Enter real RF frequency and confirm a completed two-way contact before saving."
                         model.tab = Tab.LOG
                         render()
+                    }
+                }
+            }
+            val stations = model.ftRxObservations.stations()
+            if (stations.isNotEmpty()) {
+                panel("STRUCTURED RX STATION REVIEW / NOT A QSO",
+                    "Native sender/recipient identities only; no callsigns inferred from free text. " +
+                        "WAV file selection order is NOT verified UTC or an RF exchange. " +
+                        "No transmission, QSO, confirmation or LoTW action is implied.")
+                for (station in stations.take(12)) {
+                    panel("HEARD ${station.callsign} / ${station.mode.name}",
+                        "${station.messages} messages • ${station.cqMessages} CQ • " +
+                            "${station.addressedToOwnCall} addressed to ${model.operatingSession.stationCallsign} " +
+                            "• last selected WAV #${station.lastImportOrdinal}.")
+                    action("INSPECT ${station.callsign} RX HISTORY (NO QSO)") {
+                        model.ftRxObservations.focus(station.callsign)
+                        render()
+                    }
+                }
+                val focused = model.ftRxObservations.focusedCallsign
+                if (focused != null) {
+                    panel("UNVERIFIED RX MESSAGES FOR $focused",
+                        "These are separately selected file observations, NOT a confirmed two-way contact.")
+                    model.ftRxObservations.focusedObservations().forEach { heard ->
+                        panel("WAV #${heard.importOrdinal} / ${heard.addressKind}",
+                            "Recipient: ${heard.recipient ?: "unknown"} • " +
+                                "${heard.snrDb ?: "?"} dB estimated • ${heard.text.take(180)}")
                     }
                 }
             }
