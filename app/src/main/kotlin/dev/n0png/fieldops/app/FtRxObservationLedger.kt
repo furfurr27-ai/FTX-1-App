@@ -108,6 +108,10 @@ internal class FtRxObservationLedger(private val ownCallsign: String) {
         focusedCallsign = callsign
     }
 
+    /** Bounded station-specific observations; no extra durable state. */
+    fun observationsFor(callsign: String): List<FtRxObservation> =
+        observations.filter { it.callsign == callsign }
+
     fun focusedObservations(): List<FtRxObservation> =
         observations.filter { it.callsign == focusedCallsign }.takeLast(8)
 }

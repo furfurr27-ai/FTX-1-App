@@ -97,9 +97,12 @@ receive through production FIR, structured native sender/recipient
 inspection, safe mode-switch lifecycle isolation and explicit ADIF
 file export/restore. A validated RX sender may now be carried through
 a **manual, operator-attested** FT QSO draft into the shared logbook,
-ADIF and Awards workspaces. That handoff clears any previous frequency,
-signal reports and grid; a WAV cannot attest a two-way contact or
-automatically log, transmit or upload to LoTW.
+ADIF and Awards workspaces. An offline receive-exchange evidence gate
+now labels native CQ/recipient observations and the correct FT mode slot
+duration, while explicitly reporting NO verified UTC, local TX or
+completed QSO. The handoff clears any previous frequency, signal reports
+and grid; a WAV cannot attest a two-way contact or automatically log,
+transmit or upload to LoTW.
 
 These changes live only in draft PR #71 and are NOT the durable v69
 baseline. Complete exact-head GitHub CI before claiming automated

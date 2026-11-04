@@ -531,6 +531,13 @@ open class FieldOpsOperatingActivity : Activity() {
                         model.ftRxObservations.focus(station.callsign)
                         render()
                     }
+                    val exchange = FtRxExchangeEvidenceGate.assess(
+                        station, model.ftRxObservations.observationsFor(station.callsign))
+                    panel("RX EXCHANGE EVIDENCE ${station.callsign} / NO TX",
+                        "${exchange.stage}: ${exchange.explanation} " +
+                            "${exchange.selectedWavFiles} selected WAV file(s), nominal " +
+                            "${exchange.nominalSlotMillis} ms slot. " +
+                            "Trusted UTC: NO • Verified local TX: NO • Auto-log: NO.")
                     action("PREPARE ${station.callsign} MANUAL ${station.mode.name} QSO (NO AUTO LOG)") {
                         // Only a station actually present in the selected
                         // receive-only board can be handed to the manual form.

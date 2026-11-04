@@ -383,6 +383,11 @@ class FieldOpsOperatingActivityTest {
                     decodedRecipientCallsign = "N0PNG")
             ))
             assertTrue(text(a).contains("HEARD K1JT / FT4"))
+            assertTrue(text(a).contains("RX EXCHANGE EVIDENCE K1JT / NO TX"))
+            assertTrue(text(a).contains("DIRECTED_TO_OWN_CALL_HEARD"))
+            assertTrue(text(a).contains("nominal 7500 ms slot"))
+            assertTrue(text(a).contains("Trusted UTC: NO"))
+            assertFalse(text(a).contains("RECEIVE EXCHANGE COMPLETE"))
             assertFalse(text(a).contains("HEARD W1AW / FT4"))
             val repo = readSessionField(model, "logbook")
                 as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
