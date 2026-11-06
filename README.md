@@ -95,7 +95,9 @@ Current draft development extends the non-transmitting v69 baseline with
 source-built ARM64 FT8/FT4/FT2 JNI, bounded user-selected 12/48 kHz WAV
 receive through production FIR, structured native sender/recipient
 inspection, safe mode-switch lifecycle isolation and explicit ADIF
-file export/restore. A validated RX sender may now be carried through
+file export/restore. ADIF export preflights each document through the
+strict FieldOps importer and splits large logs into operator-saved
+500-contact/1 MB parts instead of silently creating un-restorable backups. A validated RX sender may now be carried through
 a **manual, operator-attested** FT QSO draft into the shared logbook,
 ADIF and Awards workspaces. An offline receive-exchange evidence gate
 now labels native CQ/recipient observations and the correct FT mode slot

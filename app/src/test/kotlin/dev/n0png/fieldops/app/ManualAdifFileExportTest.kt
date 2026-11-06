@@ -36,6 +36,68 @@ class ManualAdifFileExportTest {
         assertEquals(QsoOrigin.MANUAL, repo.all().single().origin)
     }
 
+    @Test fun moreThan500ContactsAreSplitIntoIndependentlyRestorableParts() {
+        val (qso, _) = contact()
+        val snapshot = (1..501).map { index ->
+            qso.copy(id = index.toLong(),
+                // Dates remain valid; different UTC seconds preserve identity.
+                timeOn = "%06d".format((index - 1)),
+                startedUtcMillis = qso.startedUtcMillis + index * 1000L)
+        }
+        val parts = ManualAdifFileExport.plan(snapshot, "N0PNG")
+        assertEquals(2, parts.size)
+        assertEquals(500, parts[0].records.size)
+        assertEquals(1, parts[1].records.size)
+        val recovered = parts.flatMap { part ->
+            val bytes = ByteArrayOutputStream()
+            assertEquals(part.records.size, ManualAdifFileExport.write(part, bytes))
+            assertTrue(bytes.size() <= FieldOpsArchiveBounds.MAX_BYTES)
+            FieldOpsAdifRestore.read(java.io.ByteArrayInputStream(bytes.toByteArray()), "N0PNG")
+        }
+        assertEquals(501, recovered.size)
+        assertEquals(LotwUploadState.NOT_UPLOADED, recovered.last().lotwUpload)
+        val notWritable = ByteArrayOutputStream()
+        assertThrows(IllegalArgumentException::class.java) {
+            ManualAdifFileExport.write(snapshot, notWritable)
+        }
+        assertEquals(0, notWritable.size())
+    }
+
+    @Test fun oversizedAsciiPayloadIsSplitByByteLimitEvenBelowRecordLimit() {
+        val (qso, _) = contact()
+        val snapshot = (1..48).map { index ->
+            qso.copy(id = index.toLong(), myCountry = "X".repeat(30_000),
+                timeOn = "%06d".format(index),
+                startedUtcMillis = qso.startedUtcMillis + index * 1000L)
+        }
+        val parts = ManualAdifFileExport.plan(snapshot, "N0PNG")
+        assertTrue(parts.size >= 2)
+        assertEquals(48, parts.sumOf { it.records.size })
+        for (part in parts) {
+            assertTrue(part.byteCount <= FieldOpsArchiveBounds.MAX_BYTES)
+            val data = ByteArrayOutputStream()
+            ManualAdifFileExport.write(part, data)
+            assertEquals(part.records.size,
+                FieldOpsAdifRestore.read(java.io.ByteArrayInputStream(data.toByteArray()),
+                    "N0PNG").size)
+        }
+    }
+
+    @Test fun unsupportedUnicodeAndWrongStationFailBeforeOpeningDocument() {
+        val (qso, _) = contact()
+        for (contact in listOf(
+            qso.copy(myCountry = "München"),
+            qso.copy(stationCallsign = "W1AW"),
+            qso.copy(freqMhz = "", frequencyHz = 0L),
+        )) {
+            val output = ByteArrayOutputStream()
+            assertThrows(RuntimeException::class.java) {
+                ManualAdifFileExport.plan(listOf(contact), "N0PNG")
+            }
+            assertEquals(0, output.size())
+        }
+    }
+
     @Test fun emptyAndFailingOutputNeverMutateAuthoritativeLog() {
         val (qso, repo) = contact()
         assertThrows(IllegalArgumentException::class.java) {
@@ -52,3 +114,4 @@ class ManualAdifFileExportTest {
         assertEquals(listOf(qso), repo.all())
     }
 }
+

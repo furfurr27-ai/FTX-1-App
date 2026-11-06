@@ -17,8 +17,8 @@ import java.util.Locale
  * Deliberately resets LoTW and evidence provenance to UNKNOWN/NOT_UPLOADED.
  */
 internal object FieldOpsAdifRestore {
-    private const val MAX_BYTES = 1_000_000
-    private const val MAX_RECORDS = 500
+    private const val MAX_BYTES = FieldOpsArchiveBounds.MAX_BYTES
+    private const val MAX_RECORDS = FieldOpsArchiveBounds.MAX_RECORDS
     private const val PROGRAM_ID = "FTX1_FieldOps"
     private val allowedFields = setOf(
         "CALL", "STATION_CALLSIGN", "QSO_DATE", "TIME_ON", "BAND", "MODE",

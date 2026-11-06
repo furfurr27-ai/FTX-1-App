@@ -80,6 +80,8 @@ open class FieldOpsOperatingActivity : Activity() {
         // User-selected Storage Access Framework export. The exact immutable
         // record snapshot remains in RAM until the file picker returns.
         var pendingAdifExport: List<QsoRecord>? = null
+        var pendingAdifBatches: List<ManualAdifFileExport.Batch> = emptyList()
+        var nextAdifBatchIndex = 0
         var adifExportBusy = false
         var adifExportStatus = "No file exported. All contacts remain volatile until exported."
         var adifImportBusy = false
@@ -152,12 +154,26 @@ open class FieldOpsOperatingActivity : Activity() {
 
         fun finishAdifExport(writtenRecords: Int?, error: Throwable?) {
             adifExportBusy = false
-            adifExportStatus = if (error == null && writtenRecords != null)
-                "ADIF FILE SAVED: $writtenRecords record(s) in user-selected document. " +
-                    "No LoTW upload or confirmation; memory-only log is unchanged."
-            else
-                "ADIF EXPORT FAILED: document could not be written. " +
-                    "The in-memory log is unchanged; no LoTW upload attempted."
+            if (error == null && writtenRecords != null &&
+                nextAdifBatchIndex < pendingAdifBatches.size &&
+                writtenRecords == pendingAdifBatches[nextAdifBatchIndex].records.size) {
+                val totalParts = pendingAdifBatches.size
+                val savedPart = ++nextAdifBatchIndex
+                val stillNeeded = pendingAdifBatches.drop(nextAdifBatchIndex).sumOf { it.records.size }
+                adifExportStatus = if (stillNeeded == 0) {
+                    pendingAdifBatches = emptyList()
+                    nextAdifBatchIndex = 0
+                    "ADIF FILE SAVED: final part $savedPart/$totalParts. All selected contacts " +
+                        "exported to user-selected document(s); no LoTW upload."
+                } else {
+                    "ADIF FILE SAVED: part $savedPart/$totalParts, $writtenRecords records. " +
+                        "$stillNeeded contacts NOT YET EXPORTED. Choose NEXT ADIF PART to preserve them. " +
+                        "In-memory records remain volatile; no LoTW upload."
+                }
+            } else {
+                adifExportStatus = "ADIF EXPORT FAILED: document could not be saved/verified. " +
+                    "This part remains pending; retry choosing a destination. Log unchanged."
+            }
             onUiChanged?.invoke()
         }
 
@@ -344,11 +360,12 @@ open class FieldOpsOperatingActivity : Activity() {
         }
         if (requestCode == EXPORT_MANUAL_ADIF) {
             val session = model
-            val snapshot = session.pendingAdifExport
+            val batch = session.pendingAdifBatches.getOrNull(session.nextAdifBatchIndex)
             session.pendingAdifExport = null
             val outputUri = data?.data
-            if (resultCode != RESULT_OK || outputUri == null || snapshot.isNullOrEmpty()) {
-                session.adifExportStatus = "ADIF export canceled or no records selected; log unchanged."
+            if (resultCode != RESULT_OK || outputUri == null || batch == null) {
+                session.adifExportStatus = "ADIF destination canceled; the current part is still " +
+                    "pending. Choose NEXT ADIF PART to retry; the in-memory log is unchanged."
                 render()
                 return
             }
@@ -361,7 +378,7 @@ open class FieldOpsOperatingActivity : Activity() {
                 val result = runCatching {
                     val stream = resolver.openOutputStream(outputUri, "w")
                         ?: throw IllegalStateException("Document provider refused output")
-                    stream.use { ManualAdifFileExport.write(snapshot, it) }
+                    stream.use { ManualAdifFileExport.write(batch, it) }
                 }
                 main.post {
                     session.finishAdifExport(result.getOrNull(), result.exceptionOrNull())
@@ -597,6 +614,24 @@ open class FieldOpsOperatingActivity : Activity() {
         }
     }
 
+    /** Each complete ADIF part requires a fresh, operator-approved SAF file. */
+    private fun openNextAdifDestination() {
+        val batch = model.pendingAdifBatches.getOrNull(model.nextAdifBatchIndex)
+            ?: return
+        model.pendingAdifExport = batch.records
+        val total = model.pendingAdifBatches.size
+        val part = model.nextAdifBatchIndex + 1
+        val suggestedName = if (total == 1) "N0PNG-FieldOps-log.adi" else
+            "N0PNG-FieldOps-log-part-${part.toString().padStart(3, '0')}-of-${total.toString().padStart(3, '0')}.adi"
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TITLE, suggestedName)
+        }
+        @Suppress("DEPRECATION")
+        startActivityForResult(intent, EXPORT_MANUAL_ADIF)
+    }
+
     private fun log() {
         panel("MANUAL CW / SSB CONTACT",
             "Use this form to record an actual manually entered QSO in volatile memory. " +
@@ -677,18 +712,44 @@ open class FieldOpsOperatingActivity : Activity() {
             render()
         }
         if (all.isNotEmpty() && !model.adifExportBusy && model.pendingAdifExport == null) {
-            action("EXPORT ADIF FILE (CHOOSE DESTINATION)") {
-                // An explicit system file-picker destination is mandatory.
-                // Snapshot prevents later edits/QSOs from silently changing the
-                // bytes written after the user approves a particular export.
-                model.pendingAdifExport = model.logbook.all()
-                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                    addCategory(Intent.CATEGORY_OPENABLE)
-                    type = "text/plain"
-                    putExtra(Intent.EXTRA_TITLE, "N0PNG-FieldOps-log.adi")
+            if (model.pendingAdifBatches.isNotEmpty()) {
+                val remaining = model.pendingAdifBatches.drop(model.nextAdifBatchIndex)
+                    .sumOf { it.records.size }
+                panel("ADIF PARTS STILL TO EXPORT",
+                    "$remaining contact(s) in remaining restore-compatible documents. " +
+                        "Continue selecting destinations; the plan is an immutable snapshot.")
+                action("EXPORT NEXT ADIF PART (CHOOSE DESTINATION)") {
+                    openNextAdifDestination()
                 }
-                @Suppress("DEPRECATION")
-                startActivityForResult(intent, EXPORT_MANUAL_ADIF)
+                action("DISCARD PENDING ADIF PARTS (LOG UNCHANGED)") {
+                    model.pendingAdifBatches = emptyList()
+                    model.nextAdifBatchIndex = 0
+                    model.adifExportStatus = "Pending export parts discarded. " +
+                        "In-memory contacts are NOT preserved on disk."
+                    render()
+                }
+            } else {
+                action("EXPORT ADIF FILE (CHOOSE DESTINATION)") {
+                    // Validate every planned part against our strict importer
+                    // before opening ANY destination document.
+                    val prepared = runCatching {
+                        ManualAdifFileExport.plan(model.logbook.all(),
+                            model.operatingSession.stationCallsign)
+                    }
+                    val batches = prepared.getOrNull()
+                    if (batches == null) {
+                        model.adifExportStatus = "ADIF EXPORT BLOCKED: " +
+                            "${prepared.exceptionOrNull()?.message?.take(160)}. " +
+                            "No potentially non-restorable document written."
+                        render()
+                    } else {
+                        model.pendingAdifBatches = batches
+                        model.nextAdifBatchIndex = 0
+                        model.adifExportStatus = "Export prepared: ${batches.size} separate " +
+                            "restore-compatible file(s); each needs a selected destination."
+                        openNextAdifDestination()
+                    }
+                }
             }
         } else if (all.isEmpty()) {
             disabledAction("EXPORT ADIF FILE — NO QSOS")
@@ -719,8 +780,9 @@ open class FieldOpsOperatingActivity : Activity() {
             }
         }
         if (model.showAdif) {
-            val adif = AdifCodec.export(all)
-            title("ADIF PREVIEW / NOT SENT TO LOTW", 12, amber, true)
+            val adif = AdifCodec.export(all.take(FieldOpsArchiveBounds.MAX_RECORDS))
+            title("ADIF PREVIEW / FIRST ${minOf(all.size, FieldOpsArchiveBounds.MAX_RECORDS)} " +
+                "CONTACTS ONLY / NOT SENT TO LOTW", 12, amber, true)
             title(adif, 12, primary)
         }
     }
