@@ -195,19 +195,19 @@ internal object FieldOpsAdifRestore {
             q.exactFrequencyMhz.orEmpty()).joinToString("|")
 
     /** Called only from the explicit second confirmation on the Activity main thread. */
-    fun commit(staged: List<QsoRecord>, repo: InMemoryLogbookRepository,
+    fun commit(staged: List<QsoRecord>, repo: LogbookRepository,
                ids: SequentialQsoIdSource): Int {
         require(staged.isNotEmpty() && staged.size <= MAX_RECORDS) { "Invalid restore batch" }
         require(staged.all { it.origin == QsoOrigin.IMPORTED &&
             it.lotwUpload == LotwUploadState.NOT_UPLOADED &&
             it.lotwConfirmation == LotwConfirmationState.UNKNOWN }) { "Unsafe import provenance" }
         val existing = repo.all().mapTo(mutableSetOf(), ::key)
-        var added = 0
-        for (record in staged) {
-            if (!existing.add(key(record))) continue
-            repo.save(record.copy(id = ids.nextId()))
-            added++
-        }
-        return added
+        val newRecords = staged.filter { existing.add(key(it)) }
+            .map { it.copy(id = ids.nextId()) }
+        // All-or-nothing storage transaction for restored contacts when local
+        // persistence is enabled; no half-import after a disk write failure.
+        if (repo is OptInQsoRepository) repo.saveBatch(newRecords)
+        else newRecords.forEach(repo::save)
+        return newRecords.size
     }
 }

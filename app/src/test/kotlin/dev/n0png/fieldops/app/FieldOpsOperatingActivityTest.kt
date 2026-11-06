@@ -9,6 +9,8 @@ import android.widget.TextView
 import dev.n0png.fieldops.core.digital.DigitalMode
 import dev.n0png.fieldops.core.dsp.DecodeResult
 import dev.n0png.fieldops.core.logbook.QsoRecord
+import dev.n0png.fieldops.core.logbook.LogbookRepository
+import org.robolectric.RuntimeEnvironment
 import dev.n0png.fieldops.core.logbook.QsoOrigin
 import dev.n0png.fieldops.core.logbook.LotwUploadState
 import dev.n0png.fieldops.core.logbook.LotwConfirmationState
@@ -206,7 +208,7 @@ class FieldOpsOperatingActivityTest {
             assertTrue(text(a).contains("<MODE:3>FT4"))
             assertTrue(text(a).contains("<CALL:4>K1JT"))
             val entries = readSessionField(model, "logbook")
-                as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+                as LogbookRepository
             assertEquals(1, entries.all().size)
             assertEquals(QsoOrigin.IMPORTED, entries.all().single().origin)
             assertEquals(LotwConfirmationState.UNKNOWN,
@@ -245,7 +247,7 @@ class FieldOpsOperatingActivityTest {
             addQso(a, "K1JT", "14.08")
             val model = operatingModel(a)
             val repository = readSessionField(model, "logbook")
-                as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+                as LogbookRepository
             val original = repository.all().single()
             for (id in 2..501) {
                 val seconds = id - 1
@@ -306,6 +308,34 @@ class FieldOpsOperatingActivityTest {
             assertTrue(text(fresh.get()).contains("0 manual QSOs"))
             tap(fresh.get(), "LOG")
             assertFalse(text(fresh.get()).contains("#1  K1ABC"))
+        }
+    }
+
+    @Test fun operatorOptInLocalQsoSurvivesFreshActivityAndKeepsRadioLocked() {
+        val app = RuntimeEnvironment.getApplication()
+        app.deleteDatabase(FieldOpsLocalQsoStore.DATABASE)
+        try {
+            val initial = Robolectric.buildActivity(MainActivity::class.java).setup()
+            val a = initial.get()
+            tap(a, "LOG")
+            assertTrue(text(a).contains("LOCAL QSO STORAGE / EXPLICIT OPT-IN"))
+            tap(a, "ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)")
+            assertTrue(text(a).contains("ENABLED: contacts are written"))
+            addQso(a, "K1ABC", "14.08")
+            assertTrue(text(a).contains("Saved to app-private local storage: QSO #1"))
+            initial.pause().stop().destroy()
+            Robolectric.buildActivity(MainActivity::class.java).setup().use { fresh ->
+                val b = fresh.get()
+                assertTrue(text(b).contains("1 manual QSOs"))
+                tap(b, "LOG")
+                assertTrue(text(b).contains("#1  K1ABC"))
+                tap(b, "SHOW ADIF FROM REAL LOGBOOK")
+                assertTrue(text(b).contains("<CALL:5>K1ABC"))
+                tap(b, "RADIO")
+                assertFalse(button(b, "PTT / TRANSMIT — LOCKED").isEnabled)
+            }
+        } finally {
+            app.deleteDatabase(FieldOpsLocalQsoStore.DATABASE)
         }
     }
 
@@ -423,7 +453,7 @@ class FieldOpsOperatingActivityTest {
             assertFalse(text(a).contains("RECEIVE EXCHANGE COMPLETE"))
             assertFalse(text(a).contains("HEARD W1AW / FT4"))
             val repo = readSessionField(model, "logbook")
-                as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+                as LogbookRepository
             assertTrue("Received messages are never auto-logged", repo.all().isEmpty())
             tap(a, "PREPARE K1JT MANUAL FT4 QSO (NO AUTO LOG)")
             assertTrue(text(a).contains("UNVERIFIED WAV SENDER K1JT selected"))

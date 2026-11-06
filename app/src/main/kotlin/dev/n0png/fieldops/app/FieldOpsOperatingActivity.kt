@@ -27,7 +27,6 @@ import dev.n0png.fieldops.core.dsp.DecodeResult
 import dev.n0png.fieldops.core.logbook.AdifCodec
 import dev.n0png.fieldops.core.logbook.FastQsoLogger
 import dev.n0png.fieldops.core.logbook.QsoOrigin
-import dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
 import dev.n0png.fieldops.core.logbook.ManualQsoInput
 import dev.n0png.fieldops.core.logbook.ManualQsoMode
 import dev.n0png.fieldops.core.logbook.OperatingSession
@@ -41,8 +40,9 @@ import java.math.BigDecimal
  * The first integrated FieldOps workspace, NOT a radio controller.
  *
  * All operating-data views share the canonical logbook/awards domain services.
- * A fresh process starts empty. We retain only in-process memory across
- * configuration changes, never claim disk persistence or LoTW delivery.
+ * The log starts volatile; the operator can opt into app-private SQLite
+ * storage. Fresh sessions restore only when that choice was explicitly made.
+ * Local storage is not encrypted or a substitute for external backup.
  * No USB, CAT, audio, network, PTT or transmitter path is instantiated here.
  */
 open class FieldOpsOperatingActivity : Activity() {
@@ -53,9 +53,9 @@ open class FieldOpsOperatingActivity : Activity() {
     }
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
-    private class UiSession {
-        val logbook = InMemoryLogbookRepository()
-        val ids = SequentialQsoIdSource()
+    private class UiSession(context: android.content.Context) {
+        val logbook = OptInQsoRepository(context)
+        val ids = SequentialQsoIdSource(logbook.nextRecordId)
         val logger = FastQsoLogger(logbook, ids)
         val awards = AwardsCenterApplicationService(logbook, InMemoryAwardEvidenceRepository())
         val operatingSession = OperatingSession(
@@ -75,7 +75,9 @@ open class FieldOpsOperatingActivity : Activity() {
         var draftSent = ""
         var draftReceived = ""
         var draftRemoteGrid = ""
-        var logMessage = "No contacts recorded in this in-memory session."
+        var logMessage = if (logbook.isPersistent)
+            "Loaded ${logbook.all().size} contact(s) from app-private local storage. No LoTW upload."
+        else "No contacts recorded in this in-memory session."
         var showAdif = false
         // User-selected Storage Access Framework export. The exact immutable
         // record snapshot remains in RAM until the file picker returns.
@@ -228,6 +230,10 @@ open class FieldOpsOperatingActivity : Activity() {
         }
 
         fun saveManual(): Boolean {
+            if (logbook.storageError != null) {
+                logMessage = "NOT SAVED: existing local QSO database cannot be read. Storage is locked."
+                return false
+            }
             val call = draftCall.trim().uppercase()
             if (!call.matches(Regex("[A-Z0-9/]{3,16}")) || !call.any { it.isDigit() }) {
                 logMessage = "NOT SAVED: enter a nonblank callsign using letters, digits and /."
@@ -262,7 +268,9 @@ open class FieldOpsOperatingActivity : Activity() {
                     operatingSession,
                     QsoRadioContext(frequencyHz = hz, radioMode = manualMode.adifMode),
                 )
-                logMessage = "Saved in memory: QSO #${record.id} ${record.call} ${record.mode}. Not sent to LoTW."
+                val destination = if (logbook.isPersistent)
+                    "Saved to app-private local storage" else "Saved in memory"
+                logMessage = "$destination: QSO #${record.id} ${record.call} ${record.mode}. Not sent to LoTW."
                 draftCall = ""
                 draftSent = ""
                 draftReceived = ""
@@ -271,6 +279,9 @@ open class FieldOpsOperatingActivity : Activity() {
                 true
             } catch (_: IllegalArgumentException) {
                 logMessage = "NOT SAVED: check frequency, band and contact fields."
+                false
+            } catch (_: RuntimeException) {
+                logMessage = "NOT SAVED: local storage operation failed. Do not assume this QSO was recorded."
                 false
             }
         }
@@ -293,7 +304,7 @@ open class FieldOpsOperatingActivity : Activity() {
         super.onCreate(savedInstanceState)
         // ArchiveHistoryActivity independently owns its own explicit recovery consent.
         // Retaining this model does not persist any log or credential to disk.
-        model = (lastNonConfigurationInstance as? UiSession) ?: UiSession()
+        model = (lastNonConfigurationInstance as? UiSession) ?: UiSession(applicationContext)
         model.onUiChanged = refreshActiveUi
         if (savedInstanceState != null) {
             savedInstanceState.getString("fieldops.tab")?.let {
@@ -309,6 +320,7 @@ open class FieldOpsOperatingActivity : Activity() {
         if (::model.isInitialized && model.onUiChanged === refreshActiveUi) {
             model.onUiChanged = null
         }
+        if (::model.isInitialized && !isChangingConfigurations) model.logbook.close()
         super.onDestroy()
     }
 
@@ -445,7 +457,9 @@ open class FieldOpsOperatingActivity : Activity() {
             Tab.AWARDS -> awards()
             Tab.RADIO -> radio()
         }
-        title("IN-MEMORY ONLY • FRESH PROCESS LOSES MANUAL QSOs • NO RF TRANSMISSION", 12, muted)
+        title(if (model.logbook.isPersistent)
+            "APP-PRIVATE LOCAL QSO STORE • NO CLOUD BACKUP • NO RF TRANSMISSION" else
+            "IN-MEMORY ONLY • FRESH PROCESS LOSES MANUAL QSOs • NO RF TRANSMISSION", 12, muted)
         setContentView(scroll)
     }
 
@@ -639,6 +653,27 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     private fun log() {
+        val storage = model.logbook
+        panel("LOCAL QSO STORAGE / EXPLICIT OPT-IN", when {
+            storage.storageError != null -> storage.storageError!!
+            storage.isPersistent -> "ENABLED: contacts are written to an app-private SQLite database " +
+                "before being displayed in the log. Not encrypted, not cloud-synced, " +
+                "not backed up by Android. Uninstall/clear-data may remove it; export ADIF separately."
+            else -> "OFF: contacts are volatile and disappear after a fresh process. " +
+                "Choose ENABLE to keep full local QSO metadata on this device. " +
+                "This app-private storage is not encrypted or backed up automatically."
+        })
+        if (!storage.isPersistent && storage.storageError == null) {
+            action("ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)") {
+                val result = runCatching { storage.enableLocalPersistence() }
+                model.logMessage = if (result.isSuccess)
+                    "LOCAL STORAGE ENABLED: ${storage.all().size} contact(s) preserved on device. " +
+                        "Use ADIF export for independent backups. No LoTW."
+                else "LOCAL STORAGE NOT ENABLED: database setup failed. " +
+                    "Existing session contacts remain in memory; export ADIF before closing."
+                render()
+            }
+        }
         panel("MANUAL CW / SSB CONTACT",
             "Use this form to record an actual manually entered QSO in volatile memory. " +
                 "Do not use it as proof of radio reception, transmission, saved disk records or LoTW sync.")
@@ -707,7 +742,9 @@ open class FieldOpsOperatingActivity : Activity() {
         }
         panel("SAVE STATUS", model.logMessage)
         val all = model.logbook.all()
-        panel("LIVE IN-MEMORY LOGBOOK", "${all.size} records • no persistence or uploads")
+        panel(if (storage.isPersistent) "LOCAL DEVICE LOGBOOK" else "LIVE IN-MEMORY LOGBOOK",
+            "${all.size} records • " +
+            if (storage.isPersistent) "app-private SQLite; no cloud/LoTW" else "volatile; no uploads")
         for (qso in all.takeLast(20).asReversed()) {
             title("#${qso.id}  ${qso.call}  ${qso.mode}  ${qso.band}  ${qso.freqMhz} MHz  " +
                 "${qso.qsoDate} ${qso.timeOn} UTC", 13, primary)
@@ -776,7 +813,10 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("ADIF RESTORE / NOT LOTW", model.adifImportStatus)
         if (!model.stagedAdifRecords.isNullOrEmpty() && !model.adifImportBusy) {
             action("CONFIRM RESTORE TO LOCAL LOG (NO LOTW)") {
-                model.confirmAdifImport()
+                val result = runCatching { model.confirmAdifImport() }
+                if (result.isFailure) model.adifImportStatus =
+                    "RESTORE NOT COMPLETED: local log storage refused the batch. " +
+                    "Review current QSO count before retrying; no LoTW action."
                 render()
             }
             action("CANCEL STAGED ADIF RESTORE") {
