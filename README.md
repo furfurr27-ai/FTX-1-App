@@ -388,6 +388,28 @@ Because the original immutable checkpoint snapshot is intentionally absent from 
 
 The repository is currently **public**. Never commit credentials, private keys, PKCS#12 files, LoTW passwords, personal tokens, device secrets, or other sensitive material.
 
+## Draft CP-0009S opt-in local logbook (verification pending)
+
+The CP-0009S Android draft now offers an explicit
+`ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)` choice on LOG.
+Before the choice, a fresh process still loses volatile QSOs. After
+the choice, all current contacts are enrolled in an app-private SQLite
+database in one transaction; new manual contacts and confirmation-based
+FieldOps ADIF restore batches write to SQLite before the in-memory
+mirror changes. On next process start, the same local station's full
+QsoRecord fields are loaded, preserving exact identity and the next
+positive QSO identifier. A damaged/unreadable database blocks writes;
+the app never silently resets the stored log.
+
+The local DB is **not encrypted**, not remotely synchronized, and not
+backed up by Android (`allowBackup=false`); uninstall/clear-data can
+remove it. User-approved ADIF exports are still required for independent
+backups and intentionally omit some internal metadata. No LoTW upload,
+USB capture, CAT or PTT operations are newly enabled. JVM/Robolectric
+tests and the full GitHub CI matrix for this branch remain **pending**;
+this is not a verified final software acceptance or physical device pass.
+Main remains CP-0009R/v69.
+
 ## Draft CP-0009S backup integrity change (verification pending)
 
 The FT-family draft branch now requires an explicit SAF ADIF document

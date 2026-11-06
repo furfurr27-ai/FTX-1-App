@@ -214,3 +214,28 @@ The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action t
 - Exact-head GitHub Actions and APK/Robolectric testing remain pending for
   this new code. No hardware transmission, LoTW account action, checkpoint
   promotion or main merge is performed.
+
+## 2026-11-06 operator-opt-in local SQLite logbook — CI pending
+
+- The operator can now explicitly enable a versioned app-private SQLite
+  QSO store without LoTW or radio permissions. Before consent no database
+  is created and contacts remain volatile. Enabling atomically enrolls
+  existing session contacts; subsequent manual saves and imported ADIF
+  batches write to disk before the shared in-memory logbook changes.
+- The QSO JSON codec preserves all fields of the current QsoRecord,
+  including original UTC/frequency, location snapshots, source notes and
+  LoTW state. Fresh process rehydration resumes the QSO id sequence and
+  the existing awards/ADIF projections. A read or schema failure blocks
+  new writes rather than resetting the store. An explicit Android UI
+  control makes this storage scope visible; no encrypted key/account or
+  auto upload flow is enabled.
+- The database is **not encrypted** and is not covered by Android
+  auto-backup. Operator-approved ADIF is a narrower external backup
+  and does not include all local metadata. Real-device process-kill,
+  low-storage, power-loss and migration tests remain outstanding.
+- Added local repository Robolectric tests for volatile-by-default,
+  full-fidelity round-trip, transaction rollback and corrupt-row
+  write lock; added Activity restart/logbook/ADIF/TX-lock test.
+  Source committed but exact-head 37-workflow CI result remains
+  unverified. No CP-0009S immutable checkpoint, main merge, RF
+  transmission, account validation, or Final Review activation.

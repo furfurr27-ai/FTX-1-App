@@ -17,7 +17,7 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35])
 class FieldOpsLocalQsoStoreTest {
-    private val app get() = RuntimeEnvironment.getApplication()
+    private val app: android.app.Application get() = RuntimeEnvironment.getApplication()
 
     @Before fun clearBefore() { app.deleteDatabase(FieldOpsLocalQsoStore.DATABASE) }
     @After fun clearAfter() { app.deleteDatabase(FieldOpsLocalQsoStore.DATABASE) }
@@ -121,7 +121,6 @@ class FieldOpsLocalQsoStoreTest {
         )
         store.close()
         val file = app.getDatabasePath(FieldOpsLocalQsoStore.DATABASE)
-        val sizeBefore = file.length()
         val loaded = OptInQsoRepository(app)
         assertNotNull(loaded.storageError)
         assertThrows(IllegalStateException::class.java) {
@@ -129,6 +128,12 @@ class FieldOpsLocalQsoStoreTest {
         }
         loaded.close()
         assertTrue(file.exists())
-        assertTrue(file.length() >= sizeBefore)
+        FieldOpsLocalQsoStore(app).use { opened ->
+            opened.readableDatabase.rawQuery("SELECT payload FROM contacts WHERE id = 1", null)
+                .use { cursor ->
+                    assertTrue(cursor.moveToFirst())
+                    assertEquals("not-json", cursor.getString(0))
+                }
+        }
     }
 }

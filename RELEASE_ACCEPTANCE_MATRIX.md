@@ -97,3 +97,30 @@ considered fully accepted by this checkpoint.
 Every subsequent acceptance-focused PR should update affected rows with: precise source path(s), exact test run/link and vector, Android UI integration result, remaining gap, hardware/account proof, and software status. Avoid numerical percent-complete guesses: completed components do not measure weighted operational completeness. Never mark `ACCEPTED_SOFTWARE` based only on a contract, a compiled file or a simulated screenshot.
 
 This is a **source-inspection acceptance audit**. It does not modify CP-0009Q's immutable checkpoint, claim device testing, or constitute a new completed engineering checkpoint. Its classifications must be revised only from direct production-source and test evidence.
+
+## CP-0009S branch-only proposed local persistence (CI pending, not promoted)
+
+Draft branch `cp-0009s-ft-family-offline-rx-integration` adds
+`FieldOpsLocalQsoStore.kt` and connects its explicit opt-in SQLite
+repository to the integrated Android LOG/ADIF/AWARDS session.
+When enabled, new manual QSO saves and confirmed multi-contact ADIF
+restores write through the same transaction-aware repository and
+retain complete current QsoRecord metadata across fresh processes.
+The optional local store does not create a database before consent.
+It is app-private but **unencrypted** and not covered by Android
+auto-backup. Corrupt storage blocks writes; it does not fall back
+silently. Separate operator-controlled ADIF export still has a
+narrower format, requires user destinations, and remains essential
+against uninstall/clear-data or device loss.
+
+Evidence proposed: `FieldOpsLocalQsoStoreTest` checks opt-in/default,
+restart, complete JSON field round-trip, transaction rollback and
+corrupt-store fail-closed behavior. `FieldOpsOperatingActivityTest`
+checks operator enable -> manual QSO -> new Activity -> ADIF -> locked
+PTT. At this review the new branch head has not completed CI, and no
+Galaxy S23 Ultra SQLite/storage-power-loss validation has occurred.
+This **does not** mark P0 universal logbook as ACCEPTED_SOFTWARE:
+there is no encrypted/device-backed full recovery, confirmed
+migration, LoTW account proof, or completed app-level persistent
+provider/sync UI. Keep P0 logbook acceptance PARTIAL and require
+exact-head green Android+Kotlin tests and later real-device checks.
