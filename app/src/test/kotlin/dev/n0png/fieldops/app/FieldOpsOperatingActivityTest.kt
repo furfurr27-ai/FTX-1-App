@@ -239,6 +239,39 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun largeLogRequiresDistinctOperatorApprovedAdifParts() {
+        Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+            val a = ctl.get()
+            addQso(a, "K1JT", "14.08")
+            val model = operatingModel(a)
+            val repository = readSessionField(model, "logbook")
+                as dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+            val original = repository.all().single()
+            for (id in 2..501) {
+                val seconds = id - 1
+                val utc = "%02d%02d%02d".format(0, seconds / 60, seconds % 60)
+                repository.save(original.copy(id = id.toLong(), timeOn = utc,
+                    startedUtcMillis = requireNotNull(original.startedUtcMillis) +
+                        seconds * 1000L))
+            }
+            assertEquals(501, repository.all().size)
+            tap(a, "EXPORT ADIF FILE (CHOOSE DESTINATION)")
+            val first = Shadows.shadowOf(a).nextStartedActivityForResult
+            assertNotNull(first)
+            assertEquals(Intent.ACTION_CREATE_DOCUMENT, first.intent.action)
+            assertEquals("N0PNG-FieldOps-log-part-001-of-002.adi",
+                first.intent.getStringExtra(Intent.EXTRA_TITLE))
+            val batches = readSessionField(model, "pendingAdifBatches") as List<*>
+            assertEquals(2, batches.size)
+            assertEquals(500, (batches[0] as ManualAdifFileExport.Batch).records.size)
+            assertEquals(1, (batches[1] as ManualAdifFileExport.Batch).records.size)
+            assertEquals(501, repository.all().size)
+            tap(a, "RADIO")
+            assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+            assertFalse(button(a, "CONNECT CAT — PHYSICAL VALIDATION REQUIRED").isEnabled)
+        }
+    }
+
     @Test fun noFileExportIsOfferedUntilTheOperatorHasLoggedAContact() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()
