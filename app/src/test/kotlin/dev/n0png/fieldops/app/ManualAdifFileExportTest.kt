@@ -1,7 +1,9 @@
 package dev.n0png.fieldops.app
 
 import dev.n0png.fieldops.core.logbook.*
+import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.io.IOException
 import java.io.OutputStream
 import org.junit.Assert.*
@@ -95,6 +97,33 @@ class ManualAdifFileExportTest {
                 ManualAdifFileExport.plan(listOf(contact), "N0PNG")
             }
             assertEquals(0, output.size())
+        }
+    }
+
+    @Test fun safDocumentRequiresExactReadbackBeforeExportIsCounted() {
+        val (qso, _) = contact()
+        val part = ManualAdifFileExport.plan(listOf(qso), "N0PNG").single()
+        val output = ByteArrayOutputStream()
+        assertEquals(1, ManualAdifFileExport.write(part, output))
+        val expected = output.toByteArray()
+        ManualAdifFileExport.verifySaved(part, ByteArrayInputStream(expected))
+
+        val modified = expected.copyOf()
+        modified[modified.size - 1] = '!'.code.toByte()
+        for (invalid in listOf(
+            expected.copyOf(expected.size - 1),
+            modified,
+            expected + byteArrayOf(10),
+        )) {
+            assertThrows(IllegalArgumentException::class.java) {
+                ManualAdifFileExport.verifySaved(part, ByteArrayInputStream(invalid))
+            }
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            ManualAdifFileExport.verifySaved(part, object : InputStream() {
+                override fun read(): Int = 0
+                override fun read(b: ByteArray, off: Int, len: Int): Int = 0
+            })
         }
     }
 

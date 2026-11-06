@@ -3,6 +3,7 @@ package dev.n0png.fieldops.app
 import dev.n0png.fieldops.core.logbook.AdifCodec
 import dev.n0png.fieldops.core.logbook.QsoRecord
 import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.io.OutputStream
 
 /**
@@ -25,6 +26,29 @@ internal object ManualAdifFileExport {
             return records.size
         }
         internal fun bytes(): ByteArray = content.copyOf()
+
+        /**
+         * SAF can report a successful write even when the provider stored
+         * truncated or altered bytes. Reopen the selected URI and compare the
+         * exact preflighted ADIF bytes BEFORE advancing the backup part.
+         * This verifies the immediate provider read-back, not long-term
+         * durability or a lossless backup of all internal QSO metadata.
+         */
+        internal fun verifyStored(input: InputStream) {
+            val buffer = ByteArray(8192)
+            var offset = 0
+            while (offset < content.size) {
+                val read = input.read(buffer, 0, minOf(buffer.size, content.size - offset))
+                require(read > 0) { "Saved ADIF document is truncated or unreadable" }
+                for (i in 0 until read) {
+                    require(buffer[i] == content[offset + i]) {
+                        "Saved ADIF document differs from prepared backup"
+                    }
+                }
+                offset += read
+            }
+            require(input.read() == -1) { "Saved ADIF document contains trailing bytes" }
+        }
     }
 
     fun plan(records: List<QsoRecord>, expectedStation: String): List<Batch> {
@@ -73,6 +97,9 @@ internal object ManualAdifFileExport {
     }
 
     fun write(batch: Batch, output: OutputStream): Int = batch.writeTo(output)
+
+    fun verifySaved(batch: Batch, reopenedDocument: InputStream) =
+        batch.verifyStored(reopenedDocument)
 
     /** Single-document compatibility contract for existing callers. */
     fun write(records: List<QsoRecord>, output: OutputStream): Int {

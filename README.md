@@ -388,6 +388,16 @@ Because the original immutable checkpoint snapshot is intentionally absent from 
 
 The repository is currently **public**. Never commit credentials, private keys, PKCS#12 files, LoTW passwords, personal tokens, device secrets, or other sensitive material.
 
+## Draft CP-0009S backup integrity change (verification pending)
+
+The FT-family draft branch now requires an explicit SAF ADIF document
+read-back byte match before a written backup part advances. An incomplete,
+modified or unreadable destination stays pending and must be retried.
+This does not establish persistence across power loss, a lossless
+QsoRecord archive or a real-device Storage Access Framework result.
+Exact-head CI and actual S23 storage-provider verification are pending;
+main CP-0009R/v69 is unchanged.
+
 ## Current exact next action
 
 **FT8/FT4/FT2 software operating integration** is the next

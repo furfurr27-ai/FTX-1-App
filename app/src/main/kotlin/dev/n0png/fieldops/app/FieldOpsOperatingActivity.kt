@@ -378,7 +378,13 @@ open class FieldOpsOperatingActivity : Activity() {
                 val result = runCatching {
                     val stream = resolver.openOutputStream(outputUri, "w")
                         ?: throw IllegalStateException("Document provider refused output")
-                    stream.use { ManualAdifFileExport.write(batch, it) }
+                    val written = stream.use { ManualAdifFileExport.write(batch, it) }
+                    // Do not call this part saved based only on close/flush:
+                    // the provider must return exactly the prepared bytes.
+                    val readback = resolver.openInputStream(outputUri)
+                        ?: throw IllegalStateException("Cannot reopen saved ADIF document")
+                    readback.use { ManualAdifFileExport.verifySaved(batch, it) }
+                    written
                 }
                 main.post {
                     session.finishAdifExport(result.getOrNull(), result.exceptionOrNull())

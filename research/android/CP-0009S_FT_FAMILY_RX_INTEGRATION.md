@@ -196,3 +196,21 @@ The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action t
 
 - Scope clarification: the canonical `AdifCodec.export` intentionally does not serialize every local QSO metadata field (for example arbitrary notes, origin/source provider, internal session IDs or verified LoTW states). Restore deliberately resets LoTW states to UNKNOWN/NOT_UPLOADED. The guarantee here is that every **exported FieldOps ADIF field and contact record** can be read back in separately user-saved parts, not full-fidelity preservation of the in-memory QsoRecord object or a replacement for a real persistent database.
 - Robolectric UI regression checks that a 501-contact log opens the user-approved first `part-001-of-002.adi` destination and holds 500+1 validated snapshot parts without changing the log or enabling CAT/PTT. Exact-head Android CI required before acceptance.
+
+## 2026-11-06 SAF ADIF write/read-back integrity gate — unverified draft
+
+- A successful Storage Access Framework output stream close alone does not
+  establish that a provider preserved the intended bytes. For every separately
+  approved ADIF part, the Activity now reopens the same returned document URI
+  after closing the output and compares every stored byte with the already
+  strictly-restorable preflight snapshot, rejecting truncation, altered bytes,
+  trailing data and unreadable providers. Only then does the part index advance.
+- JVM regression covers exact readback, truncated, altered, appended and
+  non-progressing inputs. Actual Android storage providers and persistence
+  after device restart remain unverified; a successful immediate readback is
+  not a durable database, checksum of disk persistence, or backup of omitted
+  internal QSO metadata. On readback failure, partial document contents may
+  exist at the user-selected URI and require manual deletion/replacement.
+- Exact-head GitHub Actions and APK/Robolectric testing remain pending for
+  this new code. No hardware transmission, LoTW account action, checkpoint
+  promotion or main merge is performed.
