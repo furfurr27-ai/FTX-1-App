@@ -326,7 +326,7 @@ class FieldOpsOperatingActivityTest {
             initial.pause().stop().destroy()
             Robolectric.buildActivity(MainActivity::class.java).setup().use { fresh ->
                 val b = fresh.get()
-                assertTrue(text(b).contains("1 manual QSOs"))
+                assertTrue(text(b).contains("1 manual QSOs in app-private local storage"))
                 tap(b, "LOG")
                 assertTrue(text(b).contains("#1  K1ABC"))
                 tap(b, "SHOW ADIF FROM REAL LOGBOOK")

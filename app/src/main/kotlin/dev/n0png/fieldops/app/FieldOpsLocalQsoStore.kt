@@ -34,7 +34,9 @@ internal class FieldOpsLocalQsoStore(context: Context) :
         throw IllegalStateException("QSO database migration requires explicit support")
     }
 
-    fun load(): Snapshot {
+    fun load(expectedStation: String): Snapshot {
+        val station = expectedStation.trim().uppercase(java.util.Locale.ROOT)
+        require(station.isNotBlank()) { "Local QSO station identity is missing" }
         if (!app.getDatabasePath(DATABASE).exists()) return Snapshot(false, emptyList())
         val db = readableDatabase
         val enabled = db.rawQuery(
@@ -46,6 +48,9 @@ internal class FieldOpsLocalQsoStore(context: Context) :
                 val id = cursor.getLong(0)
                 val record = FieldOpsQsoJson.decode(cursor.getString(1))
                 require(id > 0 && id == record.id) { "Stored QSO id mismatch" }
+                require(record.stationCallsign.trim().uppercase(java.util.Locale.ROOT) == station) {
+                    "Stored QSO belongs to another station"
+                }
                 result.add(record)
             }
         }
@@ -120,10 +125,14 @@ internal class FieldOpsLocalQsoStore(context: Context) :
  * Import batches are all-or-nothing in SQLite. Storage read errors block
  * new writes instead of silently resetting or overwriting a corrupt log.
  */
-internal class OptInQsoRepository(context: Context) : LogbookRepository, AutoCloseable {
+internal class OptInQsoRepository(
+    context: Context,
+    stationCallsign: String = "N0PNG",
+) : LogbookRepository, AutoCloseable {
+    private val expectedStation = stationCallsign.trim().uppercase(java.util.Locale.ROOT)
     private val store = FieldOpsLocalQsoStore(context)
     private val cache = InMemoryLogbookRepository()
-    private val load = runCatching { store.load() }
+    private val load = runCatching { store.load(expectedStation) }
     val storageError: String? = load.exceptionOrNull()?.let {
         "Cannot read the existing app-private QSO database. Local writes blocked; data not reset."
     }
@@ -141,12 +150,20 @@ internal class OptInQsoRepository(context: Context) : LogbookRepository, AutoClo
 
     private fun ensureWritable() {
         check(storageError == null) { "Existing QSO store cannot be read; writes locked" }
+        check(expectedStation.isNotBlank()) { "Station identity required for local storage" }
+    }
+
+    private fun requireStation(records: List<QsoRecord>) {
+        require(records.all {
+            it.stationCallsign.trim().uppercase(java.util.Locale.ROOT) == expectedStation
+        }) { "QSO station identity differs from active profile" }
     }
 
     @Synchronized
     fun enableLocalPersistence() {
         ensureWritable()
         check(!isPersistent) { "Local QSO storage is already enabled" }
+        requireStation(cache.all())
         store.enable(cache.all())
         isPersistent = true
     }
@@ -154,6 +171,7 @@ internal class OptInQsoRepository(context: Context) : LogbookRepository, AutoClo
     @Synchronized
     fun saveBatch(records: List<QsoRecord>) {
         ensureWritable()
+        requireStation(records)
         require(records.map { it.id }.distinct().size == records.size) {
             "Duplicate QSO identifiers in import batch"
         }
@@ -173,6 +191,7 @@ internal class OptInQsoRepository(context: Context) : LogbookRepository, AutoClo
     @Synchronized
     override fun update(qso: QsoRecord): QsoRecord {
         ensureWritable()
+        requireStation(listOf(qso))
         require(cache.get(qso.id) != null) { "Cannot update unknown QSO" }
         if (isPersistent) store.update(qso)
         return cache.update(qso)

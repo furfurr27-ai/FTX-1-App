@@ -239,3 +239,9 @@ The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action t
   Source committed but exact-head 37-workflow CI result remains
   unverified. No CP-0009S immutable checkpoint, main merge, RF
   transmission, account validation, or Final Review activation.
+
+## 2026-11-06 station ownership / real rollback audit — CI pending
+
+- Local persistence now rejects attempted wrong-station writes and fails closed when previously stored contact rows belong to a different station. Neither the store nor UI automatically destroys the database.
+- OPS status now distinguishes volatile, local SQLite, and unreadable QSO storage. The new batch rollback test injects a real SQLite primary-key conflict on the second row, then verifies the first row of that transaction was rolled back after reopening the database. The former test only reached the precondition guard.
+- Source and tests only: exact-head CI and real S23 storage tests are not yet completed. Main checkpoint CP-0009R remains unchanged. No CAT/PTT/LoTW actions or Final Review.

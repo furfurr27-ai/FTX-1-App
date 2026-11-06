@@ -102,15 +102,53 @@ class FieldOpsLocalQsoStoreTest {
         val first = OptInQsoRepository(app)
         first.enableLocalPersistence()
         first.save(qso())
-        assertThrows(RuntimeException::class.java) {
-            first.saveBatch(listOf(qso(2), qso(1)))
+        // A valid row written outside the live cache collides on the second
+        // SQLite INSERT, after id 2 was inserted inside this transaction.
+        FieldOpsLocalQsoStore(app).use { external ->
+            external.writableDatabase.execSQL(
+                "INSERT INTO contacts(id,payload) VALUES (?,?)",
+                arrayOf(3L, FieldOpsQsoJson.encode(qso(3))),
+            )
         }
-        assertEquals(1, first.all().size)
+        assertThrows(RuntimeException::class.java) {
+            first.saveBatch(listOf(qso(2), qso(3)))
+        }
+        assertEquals(listOf(1L), first.all().map { it.id })
         first.close()
 
         val fresh = OptInQsoRepository(app)
-        assertEquals(listOf(qso()), fresh.all())
+        assertEquals(listOf(1L, 3L), fresh.all().map { it.id })
+        assertNull("Failed batch must roll back the first inserted row", fresh.get(2))
         fresh.close()
+    }
+
+    @Test fun anotherStationCannotBeSavedOrSilentlyLoadedAsN0png() {
+        val local = OptInQsoRepository(app, "N0PNG")
+        local.enableLocalPersistence()
+        assertThrows(IllegalArgumentException::class.java) {
+            local.save(qso().copy(stationCallsign = "DL1ABC"))
+        }
+        assertTrue(local.all().isEmpty())
+        local.close()
+
+        FieldOpsLocalQsoStore(app).use { external ->
+            external.writableDatabase.execSQL(
+                "INSERT INTO contacts(id,payload) VALUES (?,?)",
+                arrayOf(1L, FieldOpsQsoJson.encode(qso().copy(stationCallsign = "DL1ABC"))),
+            )
+        }
+        val reopened = OptInQsoRepository(app, "N0PNG")
+        assertNotNull(reopened.storageError)
+        assertThrows(IllegalStateException::class.java) { reopened.save(qso(2)) }
+        reopened.close()
+        FieldOpsLocalQsoStore(app).use { external ->
+            external.readableDatabase.rawQuery(
+                "SELECT COUNT(*) FROM contacts", null
+            ).use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(1, cursor.getInt(0))
+            }
+        }
     }
 
     @Test fun damagedStoredRecordBlocksNewWritesWithoutDestroyingDatabase() {

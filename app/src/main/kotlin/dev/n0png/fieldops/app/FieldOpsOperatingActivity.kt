@@ -54,14 +54,15 @@ open class FieldOpsOperatingActivity : Activity() {
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
     private class UiSession(context: android.content.Context) {
-        val logbook = OptInQsoRepository(context)
+        private val activeStationCallsign = "N0PNG"
+        val logbook = OptInQsoRepository(context, activeStationCallsign)
         val ids = SequentialQsoIdSource(logbook.nextRecordId)
         val logger = FastQsoLogger(logbook, ids)
         val awards = AwardsCenterApplicationService(logbook, InMemoryAwardEvidenceRepository())
         val operatingSession = OperatingSession(
             id = "local-in-memory-session",
             stationProfileId = "N0PNG-local",
-            stationCallsign = "N0PNG",
+            stationCallsign = activeStationCallsign,
             startedUtcMillis = System.currentTimeMillis(),
         )
         var tab = Tab.OPS
@@ -75,9 +76,13 @@ open class FieldOpsOperatingActivity : Activity() {
         var draftSent = ""
         var draftReceived = ""
         var draftRemoteGrid = ""
-        var logMessage = if (logbook.isPersistent)
-            "Loaded ${logbook.all().size} contact(s) from app-private local storage. No LoTW upload."
-        else "No contacts recorded in this in-memory session."
+        var logMessage = when {
+            logbook.storageError != null ->
+                "LOCAL QSO STORAGE UNREADABLE: writes locked; existing data not deleted."
+            logbook.isPersistent ->
+                "Loaded ${logbook.all().size} contact(s) from app-private local storage. No LoTW upload."
+            else -> "No contacts recorded in this in-memory session."
+        }
         var showAdif = false
         // User-selected Storage Access Framework export. The exact immutable
         // record snapshot remains in RAM until the file picker returns.
@@ -491,9 +496,18 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("SELECTED DIGITAL PROFILE",
             "${profile.mode.name}: ${profile.cycleMillis} ms cycle • ${profile.workflow}. " +
                 "Metadata from the tested shared core; decoder and transmitter not connected.")
-        panel("LOCAL CONTACTS",
-            "${model.logbook.all().size} manual QSOs in volatile memory. " +
-                "The LOG and AWARDS workspaces read the same authoritative repository.")
+        val storage = model.logbook
+        panel("LOCAL CONTACTS", when {
+            storage.storageError != null ->
+                "STORAGE ERROR: existing QSO data cannot be read; contact writes are locked. " +
+                    "No empty log is considered authoritative. Do not clear app data."
+            storage.isPersistent ->
+                "${storage.all().size} manual QSOs in app-private local storage. " +
+                    "No automatic cloud or Android backup; use manual ADIF export."
+            else ->
+                "${storage.all().size} manual QSOs in volatile memory. " +
+                    "The LOG and AWARDS workspaces share this session."
+        })
         action("OPEN SYNTHETIC OFFLINE ARCHIVE HISTORY") {
             startActivity(Intent(this, ArchiveHistoryActivity::class.java))
         }

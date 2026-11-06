@@ -403,7 +403,10 @@ the app never silently resets the stored log.
 
 The local DB is **not encrypted**, not remotely synchronized, and not
 backed up by Android (`allowBackup=false`); uninstall/clear-data can
-remove it. User-approved ADIF exports are still required for independent
+remove it. Follow-on source review rejects cross-station QSO writes and
+fails closed if stored rows belong to another station. OPS now clearly
+labels volatile, persistent, and unreadable storage. A transaction test
+injects an actual SQLite second-row collision and verifies rollback. User-approved ADIF exports are still required for independent
 backups and intentionally omit some internal metadata. No LoTW upload,
 USB capture, CAT or PTT operations are newly enabled. JVM/Robolectric
 tests and the full GitHub CI matrix for this branch remain **pending**;
