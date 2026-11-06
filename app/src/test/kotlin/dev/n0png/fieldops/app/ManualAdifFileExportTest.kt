@@ -88,7 +88,7 @@ class ManualAdifFileExportTest {
         for (contact in listOf(
             qso.copy(myCountry = "München"),
             qso.copy(stationCallsign = "W1AW"),
-            qso.copy(freqMhz = "", frequencyHz = 0L),
+            qso.copy(mode = "XYZ"),
         )) {
             val output = ByteArrayOutputStream()
             assertThrows(RuntimeException::class.java) {
