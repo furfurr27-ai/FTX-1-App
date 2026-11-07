@@ -450,3 +450,19 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+
+### CI repair — 2026-11-07 (draft, exact-head validation pending)
+
+The PR #71 `bca33f2` CI result is **19 passed / 18 failed**. The
+Android suite was blocked first by two nullable `startedUtcMillis`
+arithmetic expressions in `ManualAdifFileExportTest.kt`. These are
+now explicitly unwrapped with `requireNotNull` after fixture
+construction. Separately, the original static Android package
+contract expected `InMemoryLogbookRepository()` literally inside
+the Activity; CP-0009S now intentionally uses `OptInQsoRepository`.
+The contract is updated to verify the actual repository implementation,
+explicit operator consent, fail-closed storage warning and existing
+TX lockout rather than checking an obsolete constructor location.
+
+No CI pass or device proof is claimed by this source-only repair.

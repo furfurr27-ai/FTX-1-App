@@ -44,7 +44,7 @@ class ManualAdifFileExportTest {
             qso.copy(id = index.toLong(),
                 // Dates remain valid; different UTC seconds preserve identity.
                 timeOn = "%06d".format((index - 1)),
-                startedUtcMillis = qso.startedUtcMillis + index * 1000L)
+                startedUtcMillis = requireNotNull(qso.startedUtcMillis) + index * 1000L)
         }
         val parts = ManualAdifFileExport.plan(snapshot, "N0PNG")
         assertEquals(2, parts.size)
@@ -70,7 +70,7 @@ class ManualAdifFileExportTest {
         val snapshot = (1..48).map { index ->
             qso.copy(id = index.toLong(), myCountry = "X".repeat(30_000),
                 timeOn = "%06d".format(index),
-                startedUtcMillis = qso.startedUtcMillis + index * 1000L)
+                startedUtcMillis = requireNotNull(qso.startedUtcMillis) + index * 1000L)
         }
         val parts = ManualAdifFileExport.plan(snapshot, "N0PNG")
         assertTrue(parts.size >= 2)

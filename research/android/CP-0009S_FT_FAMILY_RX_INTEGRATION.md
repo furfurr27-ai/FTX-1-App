@@ -245,3 +245,20 @@ The DIGI FT-family screen now has a mode-aware `PREPARE MANUAL ... QSO` action t
 - Local persistence now rejects attempted wrong-station writes and fails closed when previously stored contact rows belong to a different station. Neither the store nor UI automatically destroys the database.
 - OPS status now distinguishes volatile, local SQLite, and unreadable QSO storage. The new batch rollback test injects a real SQLite primary-key conflict on the second row, then verifies the first row of that transaction was rolled back after reopening the database. The former test only reached the precondition guard.
 - Source and tests only: exact-head CI and real S23 storage tests are not yet completed. Main checkpoint CP-0009R remains unchanged. No CAT/PTT/LoTW actions or Final Review.
+
+## 2026-11-07 concrete CI compile and obsolete static-contract repair
+
+GitHub Actions for draft head `bca33f2` finished with 19 successful and
+18 failed workflows. The native FT-family host tests passed. The Android
+APK/test job confirmed `:app:assembleDebug` succeeds but
+`:app:compileDebugUnitTestKotlin` failed due to nullable Long arithmetic
+in two `ManualAdifFileExportTest.kt` sample timestamps. Other Android
+jobs failed earlier in `scripts/test_android_package_contract.py`
+because CP-0009R's string-token contract required the obsolete
+`InMemoryLogbookRepository()` constructor inside the Activity.
+
+Repaired both nullable expressions; updated the static contract to
+verify the same underlying canonical InMemory repository in the new
+opt-in persistence implementation, explicit user consent and storage
+error warning, while preserving the original RF/PTT guard assertions.
+Await the new exact-head CI before considering any of these tests green.
