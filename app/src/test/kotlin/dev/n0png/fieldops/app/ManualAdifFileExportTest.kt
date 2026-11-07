@@ -41,10 +41,17 @@ class ManualAdifFileExportTest {
     @Test fun moreThan500ContactsAreSplitIntoIndependentlyRestorableParts() {
         val (qso, _) = contact()
         val snapshot = (1..501).map { index ->
-            qso.copy(id = index.toLong(),
-                // Dates remain valid; different UTC seconds preserve identity.
-                timeOn = "%06d".format((index - 1)),
-                startedUtcMillis = requireNotNull(qso.startedUtcMillis) + index * 1000L)
+            // A decimal second counter such as "000060" is NOT a UTC HHmmss
+            // timestamp. Derive valid date/time from the authoritative epoch
+            // so the 500-contact boundary also crosses minute rollovers.
+            val start = requireNotNull(qso.startedUtcMillis) + (index - 1) * 1000L
+            val utc = QsoUtcFields.fromEpochMillis(start)
+            qso.copy(
+                id = index.toLong(),
+                qsoDate = utc.date,
+                timeOn = utc.time,
+                startedUtcMillis = start,
+            )
         }
         val parts = ManualAdifFileExport.plan(snapshot, "N0PNG")
         assertEquals(2, parts.size)
@@ -57,6 +64,10 @@ class ManualAdifFileExportTest {
             FieldOpsAdifRestore.read(java.io.ByteArrayInputStream(bytes.toByteArray()), "N0PNG")
         }
         assertEquals(501, recovered.size)
+        assertEquals("000059", recovered[57].timeOn)
+        assertEquals("000100", recovered[58].timeOn)
+        assertEquals("000822", recovered.last().timeOn)
+        assertEquals(501, recovered.map { it.timeOn }.distinct().size)
         assertEquals(LotwUploadState.NOT_UPLOADED, recovered.last().lotwUpload)
         val notWritable = ByteArrayOutputStream()
         assertThrows(IllegalArgumentException::class.java) {
@@ -68,9 +79,15 @@ class ManualAdifFileExportTest {
     @Test fun oversizedAsciiPayloadIsSplitByByteLimitEvenBelowRecordLimit() {
         val (qso, _) = contact()
         val snapshot = (1..48).map { index ->
-            qso.copy(id = index.toLong(), myCountry = "X".repeat(30_000),
-                timeOn = "%06d".format(index),
-                startedUtcMillis = requireNotNull(qso.startedUtcMillis) + index * 1000L)
+            val start = requireNotNull(qso.startedUtcMillis) + index * 1000L
+            val utc = QsoUtcFields.fromEpochMillis(start)
+            qso.copy(
+                id = index.toLong(),
+                myCountry = "X".repeat(30_000),
+                qsoDate = utc.date,
+                timeOn = utc.time,
+                startedUtcMillis = start,
+            )
         }
         val parts = ManualAdifFileExport.plan(snapshot, "N0PNG")
         assertTrue(parts.size >= 2)

@@ -466,3 +466,18 @@ explicit operator consent, fail-closed storage warning and existing
 TX lockout rather than checking an obsolete constructor location.
 
 No CI pass or device proof is claimed by this source-only repair.
+
+
+### CI test-fixture repair — 2026-11-07 (exact-head verification pending)
+
+The next CI result at `635dfba` demonstrated successful Kotlin/Android
+compilation and source packaging checks, but one of 119 Robolectric/JVM
+Android tests failed: the 501-contact manual ADIF split test formatted
+an incrementing integer as HHmmss, yielding impossible UTC seconds
+(`000060`, etc.). The strict ADIF restore correctly rejected those
+records. The fixture now derives QSO date, HHmmss and timestamp from
+shared `QsoUtcFields.fromEpochMillis` and asserts the minute rollover,
+501 distinct contacts, and independently restorable parts. The 48-row
+byte-limit fixture uses the same canonical UTC conversion. No product
+parser validation has been relaxed. New-head CI must pass before marking
+this corrected test green; main and final acceptance remain unchanged.

@@ -262,3 +262,21 @@ verify the same underlying canonical InMemory repository in the new
 opt-in persistence implementation, explicit user consent and storage
 error warning, while preserving the original RF/PTT guard assertions.
 Await the new exact-head CI before considering any of these tests green.
+
+## 2026-11-07 CI regression: invalid multi-part ADIF fixture UTC
+
+At exact draft head `635dfbab50a8931ba1cba3ea911192dc2be3efb9`, the
+37 GitHub workflows completed 21 successes / 16 failures. Verified
+Android job logs report `:app:assembleDebug` and Android source/test
+compilation completed, followed by 119 tests with one failure:
+`ManualAdifFileExportTest.moreThan500ContactsAreSplitIntoIndependentlyRestorableParts`.
+The test constructed fake timestamps using `"%06d".format(index - 1)`;
+from record #61 onward the seconds field can exceed 59. The production
+FieldOps ADIF strict restore correctly throws `DateTimeException`.
+
+Updated the test to use `QsoUtcFields.fromEpochMillis` for consistent
+QSO_DATE, TIME_ON and startedUtcMillis and added assertions crossing the
+minute boundary as well as 501 unique restored contacts. Aligned the
+48-contact large-byte-volume fixture with the same UTC primitive.
+**This is a test-data repair, not a relaxation of strict ADIF parsing.**
+CI on the new head and actual S23 device validation remain outstanding.
