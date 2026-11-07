@@ -84,6 +84,11 @@ data class QsoRadioContext(
 enum class ManualQsoMode(val adifMode: String) {
     SSB("SSB"),
     CW("CW"),
+    // An explicit human-confirmed contact may be logged in FT modes.
+    // A received decoder message cannot attest that a two-way QSO occurred.
+    FT8("FT8"),
+    FT4("FT4"),
+    FT2("FT2"),
 }
 
 data class ManualQsoInput(

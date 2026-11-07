@@ -6,6 +6,8 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.Gravity
@@ -16,18 +18,21 @@ import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import dev.n0png.fieldops.android.dsp.FtFamilyNativeEngine
 import dev.n0png.fieldops.core.awards.AwardsCenterApplicationService
 import dev.n0png.fieldops.core.awards.InMemoryAwardEvidenceRepository
 import dev.n0png.fieldops.core.digital.DigitalMode
 import dev.n0png.fieldops.core.digital.DigitalModes
+import dev.n0png.fieldops.core.dsp.DecodeResult
 import dev.n0png.fieldops.core.logbook.AdifCodec
 import dev.n0png.fieldops.core.logbook.FastQsoLogger
-import dev.n0png.fieldops.core.logbook.InMemoryLogbookRepository
+import dev.n0png.fieldops.core.logbook.QsoOrigin
 import dev.n0png.fieldops.core.logbook.ManualQsoInput
 import dev.n0png.fieldops.core.logbook.ManualQsoMode
 import dev.n0png.fieldops.core.logbook.OperatingSession
 import dev.n0png.fieldops.core.logbook.QsoLocationSnapshot
 import dev.n0png.fieldops.core.logbook.QsoRadioContext
+import dev.n0png.fieldops.core.logbook.QsoRecord
 import dev.n0png.fieldops.core.logbook.SequentialQsoIdSource
 import java.math.BigDecimal
 
@@ -35,35 +40,205 @@ import java.math.BigDecimal
  * The first integrated FieldOps workspace, NOT a radio controller.
  *
  * All operating-data views share the canonical logbook/awards domain services.
- * A fresh process starts empty. We retain only in-process memory across
- * configuration changes, never claim disk persistence or LoTW delivery.
+ * The log starts volatile; the operator can opt into app-private SQLite
+ * storage. Fresh sessions restore only when that choice was explicitly made.
+ * Local storage is not encrypted or a substitute for external backup.
  * No USB, CAT, audio, network, PTT or transmitter path is instantiated here.
  */
 open class FieldOpsOperatingActivity : Activity() {
+    private companion object {
+        const val OPEN_OFFLINE_WAV = 7129
+        const val EXPORT_MANUAL_ADIF = 7130
+        const val IMPORT_FIELDOPS_ADIF = 7131
+    }
     private enum class Tab { OPS, DIGI, APRS, MAP, LOG, AWARDS, RADIO }
 
-    private class UiSession {
-        val logbook = InMemoryLogbookRepository()
-        val logger = FastQsoLogger(logbook, SequentialQsoIdSource())
+    private class UiSession(context: android.content.Context) {
+        private val activeStationCallsign = "N0PNG"
+        val logbook = OptInQsoRepository(context, activeStationCallsign)
+        val ids = SequentialQsoIdSource(logbook.nextRecordId)
+        val logger = FastQsoLogger(logbook, ids)
         val awards = AwardsCenterApplicationService(logbook, InMemoryAwardEvidenceRepository())
         val operatingSession = OperatingSession(
             id = "local-in-memory-session",
             stationProfileId = "N0PNG-local",
-            stationCallsign = "N0PNG",
+            stationCallsign = activeStationCallsign,
             startedUtcMillis = System.currentTimeMillis(),
         )
         var tab = Tab.OPS
         var mode = DigitalMode.FT8
+        val ftRxObservations = FtRxObservationLedger(operatingSession.stationCallsign).apply {
+            switchMode(mode)
+        }
         var manualMode = ManualQsoMode.SSB
         var draftCall = ""
         var draftFrequencyMhz = ""
         var draftSent = ""
         var draftReceived = ""
         var draftRemoteGrid = ""
-        var logMessage = "No contacts recorded in this in-memory session."
+        var logMessage = when {
+            logbook.storageError != null ->
+                "LOCAL QSO STORAGE UNREADABLE: writes locked; existing data not deleted."
+            logbook.isPersistent ->
+                "Loaded ${logbook.all().size} contact(s) from app-private local storage. No LoTW upload."
+            else -> "No contacts recorded in this in-memory session."
+        }
         var showAdif = false
+        // User-selected Storage Access Framework export. The exact immutable
+        // record snapshot remains in RAM until the file picker returns.
+        var pendingAdifExport: List<QsoRecord>? = null
+        var pendingAdifBatches: List<ManualAdifFileExport.Batch> = emptyList()
+        var nextAdifBatchIndex = 0
+        var adifExportBusy = false
+        var adifExportStatus = "No file exported. All contacts remain volatile until exported."
+        var adifImportBusy = false
+        var adifImportStatus = "No ADIF restore requested."
+        var stagedAdifRecords: List<dev.n0png.fieldops.core.logbook.QsoRecord>? = null
+        var offlineDecodeBusy = false
+        var offlineDecodeStatus = "No offline recording decoded."
+        var offlineDecodes: List<DecodeResult> = emptyList()
+        // The model survives rotation. Its transient UI observer is rebound to
+        // the CURRENT Activity only; the background worker never owns a View.
+        var onUiChanged: (() -> Unit)? = null
+        var offlineDecodeGeneration: Long = 0
+
+        fun selectMode(newMode: DigitalMode) {
+            if (mode != newMode) {
+                mode = newMode
+                // The old job cannot prevent a new mode's WAV from opening.
+                // Even if the worker eventually completes, its generation is
+                // invalid and must never affect any newer decode's busy flag.
+                offlineDecodeGeneration++
+                offlineDecodeBusy = false
+                ftRxObservations.switchMode(newMode)
+                offlineDecodes = emptyList()
+                offlineDecodeStatus = "No offline recording decoded for ${newMode.name}."
+            }
+        }
+
+        fun beginOfflineDecode(): Long {
+            check(!offlineDecodeBusy) { "Offline decoder already running" }
+            require(mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+                "Only FT8/FT4/FT2 offline receive is supported"
+            }
+            offlineDecodeGeneration++
+            offlineDecodeBusy = true
+            offlineDecodes = emptyList()
+            offlineDecodeStatus = "Decoding local WAV — offline; no radio, PTT or QSO log."
+            return offlineDecodeGeneration
+        }
+
+        fun finishOfflineDecode(
+            requestGeneration: Long,
+            modeAtStart: DigitalMode,
+            decodes: List<DecodeResult>?,
+            failure: Throwable?,
+        ) {
+            if (offlineDecodeGeneration != requestGeneration || mode != modeAtStart) {
+                // Stale workers must NOT clear the busy flag of a newer WAV or
+                // overwrite its status or reviewed station. No UI callback is
+                // needed: the old result has no current-state effect.
+                return
+            }
+            offlineDecodeBusy = false
+            if (failure != null || decodes == null) {
+                offlineDecodeStatus =
+                    if (failure is IllegalArgumentException)
+                        "OFFLINE RX REJECTED: ${failure.message?.take(140)}"
+                    else
+                        "OFFLINE RX FAILED: native decoder or recording unavailable."
+                offlineDecodes = emptyList()
+            } else {
+                offlineDecodeStatus =
+                    "${modeAtStart.name}: ${decodes.size} decoded entries from user-selected WAV. " +
+                        "Recording UTC is UNKNOWN; timestamps are relative, not verified. " +
+                        "NO QSO automatically logged or transmitted."
+                offlineDecodes = decodes.filter { it.mode == modeAtStart }.take(40)
+                ftRxObservations.acceptFile(modeAtStart, offlineDecodes)
+            }
+            onUiChanged?.invoke()
+        }
+
+        fun finishAdifExport(writtenRecords: Int?, error: Throwable?) {
+            adifExportBusy = false
+            if (error == null && writtenRecords != null &&
+                nextAdifBatchIndex < pendingAdifBatches.size &&
+                writtenRecords == pendingAdifBatches[nextAdifBatchIndex].records.size) {
+                val totalParts = pendingAdifBatches.size
+                val savedPart = ++nextAdifBatchIndex
+                val stillNeeded = pendingAdifBatches.drop(nextAdifBatchIndex).sumOf { it.records.size }
+                adifExportStatus = if (stillNeeded == 0) {
+                    pendingAdifBatches = emptyList()
+                    nextAdifBatchIndex = 0
+                    "ADIF FILE SAVED: final part $savedPart/$totalParts. All selected contacts " +
+                        "exported to user-selected document(s); no LoTW upload."
+                } else {
+                    "ADIF FILE SAVED: part $savedPart/$totalParts, $writtenRecords records. " +
+                        "$stillNeeded contacts NOT YET EXPORTED. Choose NEXT ADIF PART to preserve them. " +
+                        "In-memory records remain volatile; no LoTW upload."
+                }
+            } else {
+                adifExportStatus = "ADIF EXPORT FAILED: document could not be saved/verified. " +
+                    "This part remains pending; retry choosing a destination. Log unchanged."
+            }
+            onUiChanged?.invoke()
+        }
+
+        fun stageAdifImport(records: List<dev.n0png.fieldops.core.logbook.QsoRecord>?,
+                            failure: Throwable?) {
+            adifImportBusy = false
+            stagedAdifRecords = if (failure == null) records else null
+            adifImportStatus = if (failure == null && !records.isNullOrEmpty())
+                "REVIEW BEFORE IMPORT: ${records.size} FieldOps ADIF contact(s) for ${operatingSession.stationCallsign}. " +
+                    "Only CONFIRM RESTORE adds these to the local log. LoTW remains unverified."
+            else
+                "ADIF RESTORE REJECTED: ${failure?.message?.take(110) ?: "No valid records"}. " +
+                    "Local log unchanged."
+            onUiChanged?.invoke()
+        }
+
+        fun confirmAdifImport(): Int {
+            val staged = requireNotNull(stagedAdifRecords) { "No staged ADIF import" }
+            val imported = FieldOpsAdifRestore.commit(staged, logbook, ids)
+            stagedAdifRecords = null
+            adifImportStatus = "CONFIRMED IMPORT: $imported new QSO(s) added to volatile log; " +
+                "${staged.size - imported} duplicate(s) skipped. LoTW not sent."
+            return imported
+        }
+
+        /**
+         * A validated native RX station is only a hint for a future manual QSO.
+         * Clear stale RF frequency/report/grid fields every time; NEVER infer
+         * actual dial frequency or two-way completion from a WAV recording.
+         * The LOG screen still requires explicit user-entered RF metadata and
+         * a distinct affirmative completed-QSO button.
+         */
+        fun prepareUnverifiedFtContact(review: FtDecodedStationReview) {
+            require(mode == review.mode) { "Cannot review a station from another FT mode" }
+            manualMode = review.manualMode
+            draftCall = review.callsign
+            draftFrequencyMhz = ""
+            draftSent = ""
+            draftReceived = ""
+            draftRemoteGrid = ""
+            logMessage = "UNVERIFIED WAV SENDER ${review.callsign} selected for ${review.mode.name}. " +
+                "NOT LOGGED. No trusted RF frequency or complete two-way QSO evidence. " +
+                "Enter the actual contact details and separately confirm completion."
+            tab = Tab.LOG
+        }
+
+        fun prepareObservedStation(callsign: String) {
+            val station = ftRxObservations.stations().singleOrNull {
+                it.callsign == callsign && it.mode == mode
+            } ?: throw IllegalArgumentException("Station is not in the selected FT receive review")
+            prepareUnverifiedFtContact(FtDecodedStationReview(station.callsign, station.mode))
+        }
 
         fun saveManual(): Boolean {
+            if (logbook.storageError != null) {
+                logMessage = "NOT SAVED: existing local QSO database cannot be read. Storage is locked."
+                return false
+            }
             val call = draftCall.trim().uppercase()
             if (!call.matches(Regex("[A-Z0-9/]{3,16}")) || !call.any { it.isDigit() }) {
                 logMessage = "NOT SAVED: enter a nonblank callsign using letters, digits and /."
@@ -98,7 +273,9 @@ open class FieldOpsOperatingActivity : Activity() {
                     operatingSession,
                     QsoRadioContext(frequencyHz = hz, radioMode = manualMode.adifMode),
                 )
-                logMessage = "Saved in memory: QSO #${record.id} ${record.call} ${record.mode}. Not sent to LoTW."
+                val destination = if (logbook.isPersistent)
+                    "Saved to app-private local storage" else "Saved in memory"
+                logMessage = "$destination: QSO #${record.id} ${record.call} ${record.mode}. Not sent to LoTW."
                 draftCall = ""
                 draftSent = ""
                 draftReceived = ""
@@ -107,6 +284,9 @@ open class FieldOpsOperatingActivity : Activity() {
                 true
             } catch (_: IllegalArgumentException) {
                 logMessage = "NOT SAVED: check frequency, band and contact fields."
+                false
+            } catch (_: RuntimeException) {
+                logMessage = "NOT SAVED: local storage operation failed. Do not assume this QSO was recorded."
                 false
             }
         }
@@ -121,12 +301,16 @@ open class FieldOpsOperatingActivity : Activity() {
 
     private lateinit var model: UiSession
     private lateinit var root: LinearLayout
+    private val refreshActiveUi: () -> Unit = {
+        if (::model.isInitialized && !isFinishing && !isDestroyed) render()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // ArchiveHistoryActivity independently owns its own explicit recovery consent.
         // Retaining this model does not persist any log or credential to disk.
-        model = (lastNonConfigurationInstance as? UiSession) ?: UiSession()
+        model = (lastNonConfigurationInstance as? UiSession) ?: UiSession(applicationContext)
+        model.onUiChanged = refreshActiveUi
         if (savedInstanceState != null) {
             savedInstanceState.getString("fieldops.tab")?.let {
                 model.tab = runCatching { Tab.valueOf(it) }.getOrDefault(Tab.OPS)
@@ -136,6 +320,14 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     override fun onRetainNonConfigurationInstance(): Any = model
+
+    override fun onDestroy() {
+        if (::model.isInitialized && model.onUiChanged === refreshActiveUi) {
+            model.onUiChanged = null
+        }
+        if (::model.isInitialized && !isChangingConfigurations) model.logbook.close()
+        super.onDestroy()
+    }
 
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("fieldops.tab", model.tab.name)
@@ -150,6 +342,98 @@ open class FieldOpsOperatingActivity : Activity() {
         } else {
             super.onBackPressed()
         }
+    }
+
+    @Deprecated("Android document result callback")
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == IMPORT_FIELDOPS_ADIF) {
+            val session = model
+            val uri = data?.data
+            if (resultCode != RESULT_OK || uri == null) {
+                session.adifImportStatus = "ADIF restore canceled; log unchanged."
+                render()
+                return
+            }
+            if (session.adifImportBusy) return
+            session.adifImportBusy = true
+            session.stagedAdifRecords = null
+            session.adifImportStatus = "Validating selected FieldOps ADIF; no QSO added."
+            render()
+            val resolver = applicationContext.contentResolver
+            val main = Handler(Looper.getMainLooper())
+            val station = session.operatingSession.stationCallsign
+            Thread({
+                val result = runCatching {
+                    val stream = resolver.openInputStream(uri)
+                        ?: throw IllegalArgumentException("Could not read selected ADIF")
+                    stream.use { FieldOpsAdifRestore.read(it, station) }
+                }
+                main.post {
+                    session.stageAdifImport(result.getOrNull(), result.exceptionOrNull())
+                }
+            }, "FieldOps-ADIF-Validate-Only").apply { isDaemon = true }.start()
+            return
+        }
+        if (requestCode == EXPORT_MANUAL_ADIF) {
+            val session = model
+            val batch = session.pendingAdifBatches.getOrNull(session.nextAdifBatchIndex)
+            session.pendingAdifExport = null
+            val outputUri = data?.data
+            if (resultCode != RESULT_OK || outputUri == null || batch == null) {
+                session.adifExportStatus = "ADIF destination canceled; the current part is still " +
+                    "pending. Choose NEXT ADIF PART to retry; the in-memory log is unchanged."
+                render()
+                return
+            }
+            session.adifExportBusy = true
+            session.adifExportStatus = "Writing chosen ADIF document; nothing sent to LoTW."
+            render()
+            val resolver = applicationContext.contentResolver
+            val main = Handler(Looper.getMainLooper())
+            Thread({
+                val result = runCatching {
+                    val stream = resolver.openOutputStream(outputUri, "w")
+                        ?: throw IllegalStateException("Document provider refused output")
+                    val written = stream.use { ManualAdifFileExport.write(batch, it) }
+                    // Do not call this part saved based only on close/flush:
+                    // the provider must return exactly the prepared bytes.
+                    val readback = resolver.openInputStream(outputUri)
+                        ?: throw IllegalStateException("Cannot reopen saved ADIF document")
+                    readback.use { ManualAdifFileExport.verifySaved(batch, it) }
+                    written
+                }
+                main.post {
+                    session.finishAdifExport(result.getOrNull(), result.exceptionOrNull())
+                }
+            }, "FieldOps-ADIF-Document-Export").apply { isDaemon = true }.start()
+            return
+        }
+        if (requestCode != OPEN_OFFLINE_WAV || resultCode != RESULT_OK) return
+        val uri = data?.data ?: return
+        val session = model
+        if (session.offlineDecodeBusy ||
+            session.mode !in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) return
+        val selected = session.mode
+        val generation = session.beginOfflineDecode()
+        render()
+        // Never capture this Activity in the worker. Completion is posted to
+        // the retained session and repaints whichever Activity currently owns
+        // its transient observer (or no Activity after a final destroy).
+        val resolver = applicationContext.contentResolver
+        val main = Handler(Looper.getMainLooper())
+        Thread({
+            val result = runCatching {
+                check(FtFamilyNativeAvailability.probe()) { "Native decoder unavailable" }
+                val input = resolver.openInputStream(uri)
+                    ?: throw IllegalArgumentException("Could not open selected WAV")
+                input.use { FtFamilyOfflineWav.decode(it, selected, FtFamilyNativeEngine()) }
+            }
+            main.post {
+                session.finishOfflineDecode(
+                    generation, selected, result.getOrNull(), result.exceptionOrNull())
+            }
+        }, "FieldOps-Offline-FT-Family-RX").apply { isDaemon = true }.start()
     }
 
     private fun render() {
@@ -178,7 +462,14 @@ open class FieldOpsOperatingActivity : Activity() {
             Tab.AWARDS -> awards()
             Tab.RADIO -> radio()
         }
-        title("IN-MEMORY ONLY • FRESH PROCESS LOSES MANUAL QSOs • NO RF TRANSMISSION", 12, muted)
+        title(when {
+            model.logbook.storageError != null ->
+                "LOCAL QSO STORE UNREADABLE • NO CONTACT/ACTIVITY COUNTS TRUSTED • NO RF"
+            model.logbook.isPersistent ->
+                "APP-PRIVATE LOCAL QSO STORE • NO CLOUD BACKUP • NO RF TRANSMISSION"
+            else ->
+                "IN-MEMORY ONLY • FRESH PROCESS LOSES MANUAL QSOs • NO RF TRANSMISSION"
+        }, 12, muted)
         setContentView(scroll)
     }
 
@@ -210,9 +501,18 @@ open class FieldOpsOperatingActivity : Activity() {
         panel("SELECTED DIGITAL PROFILE",
             "${profile.mode.name}: ${profile.cycleMillis} ms cycle • ${profile.workflow}. " +
                 "Metadata from the tested shared core; decoder and transmitter not connected.")
-        panel("LOCAL CONTACTS",
-            "${model.logbook.all().size} manual QSOs in volatile memory. " +
-                "The LOG and AWARDS workspaces read the same authoritative repository.")
+        val storage = model.logbook
+        panel("LOCAL CONTACTS", when {
+            storage.storageError != null ->
+                "STORAGE ERROR: existing QSO data cannot be read; contact writes are locked. " +
+                    "No empty log is considered authoritative. Do not clear app data."
+            storage.isPersistent ->
+                "${storage.all().size} manual QSOs in app-private local storage. " +
+                    "No automatic cloud or Android backup; use manual ADIF export."
+            else ->
+                "${storage.all().size} manual QSOs in volatile memory. " +
+                    "The LOG and AWARDS workspaces share this session."
+        })
         action("OPEN SYNTHETIC OFFLINE ARCHIVE HISTORY") {
             startActivity(Intent(this, ArchiveHistoryActivity::class.java))
         }
@@ -225,14 +525,108 @@ open class FieldOpsOperatingActivity : Activity() {
         for (mode in listOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2,
             DigitalMode.JS8, DigitalMode.WSPR)) {
             action("SELECT ${mode.name}") {
-                model.mode = mode
+                model.selectMode(mode)
                 render()
             }
         }
         val profile = DigitalModes.profile(model.mode)
         panel("SELECTED ${model.mode.name}",
             "Cycle: ${profile.cycleMillis} ms • workflow: ${profile.workflow}. " +
-                "RX decoding, audio capture and TX remain unavailable in this APK.")
+                "FT-family file-only RX is available below; live radio receive, USB audio and TX remain disabled.")
+        if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            val nativePresent = FtFamilyNativeAvailability.probe()
+            panel("FT-FAMILY 48 kHz / 12 kHz RX ENGINE",
+                if (nativePresent)
+                    "Native FT8AF library loadable. Shared 48 kHz to UTC slot decoder path is compiled; " +
+                        "input capture is NOT connected, and device/RF validation is still absent."
+                else
+                    "Production Java/JNI adapter compiled, but libft8af.so is not packaged. " +
+                        "Native FT8/FT4/FT2 decoding is UNAVAILABLE; no synthetic fallback.")
+        }
+        if (model.mode in setOf(DigitalMode.FT8, DigitalMode.FT4, DigitalMode.FT2)) {
+            panel("RECORDED-WAV RECEIVE / FILE ONLY",
+                "Accepts one mono 16-bit PCM WAV at 12 kHz or 48 kHz. " +
+                    "48 kHz passes through the same 4:1 FIR as shared capture; no live device connected. " +
+                    "Recording time and source are unverified. Decoded text is NOT logged as a QSO.")
+            if (!model.offlineDecodeBusy) {
+                action("OPEN OFFLINE WAV FILE (NO RF)") {
+                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                        addCategory(Intent.CATEGORY_OPENABLE)
+                        type = "*/*"
+                    }
+                    @Suppress("DEPRECATION")
+                    startActivityForResult(intent, OPEN_OFFLINE_WAV)
+                }
+            }
+            panel("OFFLINE DECODE RESULT", model.offlineDecodeStatus)
+            model.offlineDecodes.forEach { decoded ->
+                panel("DECODED WAV / UNVERIFIED",
+                    "${decoded.audioHz ?: "?"} Hz audio offset | " +
+                        "${decoded.snrDb ?: "?"} dB | " + decoded.text.take(200))
+                val review = FtDecodedStationReview.from(
+                    decoded, model.operatingSession.stationCallsign)
+                if (review != null) {
+                    action("REVIEW ${review.callsign} IN MANUAL LOG (NO AUTO QSO)") {
+                        model.prepareUnverifiedFtContact(review)
+                        render()
+                    }
+                }
+            }
+            val stations = model.ftRxObservations.stations()
+            if (stations.isNotEmpty()) {
+                panel("STRUCTURED RX STATION REVIEW / NOT A QSO",
+                    "Native sender/recipient identities only; no callsigns inferred from free text. " +
+                        "WAV file selection order is NOT verified UTC or an RF exchange. " +
+                        "No transmission, QSO, confirmation or LoTW action is implied.")
+                for (station in stations.take(12)) {
+                    panel("HEARD ${station.callsign} / ${station.mode.name}",
+                        "${station.messages} messages • ${station.cqMessages} CQ • " +
+                            "${station.addressedToOwnCall} addressed to ${model.operatingSession.stationCallsign} " +
+                            "• last selected WAV #${station.lastImportOrdinal}.")
+                    action("INSPECT ${station.callsign} RX HISTORY (NO QSO)") {
+                        model.ftRxObservations.focus(station.callsign)
+                        render()
+                    }
+                    val exchange = FtRxExchangeEvidenceGate.assess(
+                        station, model.ftRxObservations.observationsFor(station.callsign))
+                    panel("RX EXCHANGE EVIDENCE ${station.callsign} / NO TX",
+                        "${exchange.stage}: ${exchange.explanation} " +
+                            "${exchange.selectedWavFiles} selected WAV file(s), nominal " +
+                            "${exchange.nominalSlotMillis} ms slot. " +
+                            "Trusted UTC: NO • Verified local TX: NO • Auto-log: NO.")
+                    action("PREPARE ${station.callsign} MANUAL ${station.mode.name} QSO (NO AUTO LOG)") {
+                        // Only a station actually present in the selected
+                        // receive-only board can be handed to the manual form.
+                        model.prepareObservedStation(station.callsign)
+                        render()
+                    }
+                }
+                val focused = model.ftRxObservations.focusedCallsign
+                if (focused != null) {
+                    panel("UNVERIFIED RX MESSAGES FOR $focused",
+                        "These are separately selected file observations, NOT a confirmed two-way contact.")
+                    model.ftRxObservations.focusedObservations().forEach { heard ->
+                        panel("WAV #${heard.importOrdinal} / ${heard.addressKind}",
+                            "Recipient: ${heard.recipient ?: "unknown"} • " +
+                                "${heard.snrDb ?: "?"} dB estimated • ${heard.text.take(180)}")
+                    }
+                }
+            }
+            panel("COMPLETED FT QSO / OPERATOR REVIEW",
+                "Only log a TWO-WAY contact that you independently completed. " +
+                    "An offline decode, a CQ or a heard signal alone is NOT a QSO. " +
+                    "Preparing the manual form does not key the radio, record a QSO or queue LoTW.")
+            action("PREPARE MANUAL ${model.mode.name} QSO (NO AUTO LOG)") {
+                model.manualMode = when (model.mode) {
+                    DigitalMode.FT8 -> ManualQsoMode.FT8
+                    DigitalMode.FT4 -> ManualQsoMode.FT4
+                    DigitalMode.FT2 -> ManualQsoMode.FT2
+                    else -> error("FT-family mode required")
+                }
+                model.tab = Tab.LOG
+                render()
+            }
+        }
         disabledAction("START RX — NOT CONNECTED")
         disabledAction("ARM TX — HARDWARE VALIDATION REQUIRED")
     }
@@ -247,11 +641,19 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     private fun map() {
-        // Actual map-layer service: cannot invent station coordinates or award confirmations.
-        val layers = model.awards.awardMapLayers()
-        panel("AWARD-AREA GEOMETRY / NO INVENTED POSITIONS",
-            "Local award-map projection: ${layers.size} layers from current logbook/evidence. " +
-                "No authenticated APRS, heard-signal or QSO coordinates available.")
+        // An unreadable persisted log MUST NOT render apparently authoritative
+        // zero-contact or zero-award projections.
+        if (model.logbook.storageError != null) {
+            panel("MAP QSO / AWARDS PROJECTION UNAVAILABLE",
+                "The saved QSO database cannot be read. No map evidence or zero-contact " +
+                    "assessment can be trusted; stored data has not been cleared.")
+        } else {
+            // Actual map-layer service: no invented station coordinates/confirmations.
+            val layers = model.awards.awardMapLayers()
+            panel("AWARD-AREA GEOMETRY / NO INVENTED POSITIONS",
+                "Local award-map projection: ${layers.size} layers from current logbook/evidence. " +
+                    "No authenticated APRS, heard-signal or QSO coordinates available.")
+        })
         panel("PROPAGATION & OFFLINE REPORTS",
             "The separate synthetic archive workbench remains available; no live source is implied.")
         action("OPEN SYNTHETIC OFFLINE ARCHIVE HISTORY") {
@@ -259,10 +661,64 @@ open class FieldOpsOperatingActivity : Activity() {
         }
     }
 
+    /** Each complete ADIF part requires a fresh, operator-approved SAF file. */
+    private fun openNextAdifDestination() {
+        val batch = model.pendingAdifBatches.getOrNull(model.nextAdifBatchIndex)
+            ?: return
+        model.pendingAdifExport = batch.records
+        val total = model.pendingAdifBatches.size
+        val part = model.nextAdifBatchIndex + 1
+        val suggestedName = if (total == 1) "N0PNG-FieldOps-log.adi" else
+            "N0PNG-FieldOps-log-part-${part.toString().padStart(3, '0')}-of-${total.toString().padStart(3, '0')}.adi"
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TITLE, suggestedName)
+        }
+        @Suppress("DEPRECATION")
+        startActivityForResult(intent, EXPORT_MANUAL_ADIF)
+    }
+
     private fun log() {
+        val storage = model.logbook
+        panel("LOCAL QSO STORAGE / EXPLICIT OPT-IN", when {
+            storage.storageError != null -> storage.storageError!!
+            storage.isPersistent -> "ENABLED: contacts are written to an app-private SQLite database " +
+                "before being displayed in the log. Not encrypted, not cloud-synced, " +
+                "not backed up by Android. Uninstall/clear-data may remove it; export ADIF separately."
+            else -> "OFF: contacts are volatile and disappear after a fresh process. " +
+                "Choose ENABLE to keep full local QSO metadata on this device. " +
+                "This app-private storage is not encrypted or backed up automatically."
+        })
+        if (storage.storageError != null) {
+            panel("LOCAL LOGBOOK UNAVAILABLE — STORED DATA RETAINED",
+                "Existing saved contacts could not be read. Showing zero contacts would be " +
+                    "misleading. QSO logging, ADIF import/export and awards derived from " +
+                    "this database are disabled. Do NOT clear app data. Seek a verified " +
+                    "data recovery path; no files or LoTW records were deleted.")
+            disabledAction("SAVE QSO — STORAGE UNREADABLE")
+            disabledAction("EXPORT ADIF — STORAGE UNREADABLE")
+            return
+        }
+        if (!storage.isPersistent) {
+            action("ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)") {
+                val result = runCatching { storage.enableLocalPersistence() }
+                model.logMessage = if (result.isSuccess)
+                    "LOCAL STORAGE ENABLED: ${storage.all().size} contact(s) preserved on device. " +
+                        "Use ADIF export for independent backups. No LoTW."
+                else "LOCAL STORAGE NOT ENABLED: database setup failed. " +
+                    "Existing session contacts remain in memory; export ADIF before closing."
+                render()
+            }
+        }
         panel("MANUAL CW / SSB CONTACT",
             "Use this form to record an actual manually entered QSO in volatile memory. " +
                 "Do not use it as proof of radio reception, transmission, saved disk records or LoTW sync.")
+        if (model.manualMode in setOf(ManualQsoMode.FT8, ManualQsoMode.FT4, ManualQsoMode.FT2)) {
+            panel("MANUAL FT CONTACT / OPERATOR ATTESTATION",
+                "Press SAVE only after a completed two-way ${model.manualMode.adifMode} contact. " +
+                    "No waveform or decoder automatically creates a QSO; no TX or LoTW is performed.")
+        }
         val call = EditText(this).apply {
             hint = "Remote callsign"
             contentDescription = "Remote callsign"
@@ -312,7 +768,10 @@ open class FieldOpsOperatingActivity : Activity() {
                 ManualQsoMode.CW else ManualQsoMode.SSB
             render()
         }
-        action("SAVE MANUAL QSO") {
+        action(
+            if (model.manualMode in setOf(ManualQsoMode.FT8, ManualQsoMode.FT4, ManualQsoMode.FT2))
+                "CONFIRM COMPLETED FT QSO — SAVE MANUALLY" else "SAVE MANUAL QSO"
+        ) {
             model.draftCall = call.text.toString()
             model.draftFrequencyMhz = freq.text.toString()
             model.saveManual()
@@ -320,7 +779,9 @@ open class FieldOpsOperatingActivity : Activity() {
         }
         panel("SAVE STATUS", model.logMessage)
         val all = model.logbook.all()
-        panel("LIVE IN-MEMORY LOGBOOK", "${all.size} records • no persistence or uploads")
+        panel(if (storage.isPersistent) "LOCAL DEVICE LOGBOOK" else "LIVE IN-MEMORY LOGBOOK",
+            "${all.size} records • " +
+            if (storage.isPersistent) "app-private SQLite; no cloud/LoTW" else "volatile; no uploads")
         for (qso in all.takeLast(20).asReversed()) {
             title("#${qso.id}  ${qso.call}  ${qso.mode}  ${qso.band}  ${qso.freqMhz} MHz  " +
                 "${qso.qsoDate} ${qso.timeOn} UTC", 13, primary)
@@ -330,16 +791,95 @@ open class FieldOpsOperatingActivity : Activity() {
             model.showAdif = !model.showAdif
             render()
         }
+        if (all.isNotEmpty() && !model.adifExportBusy && model.pendingAdifExport == null) {
+            if (model.pendingAdifBatches.isNotEmpty()) {
+                val remaining = model.pendingAdifBatches.drop(model.nextAdifBatchIndex)
+                    .sumOf { it.records.size }
+                panel("ADIF PARTS STILL TO EXPORT",
+                    "$remaining contact(s) in remaining restore-compatible documents. " +
+                        "Continue selecting destinations; the plan is an immutable snapshot.")
+                action("EXPORT NEXT ADIF PART (CHOOSE DESTINATION)") {
+                    openNextAdifDestination()
+                }
+                action("DISCARD PENDING ADIF PARTS (LOG UNCHANGED)") {
+                    model.pendingAdifBatches = emptyList()
+                    model.nextAdifBatchIndex = 0
+                    model.adifExportStatus = "Pending export parts discarded. " +
+                        "In-memory contacts are NOT preserved on disk."
+                    render()
+                }
+            } else {
+                action("EXPORT ADIF FILE (CHOOSE DESTINATION)") {
+                    // Validate every planned part against our strict importer
+                    // before opening ANY destination document.
+                    val prepared = runCatching {
+                        ManualAdifFileExport.plan(model.logbook.all(),
+                            model.operatingSession.stationCallsign)
+                    }
+                    val batches = prepared.getOrNull()
+                    if (batches == null) {
+                        model.adifExportStatus = "ADIF EXPORT BLOCKED: " +
+                            "${prepared.exceptionOrNull()?.message?.take(160)}. " +
+                            "No potentially non-restorable document written."
+                        render()
+                    } else {
+                        model.pendingAdifBatches = batches
+                        model.nextAdifBatchIndex = 0
+                        model.adifExportStatus = "Export prepared: ${batches.size} separate " +
+                            "restore-compatible file(s); each needs a selected destination."
+                        openNextAdifDestination()
+                    }
+                }
+            }
+        } else if (all.isEmpty()) {
+            disabledAction("EXPORT ADIF FILE — NO QSOS")
+        }
+        panel("ADIF FILE EXPORT / EXPLICIT USER ACTION", model.adifExportStatus)
+        if (!model.adifImportBusy) {
+            action("RESTORE FIELDOPS ADIF (PICK FILE)") {
+                model.stagedAdifRecords = null
+                model.adifImportStatus = "Choose a FieldOps-generated ADIF file for validation."
+                val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                }
+                @Suppress("DEPRECATION")
+                startActivityForResult(intent, IMPORT_FIELDOPS_ADIF)
+            }
+        }
+        panel("ADIF RESTORE / NOT LOTW", model.adifImportStatus)
+        if (!model.stagedAdifRecords.isNullOrEmpty() && !model.adifImportBusy) {
+            action("CONFIRM RESTORE TO LOCAL LOG (NO LOTW)") {
+                val result = runCatching { model.confirmAdifImport() }
+                if (result.isFailure) model.adifImportStatus =
+                    "RESTORE NOT COMPLETED: local log storage refused the batch. " +
+                    "Review current QSO count before retrying; no LoTW action."
+                render()
+            }
+            action("CANCEL STAGED ADIF RESTORE") {
+                model.stagedAdifRecords = null
+                model.adifImportStatus = "Staged restore discarded; log unchanged."
+                render()
+            }
+        }
         if (model.showAdif) {
-            val adif = AdifCodec.export(all)
-            title("ADIF PREVIEW / NOT SENT TO LOTW", 12, amber, true)
+            val adif = AdifCodec.export(all.take(FieldOpsArchiveBounds.MAX_RECORDS))
+            title("ADIF PREVIEW / FIRST ${minOf(all.size, FieldOpsArchiveBounds.MAX_RECORDS)} " +
+                "CONTACTS ONLY / NOT SENT TO LOTW", 12, amber, true)
             title(adif, 12, primary)
         }
     }
 
     private fun awards() {
+        if (model.logbook.storageError != null) {
+            panel("AWARDS UNAVAILABLE — SAVED QSO STORE UNREADABLE",
+                "Local award counts cannot be evaluated while the existing QSO " +
+                    "database is unreadable. Zero worked or confirmed is NOT a result. " +
+                    "No database records were cleared and LoTW is disabled.")
+            return
+        }
         panel("AWARDS CENTER / LOCAL EVIDENCE ONLY",
-            "Cards below are computed from the same in-memory logbook as LOG, " +
+            "Cards below are computed from the same canonical logbook as LOG, " +
                 "with no imported confirmations or sponsor award claims.")
         val cards = model.awards.cards()
         for (card in cards.take(8)) {

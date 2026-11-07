@@ -42,15 +42,23 @@ considered fully accepted by this checkpoint.
 5. PR #68 exact head `7f9ece57a15423d7e1f2274e8add67bdd505f628`: [push 46/46](https://github.com/furfurr27-ai/FTX-1-App/actions/runs/39713091694), [PR 46/46](https://github.com/furfurr27-ai/FTX-1-App/actions/runs/39713096193), [APK](https://github.com/furfurr27-ai/FTX-1-App/actions/runs/39713096052). These verify existing archive/core regressions, not end-to-end multimode operation.
 6. `research/ARCHITECTURE.md`, `research/MULTIMODE_PARITY.md`, and `research/INTEGRATION_STATUS.md` are architecture/earlier source maps, NOT current acceptance certificates.
 
+## CP-0009R / CP-0009S audit update
+
+- CP-0009R `v69` is durable: [merged-main CI finalizer 39870937975](https://github.com/furfurr27-ai/FTX-1-App/actions/runs/39870937975) 46/46, [PR #70](https://github.com/furfurr27-ai/FTX-1-App/pull/70). It replaced the prior archive-only Android launcher. Earlier audit baseline above is retained as historical source context.
+- CP-0009S draft includes file-only 12/48 kHz FIR→native FT8/FT4/FT2 receive, structured sender/recipient station review, and an integrated station-board → explicit manual FT QSO → shared FastQsoLogger/ADIF/Awards Android workflow. The end-to-end flow is tested with synthetic decoded messages and refuses to infer a contact from WAV data. No live radio CAT/PTT/audio, hardware TX, durable DB or automatic exchange sequencer is implied.
+- CP-0009S [draft PR #71](https://github.com/furfurr27-ai/FTX-1-App/pull/71) introduces **source-built ARM64** FT8/FT4/FT2 JNI, real recorded-FT8 and independent-source FT4 CRC gates, a file-only 12/48 kHz Android native decode path, and corrected fast-mode JNI routing. Prior exact-head automated evidence was green where recorded; **new integration head CI pending**. No main merge or checkpoint promotion.
+- The current draft adds an **offline receive-exchange evidence gate**, distinguishing CQ, directed-to-own-station, and other RX observations using structured native sender/recipient fields and canonical FT8/FT4/FT2 cycle metadata. Imported WAV file order is NOT trusted UTC, observed traffic is NEVER accepted as a completed QSO or permission for automatic TX/logging. An integrated, verified-slot RX↔TX QSO sequencer remains missing.
+- There is still no validated live FTX-1 USB audio/CAT/PTT workflow, independently verified FT2 recording/golden reference, automatic FT-family QSO lifecycle, or final software release. Source-built APK and mock unit tests alone do NOT close these gaps. CP-0003C remains DEFERRED; CP-0004A/B/C remain incomplete.
+
 ## P0–P3 requirements
 
 | Phase | Required capability / user workflow | Located implementation | Checked evidence | Production app integration | Remaining software gap (CI-closable?) | Physical/account validation | Final acceptance |
 |---|---|---|---|---|---|---|---|
 | P0 | Safe FTX-1 CAT command transport, PTT arbiter, watchdog, TX abort/recovery | `core/cat/Ftx1CatTransport.kt`; `core/radio/Ftx1RadioSession.kt`, `RadioModeArbiter.kt` | Core host regression in inherited CI; inspect specific TX vector before acceptance | Not wired to launcher/radio device | Integrate serialized Android USB port, lifecycle, UI interlocks and simulated disconnect/duplicate-owner tests: **YES** | CP-0004A/C: physical USB topology, CAT and TX into dummy load | HOST_PARTIAL |
 | P0 | Shared capture, playback, DSP, timing and session management | `core/audio`, `core/dsp`, `core/time`; `android/pipeline/.../audio`, `dsp` | Host audio/slot regressions from prior native-mode work; not checked as app-native E2E | Android pipeline absent from `app/build.gradle.kts` | Link/build tested adapters; USB route error handling; simulated audio-to-decode and TX-to-safe-RX: **YES** | CP-0004B/C: real USB audio rates/route/clock, output power | HOST_PARTIAL |
-| P0 | FT8 operating screen and tested RX/TX workflow | `android/pipeline/.../dsp/FtFamilyNativeEngine.kt`; `android/compat`; `core/ft8/AutoSignalFollow.kt` | Native ABI/source notes and prior host work; app compiled/run/vector interoperability unverified | No FT8 Activity/workspace; native bridge not linked by app Gradle | Working waterfall/decode/QSO sequence, known-good vector, log link, explicit TX safety: **YES** | FTX-1+S23 physical capture/transmit | HOST_PARTIAL |
-| P0 | FT4 separate slot timing and operating workflow | `core/digital/DigitalModes.kt`; same FT family bridge | Timings and generic host contracts; actual full app test unverified | No FT4 screen/engine link | Distinct FT4 RX/TX vectors, deadline/state/UI integration: **YES** | Radio/audio field confirmation | HOST_PARTIAL |
-| P0 | FT2 very-fast workflow, not FT8 timing reused | `core/digital/DigitalModes.kt`; FT family bridge | Profile exists; interoperability vectors in installed app unverified | No FT2 screen | FT2 vector and 3.75-second timed workflow with scheduling safety: **YES** | Device audio/clock/RF proof | HOST_PARTIAL |
+| P0 | FT8 operating screen and tested RX/TX workflow | `app/src/main/cpp/third_party/ft8af`, `app/.../FtFamilyOfflineWav.kt`, `android/pipeline/.../FtFamilyNativeEngine.kt` | Pinned FT8 source/ARM64 JNI APK and native encoder golden tests **green at prior head**; recorded 20m WAV truth test introduced, current exact-head CI pending | Android DIGI now offers a bounded, user-selected offline 12 kHz PCM WAV decode with actual native adapter; no live USB/audio, waterfall or automated QSO state | Validate real WAV/Android JNI on device; FT8 structured QSO RX/TX workflow, waterfall, scheduler, log coupling, safety interlocks: **YES** | CP-0004A/B/C: physical capture and RF into dummy load | APP_PARTIAL |
+| P0 | FT4 separate slot timing and operating workflow | `app/.../FtFamilyReceiveSession.kt`, `FtFamilyOfflineWav.kt`, `FtFamilyNativeEngine.kt` | Shared 48k to 12k slot assembly/fixture tests; corrected native ABI FT4 protocol 0 -> `InitDecoderFt2`; current CI pending; NO genuine recorded FT4 decode vector | Android FT4 mode selector and file-only, exactly-7500 ms 12 kHz WAV decoder hook; TX and live RX disabled | Real FT4 WAV/golden interoperability, integrated decoder lifecycle, QSO sequencing, deadline/slot-safe PTT: **YES** | CP-0004A/B/C: physical radio/audio field confirmation | APP_PARTIAL |
+| P0 | FT2 very-fast workflow, not FT8 timing reused | `app/.../FtFamilyReceiveSession.kt`, `FtFamilyOfflineWav.kt`, `FtFamilyNativeEngine.kt` | Shared slot assembly/fixture tests, native FT2 protocol 2 uses fast decoder ABI; current CI pending; NO genuine recorded FT2 decode vector | Android FT2 selector and file-only, exactly-3750 ms 12 kHz WAV decode hook; no live USB/RF | Real FT2 WAV/golden interoperability, very-fast scheduling, QSO sequencing, recovery and TX safety: **YES** | CP-0004A/B/C: device audio/clock/RF proof | APP_PARTIAL |
 | P0 | JS8 chat: RX/TX, directed/multipart/history, safe queue | `android/pipeline/.../dsp/Js8EngineAdapter.kt`, `Js8CallAndroidEngineFactory.kt`, `Js8TxController.kt`; native checkpoint research | Prior JS8 host/native scripts; actual linked Android runtime not checked | No JS8 workspace; separate bridge not packaged | Complete licensed provider, chat UI/persistence, golden vectors, abortable queued TX: **YES** | Hardware RX/TX and timing | HOST_PARTIAL |
 | P0 | WSPR spot RX and opt-in beacon scheduler | `android/pipeline/.../dsp/Wspr*.kt`, `native/wspr` | Native WSPR source and host tests; full app NDK packaging not checked | No WSPR workspace; native bridge not packaged | Link JNI and arm64 assets; golden RX/TX; beacon UI/queue/log/map; safe disarm: **YES** | Physical WSPR reception and power/timing | HOST_PARTIAL |
 | P0 | APRS, keeping radio-internal controls distinct from phone-generated AFSK | `core/aprs` AX.25/KISS/AFSK/SmartBeaconing; `core/cat/Ftx1Cat.kt` | Core host packet tests, not real RF or production UI | No station/message/map screen or audio source | Separate explicit radio-vs-phone interfaces, supported CAT capabilities only, AFSK E2E vectors, safe PTT: **YES** | Internal modem CAT semantics and AFSK off-air proof: CP-0004A/B/C | HOST_PARTIAL |
@@ -61,7 +69,7 @@ considered fully accepted by this checkpoint.
 | P1/P3 | Map layers: QSO, heard, propagation, APRS, award regions | Geometry/projections in `core/map`, reporting adapters in `core/propagation` | Host projection/geodata pack checks | No integrated map UI/layer toggles | Android map renderer, labeling, datasets, saved filters/offline policy and tests: **YES** | GPS/data/field checks on real device | HOST_PARTIAL |
 | P2 | RTTY, PSK31/63, Olivia, MFSK | No production engine/provider found in scanned `core/src/main`, `android/pipeline/src/main`, `native` | No mode-specific CI found; requires actual code/vector inspection when added | Absent | Implement licensed/testable RX/TX providers, workflows and golden vectors: **YES** | Final RF/audio checks | MISSING |
 | P3 | Contestia, DominoEX, THOR, Hellschreiber, MT63 | No production engine/provider found in same inspected source tree | No mode-specific CI found | Absent | Implement defined mode providers, metadata, UI and tests without inventing interoperability: **YES** | Final RF/audio checks | MISSING |
-| P3 | Cohesive home/OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO navigation and persistent shared session | `MainActivity.java` opens archive only; architecture describes proposed sections | Launcher/archival Robolectric and APK build; no multimode E2E | Absent beyond archive | Actual navigation, mode-specific screens, shared state, accessibility, lifecycle/reconnect and simulated E2E: **YES** | Manual ergonomics on S23 | APP_PARTIAL |
+| P3 | Cohesive home/OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO navigation and persistent shared session | `app/.../FieldOpsOperatingActivity.kt`, core logbook/awards services; `RELEASE_ACCEPTANCE_MATRIX.md` | CP-0009R merged-main finalizer 39870937975 46/46, durable `v69`, Android Robolectric navigation and real in-memory manual QSOs | OPS/DIGI/APRS/MAP/LOG/AWARDS/RADIO with shared in-memory logbook and honest offline archive; **NOT** a process-persistent operational radio session | Persist QSOs securely, integrated modal RX/monitor/QSO state, connectivity/lifecycle/accessibility and signed final APK: **YES** | Final S23 UI/USB ergonomics | APP_PARTIAL |
 | P3 | Release packaging, privacy, licenses, reliable install and source-complete build | `app/build.gradle.kts`, APK CI; `research/LICENSE_PROVENANCE.md`; checkpoint scripts | CP-0009Q debug APK and inherited regression matrix; prior snapshots | Debug shell installable, not completed product | Bundle all required code/native assets, reproducible artifact hash, license notices/source compliance, static privacy audit, regression E2E, install instructions: **YES** | Final device install, USB/Keystore/LoTW validations | APP_PARTIAL |
 
 ## Non-negotiable safety and deferrals
@@ -89,3 +97,53 @@ considered fully accepted by this checkpoint.
 Every subsequent acceptance-focused PR should update affected rows with: precise source path(s), exact test run/link and vector, Android UI integration result, remaining gap, hardware/account proof, and software status. Avoid numerical percent-complete guesses: completed components do not measure weighted operational completeness. Never mark `ACCEPTED_SOFTWARE` based only on a contract, a compiled file or a simulated screenshot.
 
 This is a **source-inspection acceptance audit**. It does not modify CP-0009Q's immutable checkpoint, claim device testing, or constitute a new completed engineering checkpoint. Its classifications must be revised only from direct production-source and test evidence.
+
+## CP-0009S branch-only proposed local persistence (CI pending, not promoted)
+
+Draft branch `cp-0009s-ft-family-offline-rx-integration` adds
+`FieldOpsLocalQsoStore.kt` and connects its explicit opt-in SQLite
+repository to the integrated Android LOG/ADIF/AWARDS session.
+When enabled, new manual QSO saves and confirmed multi-contact ADIF
+restores write through the same transaction-aware repository and
+retain complete current QsoRecord metadata across fresh processes.
+The optional local store does not create a database before consent.
+It is app-private but **unencrypted** and not covered by Android
+auto-backup. Corrupt storage blocks writes; it does not fall back
+silently. Separate operator-controlled ADIF export still has a
+narrower format, requires user destinations, and remains essential
+against uninstall/clear-data or device loss.
+
+Evidence proposed: `FieldOpsLocalQsoStoreTest` checks opt-in/default,
+restart, complete JSON field round-trip, transaction rollback and
+corrupt-store fail-closed behavior. `FieldOpsOperatingActivityTest`
+checks operator enable -> manual QSO -> new Activity -> ADIF -> locked
+PTT. At this review the new branch head has not completed CI, and no
+Galaxy S23 Ultra SQLite/storage-power-loss validation has occurred.
+This **does not** mark P0 universal logbook as ACCEPTED_SOFTWARE:
+there is no encrypted/device-backed full recovery, confirmed
+migration, LoTW account proof, or completed app-level persistent
+provider/sync UI. Keep P0 logbook acceptance PARTIAL and require
+exact-head green Android+Kotlin tests and later real-device checks.
+
+## 2026-11-07 FT-family/Android exact-head CI and local QSO failure UX
+
+Draft PR #71 head `78705f14ff28362f7c71e327d8cc5eb4583fd115`
+passed **37/37 GitHub Actions workflows**: Android debug APK and
+Robolectric unit suite, native/ARM64 FT-family integration, and
+inherited cross-module suites. Evidence:
+`https://github.com/furfurr27-ai/FTX-1-App/actions/runs/42355056698`
+(Android APK),
+`https://github.com/furfurr27-ai/FTX-1-App/actions/runs/42355056613`
+(FT-family native/ARM64), and
+`https://github.com/furfurr27-ai/FTX-1-App/actions/runs/42355056602`
+(CP-0009R Android regression). CI verifies software-only behavior,
+**not** radio CAT/PTT/USB audio, FTX-1 RF, FT2 independent recorded
+interoperability, LoTW credentials, S23 installation or live QSO closure.
+Keep the FT family, QSO persistence and integrated operating rows
+`APP_PARTIAL`; no main merge or final release acceptance.
+
+A follow-on branch-only UI safeguard suppresses false zero QSO,
+award and map counts if the opted-in SQLite log cannot be read.
+Log/ADIF actions remain disabled in this failure state, and a new
+Robolectric test checks stored bytes remain untouched. Its exact-head
+CI still needs verification before counting the change as accepted.

@@ -37,7 +37,7 @@ if "does not connect to a radio" not in text:
     raise SystemExit("Missing explicit no-radio developer UI notice")
 gradle = appgradle.read_text()
 for field in ("applicationId = \"dev.n0png.fieldops\"", "compileSdk = 35",
-              "targetSdk = 35", "versionCode = 69"):
+              "targetSdk = 35", "versionCode = 70"):
     if field not in gradle:
         raise SystemExit("Android packaging contract missing: " + field)
 print("CP-0009D offline application shell/manifest safety contract: PASS")
@@ -289,8 +289,8 @@ for forbidden in ("android.content.Context", "SecretKey", "File(", "System.curre
                   "Log.", "MessageDigest", "SharedPreferences", "Serializable", "Parcelable"):
     if forbidden in consent_source:
         raise SystemExit("CP-0009Q consent renderer must remain side-effect free: " + forbidden)
-if "versionCode = 69" not in appgradle.read_text():
-    raise SystemExit("CP-0009R APK versionCode 69 expected")
+if "versionCode = 70" not in appgradle.read_text():
+    raise SystemExit("CP-0009S APK versionCode 70 expected")
 print("CP-0009Q explicit consent, safe failure, cancel and typed-only audit: PASS")
 
 # CP-0009R integrated navigation must wire actual logbook/award and mode
@@ -298,7 +298,7 @@ print("CP-0009Q explicit consent, safe failure, cancel and typed-only audit: PAS
 operating = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/FieldOpsOperatingActivity.kt").read_text()
 for required in (
     "FieldOpsOperatingActivity : Activity()",
-    "FastQsoLogger(", "InMemoryLogbookRepository()", "AwardsCenterApplicationService(",
+    "FastQsoLogger(", "OptInQsoRepository(", "AwardsCenterApplicationService(",
     "DigitalModes.profile(", "AdifCodec.export(", "logManual(", "awardMapLayers()",
     "onRetainNonConfigurationInstance()", "START RX — NOT CONNECTED",
     "PTT / TRANSMIT — LOCKED", "No LoTW uploads",
@@ -311,6 +311,22 @@ for forbidden in ("UsbManager", "AudioRecord(", "AudioTrack(", "startService(",
                   "KeyStore.getInstance(", "TX1;", "TX0;"):
     if forbidden in operating:
         raise SystemExit("CP-0009R unsafe or unsupported device integration: " + forbidden)
+# The integrated Android view now uses an explicit opt-in persisted QSO
+# repository, while still relying on the same in-memory canonical model
+# for LOG/AWARDS. Verify the actual backing source rather than demanding
+# the old constructor token in the Activity.
+qso_store = (root / "app/src/main/kotlin/dev/n0png/fieldops/app/FieldOpsLocalQsoStore.kt").read_text()
+for required in (
+    "class OptInQsoRepository(", "InMemoryLogbookRepository()",
+    "FieldOpsLocalQsoStore(", "fun enableLocalPersistence()",
+    "store.insertBatch(records)", "storageError", "requireStation("
+):
+    if required not in qso_store:
+        raise SystemExit("CP-0009S opt-in local QSO repository missing: " + required)
+if "ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)" not in operating:
+    raise SystemExit("CP-0009S QSO persistence must require explicit operator consent")
+if "storage.storageError != null" not in operating:
+    raise SystemExit("CP-0009S QSO store failure must remain visible on OPS")
 if "extends FieldOpsOperatingActivity" not in text:
     raise SystemExit("CP-0009R launcher does not open integrated operating Activity")
-print("CP-0009R canonical logbook/awards/mode navigation and RF lockout: PASS")
+print("CP-0009R/CP-0009S canonical logbook/awards/mode navigation and RF lockout: PASS")

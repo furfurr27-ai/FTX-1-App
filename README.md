@@ -89,6 +89,30 @@ key retirement, auto fallback or LoTW account/certificate proof.
 
 CP-0009Q and preceding immutable checkpoints remain intact.
 
+## Active unmerged FT-family integration (CP-0009S, PR #71)
+
+Current draft development extends the non-transmitting v69 baseline with
+source-built ARM64 FT8/FT4/FT2 JNI, bounded user-selected 12/48 kHz WAV
+receive through production FIR, structured native sender/recipient
+inspection, safe mode-switch lifecycle isolation and explicit ADIF
+file export/restore. ADIF export preflights each document through the
+strict FieldOps importer and splits large logs into operator-saved
+500-contact/1 MB parts instead of silently creating un-restorable backups. A validated RX sender may now be carried through
+a **manual, operator-attested** FT QSO draft into the shared logbook,
+ADIF and Awards workspaces. An offline receive-exchange evidence gate
+now labels native CQ/recipient observations and the correct FT mode slot
+duration, while explicitly reporting NO verified UTC, local TX or
+completed QSO. The handoff clears any previous frequency, signal reports
+and grid; a WAV cannot attest a two-way contact or automatically log,
+transmit or upload to LoTW.
+
+These changes live only in draft PR #71 and are NOT the durable v69
+baseline. Complete exact-head GitHub CI before claiming automated
+acceptance; S23/FTX-1 USB audio, CAT/PTT, live transmission, timed
+full QSO sequencing and on-device interoperability remain unverified.
+Continue finite P0–P3 acceptance work; do not start the deferred
+CP-0003C or Final Review without the owner's explicit trigger.
+
 ## Execution tracks and hardware-gated deferrals
 
 FieldOps has two practical execution lanes:
@@ -364,6 +388,41 @@ Because the original immutable checkpoint snapshot is intentionally absent from 
 
 The repository is currently **public**. Never commit credentials, private keys, PKCS#12 files, LoTW passwords, personal tokens, device secrets, or other sensitive material.
 
+## Draft CP-0009S opt-in local logbook (verification pending)
+
+The CP-0009S Android draft now offers an explicit
+`ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)` choice on LOG.
+Before the choice, a fresh process still loses volatile QSOs. After
+the choice, all current contacts are enrolled in an app-private SQLite
+database in one transaction; new manual contacts and confirmation-based
+FieldOps ADIF restore batches write to SQLite before the in-memory
+mirror changes. On next process start, the same local station's full
+QsoRecord fields are loaded, preserving exact identity and the next
+positive QSO identifier. A damaged/unreadable database blocks writes;
+the app never silently resets the stored log.
+
+The local DB is **not encrypted**, not remotely synchronized, and not
+backed up by Android (`allowBackup=false`); uninstall/clear-data can
+remove it. Follow-on source review rejects cross-station QSO writes and
+fails closed if stored rows belong to another station. OPS now clearly
+labels volatile, persistent, and unreadable storage. A transaction test
+injects an actual SQLite second-row collision and verifies rollback. User-approved ADIF exports are still required for independent
+backups and intentionally omit some internal metadata. No LoTW upload,
+USB capture, CAT or PTT operations are newly enabled. JVM/Robolectric
+tests and the full GitHub CI matrix for this branch remain **pending**;
+this is not a verified final software acceptance or physical device pass.
+Main remains CP-0009R/v69.
+
+## Draft CP-0009S backup integrity change (verification pending)
+
+The FT-family draft branch now requires an explicit SAF ADIF document
+read-back byte match before a written backup part advances. An incomplete,
+modified or unreadable destination stays pending and must be retried.
+This does not establish persistence across power loss, a lossless
+QsoRecord archive or a real-device Storage Access Framework result.
+Exact-head CI and actual S23 storage-provider verification are pending;
+main CP-0009R/v69 is unchanged.
+
 ## Current exact next action
 
 **FT8/FT4/FT2 software operating integration** is the next
@@ -391,3 +450,54 @@ Every future durable engineering pass must review and update this README when an
 - exact next action
 
 A new chat should be able to read this file and know what FieldOps is, what is proven, what is merely planned/recovered from discussion, and exactly where to resume.
+
+
+### CI repair — 2026-11-07 (draft, exact-head validation pending)
+
+The PR #71 `bca33f2` CI result is **19 passed / 18 failed**. The
+Android suite was blocked first by two nullable `startedUtcMillis`
+arithmetic expressions in `ManualAdifFileExportTest.kt`. These are
+now explicitly unwrapped with `requireNotNull` after fixture
+construction. Separately, the original static Android package
+contract expected `InMemoryLogbookRepository()` literally inside
+the Activity; CP-0009S now intentionally uses `OptInQsoRepository`.
+The contract is updated to verify the actual repository implementation,
+explicit operator consent, fail-closed storage warning and existing
+TX lockout rather than checking an obsolete constructor location.
+
+No CI pass or device proof is claimed by this source-only repair.
+
+
+### CI test-fixture repair — 2026-11-07 (exact-head verification pending)
+
+The next CI result at `635dfba` demonstrated successful Kotlin/Android
+compilation and source packaging checks, but one of 119 Robolectric/JVM
+Android tests failed: the 501-contact manual ADIF split test formatted
+an incrementing integer as HHmmss, yielding impossible UTC seconds
+(`000060`, etc.). The strict ADIF restore correctly rejected those
+records. The fixture now derives QSO date, HHmmss and timestamp from
+shared `QsoUtcFields.fromEpochMillis` and asserts the minute rollover,
+501 distinct contacts, and independently restorable parts. The 48-row
+byte-limit fixture uses the same canonical UTC conversion. No product
+parser validation has been relaxed. New-head CI must pass before marking
+this corrected test green; main and final acceptance remain unchanged.
+
+
+### 2026-11-07 exact-head CI and unreadable-log fail-closed views
+
+Commit `78705f14ff28362f7c71e327d8cc5eb4583fd115` completed
+**37/37 GitHub Actions workflows successfully**, including
+Android APK + Robolectric and FT-family ARM64/native golden gates.
+This verifies the previously failing ADIF UTC test; it does **not**
+verify physical Galaxy S23 Ultra or Yaesu FTX-1 operation.
+
+Subsequent branch-only source review found that a corrupt opted-in
+QSO database correctly locked writes but the LOG/AWARDS/MAP views
+could still display misleading empty/zero results. Their new code
+suppresses ordinary logging, ADIF import/export, awards and map-QSO
+projections when the persisted database is unreadable, displays a
+strong recovery warning, and preserves the corrupt DB unchanged.
+A Robolectric test injects a malformed JSON row, checks each UI
+state and proves the row is still on disk. Exact-head CI for this
+follow-on source change is **pending**. The release gate, TX lockout,
+LoTW deferral and v69 main baseline remain unchanged.
