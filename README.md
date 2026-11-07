@@ -481,3 +481,23 @@ shared `QsoUtcFields.fromEpochMillis` and asserts the minute rollover,
 byte-limit fixture uses the same canonical UTC conversion. No product
 parser validation has been relaxed. New-head CI must pass before marking
 this corrected test green; main and final acceptance remain unchanged.
+
+
+### 2026-11-07 exact-head CI and unreadable-log fail-closed views
+
+Commit `78705f14ff28362f7c71e327d8cc5eb4583fd115` completed
+**37/37 GitHub Actions workflows successfully**, including
+Android APK + Robolectric and FT-family ARM64/native golden gates.
+This verifies the previously failing ADIF UTC test; it does **not**
+verify physical Galaxy S23 Ultra or Yaesu FTX-1 operation.
+
+Subsequent branch-only source review found that a corrupt opted-in
+QSO database correctly locked writes but the LOG/AWARDS/MAP views
+could still display misleading empty/zero results. Their new code
+suppresses ordinary logging, ADIF import/export, awards and map-QSO
+projections when the persisted database is unreadable, displays a
+strong recovery warning, and preserves the corrupt DB unchanged.
+A Robolectric test injects a malformed JSON row, checks each UI
+state and proves the row is still on disk. Exact-head CI for this
+follow-on source change is **pending**. The release gate, TX lockout,
+LoTW deferral and v69 main baseline remain unchanged.

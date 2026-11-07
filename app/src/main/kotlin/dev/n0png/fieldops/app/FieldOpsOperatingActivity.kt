@@ -462,9 +462,14 @@ open class FieldOpsOperatingActivity : Activity() {
             Tab.AWARDS -> awards()
             Tab.RADIO -> radio()
         }
-        title(if (model.logbook.isPersistent)
-            "APP-PRIVATE LOCAL QSO STORE • NO CLOUD BACKUP • NO RF TRANSMISSION" else
-            "IN-MEMORY ONLY • FRESH PROCESS LOSES MANUAL QSOs • NO RF TRANSMISSION", 12, muted)
+        title(when {
+            model.logbook.storageError != null ->
+                "LOCAL QSO STORE UNREADABLE • NO CONTACT/ACTIVITY COUNTS TRUSTED • NO RF"
+            model.logbook.isPersistent ->
+                "APP-PRIVATE LOCAL QSO STORE • NO CLOUD BACKUP • NO RF TRANSMISSION"
+            else ->
+                "IN-MEMORY ONLY • FRESH PROCESS LOSES MANUAL QSOs • NO RF TRANSMISSION"
+        }, 12, muted)
         setContentView(scroll)
     }
 
@@ -636,11 +641,19 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     private fun map() {
-        // Actual map-layer service: cannot invent station coordinates or award confirmations.
-        val layers = model.awards.awardMapLayers()
-        panel("AWARD-AREA GEOMETRY / NO INVENTED POSITIONS",
-            "Local award-map projection: ${layers.size} layers from current logbook/evidence. " +
-                "No authenticated APRS, heard-signal or QSO coordinates available.")
+        // An unreadable persisted log MUST NOT render apparently authoritative
+        // zero-contact or zero-award projections.
+        if (model.logbook.storageError != null) {
+            panel("MAP QSO / AWARDS PROJECTION UNAVAILABLE",
+                "The saved QSO database cannot be read. No map evidence or zero-contact " +
+                    "assessment can be trusted; stored data has not been cleared.")
+        } else {
+            // Actual map-layer service: no invented station coordinates/confirmations.
+            val layers = model.awards.awardMapLayers()
+            panel("AWARD-AREA GEOMETRY / NO INVENTED POSITIONS",
+                "Local award-map projection: ${layers.size} layers from current logbook/evidence. " +
+                    "No authenticated APRS, heard-signal or QSO coordinates available.")
+        })
         panel("PROPAGATION & OFFLINE REPORTS",
             "The separate synthetic archive workbench remains available; no live source is implied.")
         action("OPEN SYNTHETIC OFFLINE ARCHIVE HISTORY") {
@@ -677,7 +690,17 @@ open class FieldOpsOperatingActivity : Activity() {
                 "Choose ENABLE to keep full local QSO metadata on this device. " +
                 "This app-private storage is not encrypted or backed up automatically."
         })
-        if (!storage.isPersistent && storage.storageError == null) {
+        if (storage.storageError != null) {
+            panel("LOCAL LOGBOOK UNAVAILABLE — STORED DATA RETAINED",
+                "Existing saved contacts could not be read. Showing zero contacts would be " +
+                    "misleading. QSO logging, ADIF import/export and awards derived from " +
+                    "this database are disabled. Do NOT clear app data. Seek a verified " +
+                    "data recovery path; no files or LoTW records were deleted.")
+            disabledAction("SAVE QSO — STORAGE UNREADABLE")
+            disabledAction("EXPORT ADIF — STORAGE UNREADABLE")
+            return
+        }
+        if (!storage.isPersistent) {
             action("ENABLE LOCAL QSO STORAGE (THIS DEVICE ONLY)") {
                 val result = runCatching { storage.enableLocalPersistence() }
                 model.logMessage = if (result.isSuccess)
@@ -848,8 +871,15 @@ open class FieldOpsOperatingActivity : Activity() {
     }
 
     private fun awards() {
+        if (model.logbook.storageError != null) {
+            panel("AWARDS UNAVAILABLE — SAVED QSO STORE UNREADABLE",
+                "Local award counts cannot be evaluated while the existing QSO " +
+                    "database is unreadable. Zero worked or confirmed is NOT a result. " +
+                    "No database records were cleared and LoTW is disabled.")
+            return
+        }
         panel("AWARDS CENTER / LOCAL EVIDENCE ONLY",
-            "Cards below are computed from the same in-memory logbook as LOG, " +
+            "Cards below are computed from the same canonical logbook as LOG, " +
                 "with no imported confirmations or sponsor award claims.")
         val cards = model.awards.cards()
         for (card in cards.take(8)) {

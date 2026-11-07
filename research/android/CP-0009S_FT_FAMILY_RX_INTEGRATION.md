@@ -280,3 +280,21 @@ minute boundary as well as 501 unique restored contacts. Aligned the
 48-contact large-byte-volume fixture with the same UTC primitive.
 **This is a test-data repair, not a relaxation of strict ADIF parsing.**
 CI on the new head and actual S23 device validation remain outstanding.
+
+## 2026-11-07 37/37 green and unreadable SQLite view gate
+
+PR #71 head `78705f14ff28362f7c71e327d8cc5eb4583fd115` has
+37/37 successful GitHub workflows, including Android APK build,
+Android Robolectric suite and ARM64/native FT-family checks.
+This validates the prior UTC fixture correction, not hardware RF.
+
+Follow-on review identified a real data-integrity presentation
+problem: an unreadable opt-in database already blocked writes, but
+LOG, AWARDS and MAP could still imply an authoritative empty log.
+The UI now renders unavailable-data warnings, suppresses QSO save,
+ADIF import/export and evidence-derived counts, and retains the
+original database. A new Android Robolectric test injects a corrupt
+on-disk JSON row, navigates each view, confirms TX remains locked,
+and reads the unchanged bad row after activity teardown.
+Exact-head follow-on tests pending. No main merge, new checkpoint,
+LoTW validation or device/RF activity.

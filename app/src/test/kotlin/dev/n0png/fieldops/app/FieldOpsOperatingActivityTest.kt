@@ -339,6 +339,49 @@ class FieldOpsOperatingActivityTest {
         }
     }
 
+    @Test fun unreadablePersistentLogNeverRendersFalseZeroOrPermitsExport() {
+        val app = RuntimeEnvironment.getApplication()
+        app.deleteDatabase(FieldOpsLocalQsoStore.DATABASE)
+        try {
+            FieldOpsLocalQsoStore(app).use { store ->
+                store.enable(emptyList())
+                store.writableDatabase.execSQL(
+                    "INSERT INTO contacts(id,payload) VALUES (1,'not-json')"
+                )
+            }
+            Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
+                val a = ctl.get()
+                assertTrue(text(a).contains("STORAGE ERROR: existing QSO data cannot be read"))
+                tap(a, "LOG")
+                assertTrue(text(a).contains("LOCAL LOGBOOK UNAVAILABLE"))
+                assertFalse(text(a).contains("0 records"))
+                assertFalse(text(a).contains("No file exported"))
+                assertFalse(text(a).contains("SHOW ADIF FROM REAL LOGBOOK"))
+                assertFalse(text(a).contains("CONFIRM RESTORE TO LOCAL LOG"))
+                assertFalse(button(a, "SAVE QSO — STORAGE UNREADABLE").isEnabled)
+                assertFalse(button(a, "EXPORT ADIF — STORAGE UNREADABLE").isEnabled)
+                tap(a, "AWARDS")
+                assertTrue(text(a).contains("AWARDS UNAVAILABLE"))
+                assertFalse(text(a).contains("Worked:"))
+                tap(a, "MAP")
+                assertTrue(text(a).contains("MAP QSO / AWARDS PROJECTION UNAVAILABLE"))
+                assertFalse(text(a).contains("Local award-map projection: 0 layers"))
+                tap(a, "RADIO")
+                assertFalse(button(a, "PTT / TRANSMIT — LOCKED").isEnabled)
+            }
+            FieldOpsLocalQsoStore(app).use { store ->
+                store.readableDatabase.rawQuery(
+                    "SELECT payload FROM contacts WHERE id = 1", null
+                ).use { cursor ->
+                    assertTrue(cursor.moveToFirst())
+                    assertEquals("not-json", cursor.getString(0))
+                }
+            }
+        } finally {
+            app.deleteDatabase(FieldOpsLocalQsoStore.DATABASE)
+        }
+    }
+
     @Test fun malformedGridNeverEntersAuthoritativeLogbookOrAwards() {
         Robolectric.buildActivity(MainActivity::class.java).setup().use { ctl ->
             val a = ctl.get()

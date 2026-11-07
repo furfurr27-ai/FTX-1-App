@@ -124,3 +124,26 @@ there is no encrypted/device-backed full recovery, confirmed
 migration, LoTW account proof, or completed app-level persistent
 provider/sync UI. Keep P0 logbook acceptance PARTIAL and require
 exact-head green Android+Kotlin tests and later real-device checks.
+
+## 2026-11-07 FT-family/Android exact-head CI and local QSO failure UX
+
+Draft PR #71 head `78705f14ff28362f7c71e327d8cc5eb4583fd115`
+passed **37/37 GitHub Actions workflows**: Android debug APK and
+Robolectric unit suite, native/ARM64 FT-family integration, and
+inherited cross-module suites. Evidence:
+`https://github.com/furfurr27-ai/FTX-1-App/actions/runs/42355056698`
+(Android APK),
+`https://github.com/furfurr27-ai/FTX-1-App/actions/runs/42355056613`
+(FT-family native/ARM64), and
+`https://github.com/furfurr27-ai/FTX-1-App/actions/runs/42355056602`
+(CP-0009R Android regression). CI verifies software-only behavior,
+**not** radio CAT/PTT/USB audio, FTX-1 RF, FT2 independent recorded
+interoperability, LoTW credentials, S23 installation or live QSO closure.
+Keep the FT family, QSO persistence and integrated operating rows
+`APP_PARTIAL`; no main merge or final release acceptance.
+
+A follow-on branch-only UI safeguard suppresses false zero QSO,
+award and map counts if the opted-in SQLite log cannot be read.
+Log/ADIF actions remain disabled in this failure state, and a new
+Robolectric test checks stored bytes remain untouched. Its exact-head
+CI still needs verification before counting the change as accepted.
